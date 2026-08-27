@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Srilatha Creations | Boutique • Fashion • Jewellery • Embroidery</title>
+<meta name="description" content="Srilatha Creations, Bukawada, Jagtial. Designer dresses, blouse works, maggam works, stitching, sarees, 1 gram gold jewellery and wedding shopping.">
+<meta property="og:title" content="Srilatha Creations">
+<meta property="og:description" content="One stop solution for all your event shopping in Jagtial.">
+<meta property="og:image" content="assets/images/og-cover.jpg">
+<link rel="icon" href="assets/images/favicon.png">
+<style>
+:root{
+ --cream:#fff8ec; --cream2:#fffdf9; --pink:#df1f73; --pink2:#f43b8d;
+ --wine:#6c1247; --gold:#c99532; --ink:#23181e; --muted:#745e69;
+ --line:#efd8df; --card:#fffdfb; --shadow:0 14px 38px rgba(94,30,63,.12);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--cream);color:var(--ink)}
+a{text-decoration:none;color:inherit}
+button,input{font:inherit}
+img{max-width:100%;display:block}
+.shell{max-width:1240px;margin:auto;padding:0 18px}
+.ornament{height:16px;background:
+linear-gradient(90deg,transparent 0 2%,var(--pink) 2% 2.15%,transparent 2.15% 97.85%,var(--pink) 97.85% 98%,transparent 98%),
+radial-gradient(circle,var(--gold) 0 2px,transparent 3px);
+background-size:100% 100%,38px 16px;opacity:.7}
+.topbar{background:var(--wine);color:#fff;font-size:12px}
+.topbar .shell{min-height:36px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.topbar strong{color:#ffd879}
+.header{background:rgba(255,248,236,.96);position:sticky;top:0;z-index:50;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+.header-main{display:grid;grid-template-columns:240px 1fr auto;align-items:center;gap:22px;padding:12px 0}
+.brand img{height:66px;width:230px;object-fit:cover;object-position:center;border-radius:8px}
+.search{display:flex;background:#fff;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.search input{flex:1;border:0;outline:0;padding:13px 17px;background:transparent}
+.search button{width:48px;border:0;background:var(--pink);color:#fff;cursor:pointer}
+.actions{display:flex;gap:8px}
+.iconbtn{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;position:relative}
+.count{position:absolute;right:-2px;top:-4px;background:var(--pink);color:#fff;font-size:9px;min-width:17px;height:17px;border-radius:9px;display:grid;place-items:center}
+.nav{border-top:1px solid #f6e6eb}
+.nav .shell{display:flex;gap:7px;justify-content:center;overflow:auto;padding-top:7px;padding-bottom:7px}
+.nav button{white-space:nowrap;border:0;background:transparent;padding:9px 12px;border-radius:999px;font-weight:800;font-size:12px;cursor:pointer}
+.nav button:hover,.nav button.active{background:#fde5ef;color:var(--pink)}
+.hero{padding:18px 0 6px}
+.hero-card{position:relative;border-radius:28px;overflow:hidden;min-height:520px;background:#ead1d8;box-shadow:var(--shadow)}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .55s ease}
+.slide.active{opacity:1}
+.slide img{width:100%;height:100%;object-fit:cover}
+.slide:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,248,236,.94) 0%,rgba(255,248,236,.75) 40%,rgba(255,248,236,.06) 70%)}
+.hero-copy{position:absolute;z-index:3;left:6%;top:50%;transform:translateY(-50%);max-width:510px}
+.eyebrow{display:inline-flex;gap:7px;align-items:center;color:var(--pink);font-weight:900;font-size:11px;letter-spacing:1.4px;text-transform:uppercase}
+.hero h1{font-family:Georgia,serif;font-size:clamp(43px,6vw,73px);line-height:.98;margin:14px 0;color:#4e1737}
+.hero p{font-size:16px;line-height:1.7;color:#654b58}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.btn{border:0;border-radius:999px;padding:13px 19px;font-weight:900;cursor:pointer}
+.primary{background:linear-gradient(135deg,var(--wine),var(--pink));color:#fff}
+.secondary{background:#fff;color:var(--wine);border:1px solid #e7cbd7}
+.dots{position:absolute;z-index:5;bottom:25px;left:6%;display:flex;gap:7px}
+.dot{width:9px;height:9px;border-radius:50%;background:#fff9;border:1px solid #fff;cursor:pointer}
+.dot.active{width:29px;border-radius:8px;background:var(--pink)}
+.trust{margin:18px 0;background:#fff;border:1px solid var(--line);border-radius:18px;display:grid;grid-template-columns:repeat(5,1fr)}
+.trust div{padding:17px;text-align:center;border-right:1px solid var(--line)}
+.trust div:last-child{border:0}.trust b{display:block;font-size:12px}.trust span{font-size:10px;color:var(--muted)}
+.section{padding:30px 0}
+.head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:18px}
+.head h2{font-family:Georgia,serif;font-size:36px;margin:0;color:#4d1937}
+.head p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.link{color:var(--pink);font-weight:900;font-size:12px}
+.categories{display:grid;grid-template-columns:repeat(8,1fr);gap:12px}
+.cat{cursor:pointer;text-align:center}
+.catpic{aspect-ratio:1/1;border-radius:50%;padding:5px;border:2px solid #f0b9cf;background:#fff;box-shadow:0 7px 20px #a62b5b15;overflow:hidden}
+.catpic img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.cat b{font-size:12px;display:block;margin-top:9px}
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+.product{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 6px 20px rgba(96,29,61,.06);transition:.2s;position:relative}
+.product:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.productimg{aspect-ratio:4/5;position:relative;background:#f8eaf0;overflow:hidden}
+.productimg img{width:100%;height:100%;object-fit:cover}
+.badge{position:absolute;left:11px;top:11px;background:#fff;color:var(--pink);padding:6px 9px;border-radius:999px;font-size:9px;font-weight:900}
+.heart{position:absolute;right:11px;top:11px;width:34px;height:34px;border-radius:50%;border:0;background:#fff;color:var(--pink);font-size:17px}
+.pinfo{padding:13px}.pinfo h3{font-size:14px;margin:0 0 5px}.pinfo small{color:var(--muted)}
+.price{display:flex;gap:7px;align-items:center;margin-top:8px}.price b{font-size:16px}.price del{font-size:11px;color:#a2929a}
+.pbuttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:11px}
+.pbuttons button{padding:10px 6px;border-radius:10px;font-size:11px;font-weight:900;cursor:pointer}
+.add{background:#fff;border:1px solid var(--pink);color:var(--pink)}.buy{background:var(--pink);border:1px solid var(--pink);color:#fff}
+.wedding{display:grid;grid-template-columns:1fr 1fr;background:#fff;border:1px solid var(--line);border-radius:26px;overflow:hidden}
+.wedding img{width:100%;height:100%;min-height:390px;object-fit:cover}
+.weddingcopy{padding:42px;display:flex;flex-direction:column;justify-content:center;background:radial-gradient(circle at 90% 20%,#ffe5ee,transparent 35%),var(--cream2)}
+.weddingcopy h2{font-family:Georgia,serif;font-size:42px;line-height:1.04;margin:8px 0 12px;color:#561a3e}
+.weddingcopy p{color:var(--muted);line-height:1.8}
+.pills{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 22px}.pills span{padding:8px 10px;border:1px solid var(--line);background:#fff;border-radius:999px;font-size:11px;font-weight:800}
+.about{display:grid;grid-template-columns:1.05fr .95fr;gap:22px}
+.aboutimg{border-radius:24px;overflow:hidden;min-height:430px}.aboutimg img{width:100%;height:100%;object-fit:cover}
+.aboutbox{padding:35px;background:#fff;border:1px solid var(--line);border-radius:24px}
+.aboutbox h2{font:700 38px Georgia,serif;margin:7px 0 12px;color:#511a3c}.aboutbox p{color:var(--muted);line-height:1.8}
+.info{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}.info div{padding:15px;border-radius:15px;background:#fff7fa;border:1px solid #f2d5e1}.info b{display:block;font-size:12px}.info span{font-size:11px;color:var(--muted)}
+.insta{display:flex;align-items:center;justify-content:space-between;gap:20px;background:linear-gradient(135deg,#6b1247,#d42072);color:#fff;border-radius:24px;padding:30px}
+.insta h2{font:700 32px Georgia,serif;margin:0 0 5px}.insta p{margin:0;color:#ffe7f1}.insta .btn{background:#fff;color:#7c154d}
+footer{margin-top:38px;background:#351024;color:#fff}
+.footer{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:28px;padding:38px 18px}
+.footer img{height:76px;width:270px;object-fit:cover;border-radius:8px}.footer p,.footer a{font-size:12px;color:#e7ced9;line-height:1.8;display:block}.footer h4{margin:0 0 10px;color:#ffd78c}
+.copy{border-top:1px solid #ffffff18;padding:15px 18px;color:#d9bdca;font-size:11px;text-align:center}
+.floatwa{position:fixed;right:18px;bottom:18px;background:#20b75a;color:#fff;width:55px;height:55px;border-radius:50%;display:grid;place-items:center;font-size:23px;box-shadow:0 10px 25px #0003;z-index:70}
+.drawer{position:fixed;right:-420px;top:0;width:min(390px,92vw);height:100vh;background:#fff;z-index:100;box-shadow:-18px 0 45px #0002;transition:.3s;padding:20px;overflow:auto}
+.drawer.open{right:0}.drawerhead{display:flex;justify-content:space-between;align-items:center}.drawerhead button{border:0;background:#f8e8ef;width:38px;height:38px;border-radius:50%}
+.cartitem{display:grid;grid-template-columns:70px 1fr auto;gap:10px;padding:13px 0;border-bottom:1px solid var(--line)}.cartitem img{width:70px;height:78px;object-fit:cover;border-radius:10px}.total{display:flex;justify-content:space-between;font-weight:900;font-size:18px;margin:18px 0}
+.checkout{width:100%;padding:13px;border:0;border-radius:12px;background:var(--pink);color:#fff;font-weight:900}.note{font-size:10px;color:var(--muted);line-height:1.5;margin-top:8px}
+.overlay{position:fixed;inset:0;background:#0006;z-index:90;opacity:0;pointer-events:none;transition:.2s}.overlay.show{opacity:1;pointer-events:auto}
+.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,20px);background:#321122;color:#fff;padding:11px 16px;border-radius:999px;opacity:0;transition:.25s;z-index:120;font-size:12px}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:960px){
+ .header-main{grid-template-columns:1fr auto}.search{grid-column:1/-1;grid-row:2}.brand img{height:54px;width:200px}.categories{grid-template-columns:repeat(4,1fr)}.products{grid-template-columns:repeat(2,1fr)}.trust{grid-template-columns:repeat(2,1fr)}.trust div{border-bottom:1px solid var(--line)}.wedding,.about{grid-template-columns:1fr}.footer{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+ .shell{padding:0 12px}.topbar .shell{justify-content:center}.topbar span:last-child{display:none}.brand img{width:160px;height:45px}.actions .iconbtn:first-child{display:none}
+ .hero-card{min-height:500px;border-radius:19px}.slide:after{background:linear-gradient(0deg,rgba(255,248,236,.98),rgba(255,248,236,.25) 75%)}.hero-copy{left:22px;right:22px;top:auto;bottom:55px;transform:none}.hero h1{font-size:44px}.hero p{font-size:13px}.dots{left:22px;bottom:22px}
+ .trust{grid-template-columns:1fr 1fr}.categories{grid-template-columns:repeat(4,1fr);gap:8px}.cat b{font-size:10px}.products{gap:9px}.product{border-radius:14px}.pinfo{padding:10px}.pbuttons{grid-template-columns:1fr}.add{display:none}.weddingcopy{padding:25px}.weddingcopy h2{font-size:34px}.aboutbox{padding:24px}.info{grid-template-columns:1fr}.insta{align-items:flex-start;flex-direction:column}.footer{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="ornament"></div>
+<div class="topbar">
+  <div class="shell">
+    <span>📍 Bukawada, Jagtial &nbsp; • &nbsp; Since <strong>2008</strong></span>
+    <span>☎ 7981686569 &nbsp; • &nbsp; Open 10:00 AM – 9:00 PM</span>
+  </div>
+</div>
+
+<header class="header">
+ <div class="shell header-main">
+  <a class="brand" href="#home"><img src="assets/images/srilatha-logo.png" alt="Srilatha Creations"></a>
+  <div class="search"><input id="search" placeholder="Search products, blouse works, jewellery..."><button onclick="applySearch()">⌕</button></div>
+  <div class="actions">
+   <button class="iconbtn" title="Instagram" onclick="window.open('https://www.instagram.com/srilatha_creations_9','_blank')">◎</button>
+   <button class="iconbtn" title="Wishlist">♡</button>
+   <button class="iconbtn" title="Cart" onclick="toggleCart()">🛍<span id="cartCount" class="count">0</span></button>
+  </div>
+ </div>
+ <nav class="nav"><div class="shell">
+  <button class="active" onclick="filterCat('all',this)">Home</button>
+  <button onclick="filterCat('blouse',this)">Blouse Works</button>
+  <button onclick="filterCat('maggam',this)">Maggam Works</button>
+  <button onclick="filterCat('jewellery',this)">1 Gram Gold Jewellery</button>
+  <button onclick="filterCat('stitching',this)">Stitching</button>
+  <button onclick="filterCat('sarees',this)">Sarees</button>
+  <button onclick="filterCat('fabric',this)">Dress Materials</button>
+  <button onclick="filterCat('computer',this)">Computer Works</button>
+  <button onclick="document.querySelector('#contact').scrollIntoView()">Contact</button>
+ </div></nav>
+</header>
+
+<main id="home">
+<section class="hero">
+ <div class="shell">
+  <div class="hero-card">
+   <div class="slide active"><img src="assets/images/hero-wedding.jpg" alt=""><div class="hero-copy"><span class="eyebrow">✦ Wedding Collection</span><h1>Celebrate in your own style.</h1><p>Designer blouses, custom stitching, sarees, jewellery and event-ready styling — thoughtfully brought together at Srilatha Creations.</p><div class="btnrow"><button class="btn primary" onclick="document.querySelector('#shop').scrollIntoView()">Shop Collection</button><a class="btn secondary" href="https://wa.me/917981686569" target="_blank">WhatsApp Us</a></div></div></div>
+   <div class="slide"><img src="assets/images/hero-blouse.jpg" alt=""><div class="hero-copy"><span class="eyebrow">✦ Designer Blouses</span><h1>Crafted details. Beautiful finishes.</h1><p>Maggam, embroidery and custom blouse work designed for weddings, celebrations and special occasions.</p><div class="btnrow"><button class="btn primary" onclick="filterCat('blouse')">Explore Blouses</button></div></div></div>
+   <div class="slide"><img src="assets/images/hero-jewellery.jpg" alt=""><div class="hero-copy"><span class="eyebrow">✦ Jewellery Collection</span><h1>A little gold. A lot of elegance.</h1><p>Explore festive and occasion-ready 1 gram gold jewellery styles for your complete look.</p><div class="btnrow"><button class="btn primary" onclick="filterCat('jewellery')">Explore Jewellery</button></div></div></div>
+   <div class="dots"><span class="dot active" onclick="goSlide(0)"></span><span class="dot" onclick="goSlide(1)"></span><span class="dot" onclick="goSlide(2)"></span></div>
+  </div>
+
+  <div class="trust">
+   <div>✦<b>Premium Quality</b><span>Carefully selected</span></div><div>✂<b>Custom Designs</b><span>Made for you</span></div>
+   <div>♕<b>Wedding Shopping</b><span>One-stop solution</span></div><div>◇<b>Secure Checkout</b><span>Gateway ready</span></div>
+   <div>♡<b>Customer Support</b><span>WhatsApp assistance</span></div>
+  </div>
+ </div>
+</section>
+
+<section class="section"><div class="shell">
+ <div class="head"><div><h2>Shop by Category</h2><p>Browse the services and collections Srilatha Creations is known for.</p></div></div>
+ <div class="categories">
+  <div class="cat" onclick="filterCat('blouse')"><div class="catpic"><img src="assets/images/blouse.jpg"></div><b>Blouse Works</b></div>
+  <div class="cat" onclick="filterCat('maggam')"><div class="catpic"><img src="assets/images/maggam.jpg"></div><b>Maggam Work</b></div>
+  <div class="cat" onclick="filterCat('jewellery')"><div class="catpic"><img src="assets/images/jewellery.jpg"></div><b>Jewellery</b></div>
+  <div class="cat" onclick="filterCat('stitching')"><div class="catpic"><img src="assets/images/stitching.jpg"></div><b>Stitching</b></div>
+  <div class="cat" onclick="filterCat('sarees')"><div class="catpic"><img src="assets/images/sarees.jpg"></div><b>Sarees</b></div>
+  <div class="cat" onclick="filterCat('fabric')"><div class="catpic"><img src="assets/images/dress-material.jpg"></div><b>Dress Material</b></div>
+  <div class="cat" onclick="filterCat('computer')"><div class="catpic"><img src="assets/images/computer-work.jpg"></div><b>Computer Work</b></div>
+  <div class="cat" onclick="filterCat('wedding')"><div class="catpic"><img src="assets/images/wedding.jpg"></div><b>Wedding</b></div>
+ </div>
+</div></section>
+
+<section class="section" id="shop"><div class="shell">
+ <div class="head"><div><h2>Featured Products</h2><p>Dummy catalogue for development. Replace with the boutique's actual products, photos, prices and stock later.</p></div><button class="link" onclick="filterCat('all')">Show All →</button></div>
+ <div class="products" id="products"></div>
+</div></section>
+
+<section class="section"><div class="shell">
+ <div class="wedding">
+  <div><img src="assets/images/wedding.jpg" alt="Wedding collection"></div>
+  <div class="weddingcopy"><span class="eyebrow">One Stop Event Shopping</span><h2>Your special occasion, beautifully put together.</h2><p>From blouse designing and maggam work to sarees, stitching, jewellery and personalised finishing, Srilatha Creations brings multiple event-shopping needs together in one place.</p>
+   <div class="pills"><span>Blouse Design</span><span>Maggam Work</span><span>Stitching</span><span>Sarees</span><span>1 Gram Jewellery</span><span>Computer Embroidery</span></div>
+   <a class="btn primary" href="https://wa.me/917981686569" target="_blank">Plan on WhatsApp</a>
+  </div>
+ </div>
+</div></section>
+
+<section class="section" id="about"><div class="shell">
+ <div class="about">
+  <div class="aboutimg"><img src="assets/images/about-srilatha.jpg" alt="Srilatha Konduri - Founder"></div>
+  <div class="aboutbox"><span class="eyebrow">Founder & Owner</span><h2>Srilatha Konduri</h2><p>Founded in 2008, Srilatha Creations serves customers in Jagtial with designer blouse works, maggam work, stitching, sarees, 1 gram gold jewellery, computer work and event-shopping support.</p><p>Our goal is to make special-occasion shopping easier through customised work, thoughtful design and personal attention.</p>
+   <div class="info"><div><b>Since</b><span>2008</span></div><div><b>Location</b><span>Bukawada, Jagtial</span></div><div><b>Hours</b><span>10 AM – 9 PM</span></div></div>
+  </div>
+ </div>
+</div></section>
+
+<section class="section"><div class="shell">
+ <div class="insta"><div><h2>Follow Srilatha Creations</h2><p>See new designs, reels, collections and boutique updates on Instagram.</p></div><a class="btn" href="https://www.instagram.com/srilatha_creations_9" target="_blank">Open Instagram ↗</a></div>
+</div></section>
+
+<section class="section" id="contact"><div class="shell">
+ <div class="head"><div><h2>Contact & Visit</h2><p>For custom orders, wedding shopping or product enquiries.</p></div></div>
+ <div class="info">
+  <div><b>Call / WhatsApp</b><span>7981686569</span></div>
+  <div><b>Email</b><span>Srilathascreations@gmail.com</span></div>
+  <div><b>Address</b><span>Bukawada, Jagtial</span></div>
+ </div>
+</div></section>
+</main>
+
+<footer>
+ <div class="shell footer">
+  <div><img src="assets/images/srilatha-logo.png"><p>Boutique • Fashion • Jewellery • Embroidery<br>Where fashion meets passion.</p></div>
+  <div><h4>Shop</h4><a href="#shop">Featured Products</a><a href="#shop">Blouse Works</a><a href="#shop">Jewellery</a><a href="#shop">Sarees</a></div>
+  <div><h4>Help</h4><a href="#">Shipping Policy</a><a href="#">Return Policy</a><a href="#">Privacy Policy</a><a href="#">Terms & Conditions</a></div>
+  <div><h4>Contact</h4><p>7981686569<br>Srilathascreations@gmail.com<br>Bukawada, Jagtial<br>10 AM – 9 PM</p></div>
+ </div>
+ <div class="copy">© 2026 Srilatha Creations. All rights reserved. • E‑commerce payment integration pending merchant account setup.</div>
+</footer>
+
+<a class="floatwa" href="https://wa.me/917981686569" target="_blank" aria-label="WhatsApp">☏</a>
+<div class="overlay" id="overlay" onclick="toggleCart(false)"></div>
+<aside class="drawer" id="drawer">
+ <div class="drawerhead"><h2>Your Cart</h2><button onclick="toggleCart(false)">×</button></div>
+ <div id="cartItems"></div>
+ <div class="total"><span>Total</span><span id="total">₹0</span></div>
+ <button class="checkout" onclick="checkout()">Proceed to Checkout</button>
+ <p class="note">Demo checkout only. Razorpay / Cashfree can be connected after merchant KYC and payment account setup.</p>
+</aside>
+<div class="toast" id="toast"></div>
+
+<script>
+const products=[
+ {id:1,name:"Designer Blouse",cat:"blouse",price:1499,old:1899,img:"assets/images/blouse.jpg"},
+ {id:2,name:"Bridal Maggam Blouse",cat:"maggam",price:2499,old:2999,img:"assets/images/maggam.jpg"},
+ {id:3,name:"1 Gram Gold Necklace Set",cat:"jewellery",price:1899,old:2299,img:"assets/images/jewellery.jpg"},
+ {id:4,name:"Custom Stitching",cat:"stitching",price:999,old:1299,img:"assets/images/stitching.jpg"},
+ {id:5,name:"Premium Saree",cat:"sarees",price:2899,old:3499,img:"assets/images/sarees.jpg"},
+ {id:6,name:"Designer Dress Material",cat:"fabric",price:1699,old:1999,img:"assets/images/dress-material.jpg"},
+ {id:7,name:"Computer Embroidery Work",cat:"computer",price:1199,old:1499,img:"assets/images/computer-work.jpg"},
+ {id:8,name:"Wedding Collection",cat:"wedding",price:3999,old:4999,img:"assets/images/wedding.jpg"}
+];
+let current="all",cart=[],slide=0;
+function money(n){return "₹"+n.toLocaleString("en-IN")}
+function render(){
+ let q=(document.getElementById("search").value||"").toLowerCase();
+ let list=products.filter(p=>(current==="all"||p.cat===current)&&p.name.toLowerCase().includes(q));
+ document.getElementById("products").innerHTML=list.map(p=>`<article class="product">
+  <div class="productimg"><img src="${p.img}"><span class="badge">DUMMY PRODUCT</span><button class="heart">♡</button></div>
+  <div class="pinfo"><h3>${p.name}</h3><small>Replace with actual product details</small>
+  <div class="price"><b>${money(p.price)}</b><del>${money(p.old)}</del></div>
+  <div class="pbuttons"><button class="add" onclick="addCart(${p.id})">Add to Cart</button><button class="buy" onclick="buyNow(${p.id})">Buy Now</button></div></div></article>`).join("");
+}
+function filterCat(cat,el){
+ current=cat; document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active")); if(el)el.classList.add("active");
+ render(); document.querySelector("#shop").scrollIntoView({behavior:"smooth"});
+}
+function applySearch(){current="all";render();document.querySelector("#shop").scrollIntoView({behavior:"smooth"})}
+document.getElementById("search").addEventListener("input",render);
+function addCart(id){
+ let p=products.find(x=>x.id===id), existing=cart.find(x=>x.id===id);
+ if(existing)existing.qty++;else cart.push({...p,qty:1});
+ updateCart();toast("Added to cart");
+}
+function buyNow(id){addCart(id);toggleCart(true)}
+function updateCart(){
+ document.getElementById("cartCount").textContent=cart.reduce((s,x)=>s+x.qty,0);
+ document.getElementById("cartItems").innerHTML=cart.length?cart.map(x=>`<div class="cartitem"><img src="${x.img}"><div><b>${x.name}</b><div style="font-size:11px;color:#765f6d">Qty ${x.qty}</div></div><b>${money(x.price*x.qty)}</b></div>`).join(""):"<p>Your cart is empty.</p>";
+ document.getElementById("total").textContent=money(cart.reduce((s,x)=>s+x.price*x.qty,0));
+}
+function toggleCart(force){
+ let open=typeof force==="boolean"?force:!document.getElementById("drawer").classList.contains("open");
+ document.getElementById("drawer").classList.toggle("open",open);document.getElementById("overlay").classList.toggle("show",open)
+}
+function checkout(){toast("Checkout UI ready — payment gateway will be connected next.");}
+function toast(t){let e=document.getElementById("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2200)}
+function goSlide(i){slide=i;document.querySelectorAll(".slide").forEach((s,n)=>s.classList.toggle("active",n===i));document.querySelectorAll(".dot").forEach((d,n)=>d.classList.toggle("active",n===i))}
+setInterval(()=>goSlide((slide+1)%3),5500);
+render();updateCart();
+</script>
+</body></html>
