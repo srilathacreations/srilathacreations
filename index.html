@@ -78,7 +78,8 @@ background-size:100% 100%,38px 16px;opacity:.7}
 .productimg{aspect-ratio:4/5;position:relative;background:#f8eaf0;overflow:hidden}
 .productimg img{width:100%;height:100%;object-fit:cover}
 .badge{position:absolute;left:11px;top:11px;background:#fff;color:var(--pink);padding:6px 9px;border-radius:999px;font-size:9px;font-weight:900}
-.heart{position:absolute;right:11px;top:11px;width:34px;height:34px;border-radius:50%;border:0;background:#fff;color:var(--pink);font-size:17px}
+.heart{position:absolute;right:11px;top:11px;width:34px;height:34px;border-radius:50%;border:0;background:#fff;color:var(--pink);font-size:17px;cursor:pointer}
+.heart.active{background:var(--pink);color:#fff}
 .pinfo{padding:13px}.pinfo h3{font-size:14px;margin:0 0 5px}.pinfo small{color:var(--muted)}
 .price{display:flex;gap:7px;align-items:center;margin-top:8px}.price b{font-size:16px}.price del{font-size:11px;color:#a2929a}
 .pbuttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:11px}
@@ -104,11 +105,24 @@ footer{margin-top:38px;background:#351024;color:#fff}
 .floatwa{position:fixed;right:18px;bottom:18px;background:#20b75a;color:#fff;width:55px;height:55px;border-radius:50%;display:grid;place-items:center;font-size:23px;box-shadow:0 10px 25px #0003;z-index:70}
 .drawer{position:fixed;right:-420px;top:0;width:min(390px,92vw);height:100vh;background:#fff;z-index:100;box-shadow:-18px 0 45px #0002;transition:.3s;padding:20px;overflow:auto}
 .drawer.open{right:0}.drawerhead{display:flex;justify-content:space-between;align-items:center}.drawerhead button{border:0;background:#f8e8ef;width:38px;height:38px;border-radius:50%}
-.cartitem{display:grid;grid-template-columns:70px 1fr auto;gap:10px;padding:13px 0;border-bottom:1px solid var(--line)}.cartitem img{width:70px;height:78px;object-fit:cover;border-radius:10px}.total{display:flex;justify-content:space-between;font-weight:900;font-size:18px;margin:18px 0}
+.cartitem,.wishlistitem{display:grid;grid-template-columns:70px 1fr auto;gap:10px;padding:13px 0;border-bottom:1px solid var(--line)}
+.cartitem img,.wishlistitem img{width:70px;height:78px;object-fit:cover;border-radius:10px}
+.total{display:flex;justify-content:space-between;font-weight:900;font-size:18px;margin:18px 0}
 .checkout{width:100%;padding:13px;border:0;border-radius:12px;background:var(--pink);color:#fff;font-weight:900}.note{font-size:10px;color:var(--muted);line-height:1.5;margin-top:8px}
 .overlay{position:fixed;inset:0;background:#0006;z-index:90;opacity:0;pointer-events:none;transition:.2s}.overlay.show{opacity:1;pointer-events:auto}
 .toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,20px);background:#321122;color:#fff;padding:11px 16px;border-radius:999px;opacity:0;transition:.25s;z-index:220;font-size:12px;max-width:min(90vw,520px);text-align:center;box-shadow:0 12px 30px #0004}.toast.show{opacity:1;transform:translate(-50%,0)}
-
+.track-modal{position:fixed;inset:0;z-index:135;display:none;align-items:center;justify-content:center;padding:18px;background:#0007}
+.track-modal.show{display:flex}
+.track-card{width:min(620px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;border:1px solid var(--line);box-shadow:0 25px 60px #0003;padding:24px}
+.track-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.track-result{margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fff8fb}
+.timeline{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:18px 0}
+.step{text-align:center;font-size:10px;color:#9a8891}
+.step .dotstep{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;margin:0 auto 6px;background:#f1e8ec;color:#806b76;font-weight:900}
+.step.done{color:var(--wine);font-weight:900}
+.step.done .dotstep{background:#e6f7ed;color:#18864b}
+.shipbox{padding:13px;border:1px solid var(--line);border-radius:13px;background:#fff}
+.shipbox b{display:block;margin-bottom:5px}
 .checkout-modal{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;padding:18px;background:#0007}
 .checkout-modal.show{display:flex}
 .checkout-card{width:min(620px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;border:1px solid var(--line);box-shadow:0 25px 60px #0003;padding:24px}
@@ -131,12 +145,14 @@ footer{margin-top:38px;background:#351024;color:#fff}
 .order-success .tick{width:64px;height:64px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;background:#e9f8ef;color:#1f9d55;font-size:30px;font-weight:900}
 .order-success h3{font:700 28px Georgia,serif;margin:8px 0;color:#511a3c}
 .order-number{display:inline-block;margin:10px 0;padding:10px 14px;border-radius:999px;background:#fff1f6;border:1px solid #efccdc;color:#7c154d;font-weight:900}
-@media(max-width:560px){.checkout-grid{grid-template-columns:1fr}.checkout-field.full{grid-column:auto}.checkout-card{padding:18px;border-radius:18px}}
-
 @media(max-width:960px){
  .header-main{grid-template-columns:1fr auto}.search{grid-column:1/-1;grid-row:2}.brand img{height:54px;width:200px}.categories{grid-template-columns:repeat(4,1fr)}.products{grid-template-columns:repeat(2,1fr)}.trust{grid-template-columns:repeat(2,1fr)}.trust div{border-bottom:1px solid var(--line)}.wedding,.about{grid-template-columns:1fr}.footer{grid-template-columns:1fr 1fr}
 }
 @media(max-width:560px){
+ .checkout-grid,.track-grid{grid-template-columns:1fr}
+ .checkout-field.full{grid-column:auto}
+ .checkout-card{padding:18px;border-radius:18px}
+ .timeline{grid-template-columns:repeat(3,1fr)}
  .shell{padding:0 12px}.topbar .shell{justify-content:center}.topbar span:last-child{display:none}.brand img{width:160px;height:45px}.actions .iconbtn:first-child{display:none}
  .hero-card{min-height:500px;border-radius:19px}.slide:after{background:linear-gradient(0deg,rgba(255,248,236,.98),rgba(255,248,236,.25) 75%)}.hero-copy{left:22px;right:22px;top:auto;bottom:55px;transform:none}.hero h1{font-size:44px}.hero p{font-size:13px}.dots{left:22px;bottom:22px}
  .trust{grid-template-columns:1fr 1fr}.categories{grid-template-columns:repeat(4,1fr);gap:8px}.cat b{font-size:10px}.products{gap:9px}.product{border-radius:14px}.pinfo{padding:10px}.pbuttons{grid-template-columns:1fr}.add{display:none}.weddingcopy{padding:25px}.weddingcopy h2{font-size:34px}.aboutbox{padding:24px}.info{grid-template-columns:1fr}.insta{align-items:flex-start;flex-direction:column}.footer{grid-template-columns:1fr}
@@ -144,7 +160,9 @@ footer{margin-top:38px;background:#351024;color:#fff}
 </style>
 </head>
 <body>
+
 <div class="ornament"></div>
+
 <div class="topbar">
   <div class="shell">
     <span>📍 Bukawada, Jagtial &nbsp; • &nbsp; Since <strong>2008</strong></span>
@@ -155,94 +173,176 @@ footer{margin-top:38px;background:#351024;color:#fff}
 <header class="header">
  <div class="shell header-main">
   <a class="brand" href="#home"><img src="assets/images/srilatha-logo-new.png" alt="Srilatha Creations"></a>
-  <div class="search"><input id="search" placeholder="Search products, blouse works, jewellery..."><button onclick="applySearch()">⌕</button></div>
+  <div class="search">
+   <input id="search" placeholder="Search products, blouse works, jewellery...">
+   <button onclick="applySearch()">⌕</button>
+  </div>
   <div class="actions">
    <button class="iconbtn" title="Instagram" onclick="window.open('https://www.instagram.com/srilatha_creations_9','_blank')">◎</button>
-   <button class="iconbtn" title="Wishlist">♡</button>
+   <button class="iconbtn" title="Wishlist" onclick="toggleWishlist()">♡<span id="wishlistCount" class="count">0</span></button>
    <button class="iconbtn" title="Cart" onclick="toggleCart()">🛍<span id="cartCount" class="count">0</span></button>
   </div>
  </div>
- <nav class="nav"><div class="shell">
-  <button class="active" onclick="filterCat('all',this)">Home</button>
-  <button onclick="filterCat('blouse',this)">Blouse Works</button>
-  <button onclick="filterCat('maggam',this)">Maggam Works</button>
-  <button onclick="filterCat('jewellery',this)">1 Gram Gold Jewellery</button>
-  <button onclick="filterCat('stitching',this)">Stitching</button>
-  <button onclick="filterCat('sarees',this)">Sarees</button>
-  <button onclick="filterCat('fabric',this)">Dress Materials</button>
-  <button onclick="filterCat('computer',this)">Computer Works</button>
-  <button onclick="document.querySelector('#contact').scrollIntoView()">Contact</button>
- </div></nav>
+
+ <nav class="nav">
+  <div class="shell">
+   <button class="active" onclick="filterCat('all',this)">Home</button>
+   <button onclick="filterCat('blouse',this)">Blouse Works</button>
+   <button onclick="filterCat('maggam',this)">Maggam Works</button>
+   <button onclick="filterCat('jewellery',this)">1 Gram Gold Jewellery</button>
+   <button onclick="filterCat('stitching',this)">Stitching</button>
+   <button onclick="filterCat('sarees',this)">Sarees</button>
+   <button onclick="filterCat('fabric',this)">Dress Materials</button>
+   <button onclick="filterCat('computer',this)">Computer Works</button>
+   <button onclick="openTrackOrder()">Track Order</button>
+   <button onclick="document.querySelector('#contact').scrollIntoView()">Contact</button>
+  </div>
+ </nav>
 </header>
 
 <main id="home">
+
 <section class="hero">
  <div class="shell">
   <div class="hero-card">
-   <div class="slide active"><img src="assets/images/hero-wedding.jpg" alt=""><div class="hero-copy"><span class="eyebrow">✦ Wedding Collection</span><h1>Celebrate in your own style.</h1><p>Designer blouses, custom stitching, sarees, jewellery and event-ready styling — thoughtfully brought together at Srilatha Creations.</p><div class="btnrow"><button class="btn primary" onclick="document.querySelector('#shop').scrollIntoView()">Shop Collection</button><a class="btn secondary" href="https://wa.me/917981686569" target="_blank">WhatsApp Us</a></div></div></div>
-   <div class="slide"><img src="assets/images/hero-blouse.jpg" alt=""><div class="hero-copy"><span class="eyebrow">✦ Designer Blouses</span><h1>Crafted details. Beautiful finishes.</h1><p>Maggam, embroidery and custom blouse work designed for weddings, celebrations and special occasions.</p><div class="btnrow"><button class="btn primary" onclick="filterCat('blouse')">Explore Blouses</button></div></div></div>
-   <div class="slide"><img src="assets/images/hero-jewellery.jpg" alt=""><div class="hero-copy"><span class="eyebrow">✦ Jewellery Collection</span><h1>A little gold. A lot of elegance.</h1><p>Explore festive and occasion-ready 1 gram gold jewellery styles for your complete look.</p><div class="btnrow"><button class="btn primary" onclick="filterCat('jewellery')">Explore Jewellery</button></div></div></div>
-   <div class="dots"><span class="dot active" onclick="goSlide(0)"></span><span class="dot" onclick="goSlide(1)"></span><span class="dot" onclick="goSlide(2)"></span></div>
+   <div class="slide active">
+    <img src="assets/images/hero-wedding.jpg" alt="">
+    <div class="hero-copy">
+     <span class="eyebrow">✦ Wedding Collection</span>
+     <h1>Celebrate in your own style.</h1>
+     <p>Designer blouses, custom stitching, sarees, jewellery and event-ready styling — thoughtfully brought together at Srilatha Creations.</p>
+     <div class="btnrow">
+      <button class="btn primary" onclick="document.querySelector('#shop').scrollIntoView()">Shop Collection</button>
+      <a class="btn secondary" href="https://wa.me/917981686569" target="_blank">WhatsApp Us</a>
+     </div>
+    </div>
+   </div>
+
+   <div class="slide">
+    <img src="assets/images/hero-blouse.jpg" alt="">
+    <div class="hero-copy">
+     <span class="eyebrow">✦ Designer Blouses</span>
+     <h1>Crafted details. Beautiful finishes.</h1>
+     <p>Maggam, embroidery and custom blouse work designed for weddings, celebrations and special occasions.</p>
+     <div class="btnrow"><button class="btn primary" onclick="filterCat('blouse')">Explore Blouses</button></div>
+    </div>
+   </div>
+
+   <div class="slide">
+    <img src="assets/images/hero-jewellery.jpg" alt="">
+    <div class="hero-copy">
+     <span class="eyebrow">✦ Jewellery Collection</span>
+     <h1>A little gold. A lot of elegance.</h1>
+     <p>Explore festive and occasion-ready 1 gram gold jewellery styles for your complete look.</p>
+     <div class="btnrow"><button class="btn primary" onclick="filterCat('jewellery')">Explore Jewellery</button></div>
+    </div>
+   </div>
+
+   <div class="dots">
+    <span class="dot active" onclick="goSlide(0)"></span>
+    <span class="dot" onclick="goSlide(1)"></span>
+    <span class="dot" onclick="goSlide(2)"></span>
+   </div>
   </div>
 
   <div class="trust">
-   <div>✦<b>Premium Quality</b><span>Carefully selected</span></div><div>✂<b>Custom Designs</b><span>Made for you</span></div>
-   <div>♕<b>Wedding Shopping</b><span>One-stop solution</span></div><div>◇<b>Secure Checkout</b><span>Gateway ready</span></div>
+   <div>✦<b>Premium Quality</b><span>Carefully selected</span></div>
+   <div>✂<b>Custom Designs</b><span>Made for you</span></div>
+   <div>♕<b>Wedding Shopping</b><span>One-stop solution</span></div>
+   <div>◇<b>Secure Checkout</b><span>Gateway ready</span></div>
    <div>♡<b>Customer Support</b><span>WhatsApp assistance</span></div>
   </div>
  </div>
 </section>
 
-<section class="section"><div class="shell">
- <div class="head"><div><h2>Shop by Category</h2><p>Browse the services and collections Srilatha Creations is known for.</p></div></div>
- <div class="categories">
-  <div class="cat" onclick="filterCat('blouse')"><div class="catpic"><img src="assets/images/blouse.jpg"></div><b>Blouse Works</b></div>
-  <div class="cat" onclick="filterCat('maggam')"><div class="catpic"><img src="assets/images/maggam.jpg"></div><b>Maggam Work</b></div>
-  <div class="cat" onclick="filterCat('jewellery')"><div class="catpic"><img src="assets/images/jewellery.jpg"></div><b>Jewellery</b></div>
-  <div class="cat" onclick="filterCat('stitching')"><div class="catpic"><img src="assets/images/stitching.jpg"></div><b>Stitching</b></div>
-  <div class="cat" onclick="filterCat('sarees')"><div class="catpic"><img src="assets/images/sarees.jpg"></div><b>Sarees</b></div>
-  <div class="cat" onclick="filterCat('fabric')"><div class="catpic"><img src="assets/images/dress-material.jpg"></div><b>Dress Material</b></div>
-  <div class="cat" onclick="filterCat('computer')"><div class="catpic"><img src="assets/images/computer-work.jpg"></div><b>Computer Work</b></div>
-  <div class="cat" onclick="filterCat('wedding')"><div class="catpic"><img src="assets/images/wedding.jpg"></div><b>Wedding</b></div>
- </div>
-</div></section>
+<section class="section">
+ <div class="shell">
+  <div class="head">
+   <div><h2>Shop by Category</h2><p>Browse the services and collections Srilatha Creations is known for.</p></div>
+  </div>
 
-<section class="section" id="shop"><div class="shell">
- <div class="head"><div><h2>Featured Products</h2><p>Live catalogue from Srilatha Creations. Product prices, stock and availability update from our store database.</p></div><button class="link" onclick="filterCat('all')">Show All →</button></div>
- <div class="products" id="products"></div>
-</div></section>
-
-<section class="section"><div class="shell">
- <div class="wedding">
-  <div><img src="assets/images/wedding.jpg" alt="Wedding collection"></div>
-  <div class="weddingcopy"><span class="eyebrow">One Stop Event Shopping</span><h2>Your special occasion, beautifully put together.</h2><p>From blouse designing and maggam work to sarees, stitching, jewellery and personalised finishing, Srilatha Creations brings multiple event-shopping needs together in one place.</p>
-   <div class="pills"><span>Blouse Design</span><span>Maggam Work</span><span>Stitching</span><span>Sarees</span><span>1 Gram Jewellery</span><span>Computer Embroidery</span></div>
-   <a class="btn primary" href="https://wa.me/917981686569" target="_blank">Plan on WhatsApp</a>
+  <div class="categories">
+   <div class="cat" onclick="filterCat('blouse')"><div class="catpic"><img src="assets/images/blouse.jpg"></div><b>Blouse Works</b></div>
+   <div class="cat" onclick="filterCat('maggam')"><div class="catpic"><img src="assets/images/maggam.jpg"></div><b>Maggam Work</b></div>
+   <div class="cat" onclick="filterCat('jewellery')"><div class="catpic"><img src="assets/images/jewellery.jpg"></div><b>Jewellery</b></div>
+   <div class="cat" onclick="filterCat('stitching')"><div class="catpic"><img src="assets/images/stitching.jpg"></div><b>Stitching</b></div>
+   <div class="cat" onclick="filterCat('sarees')"><div class="catpic"><img src="assets/images/sarees.jpg"></div><b>Sarees</b></div>
+   <div class="cat" onclick="filterCat('fabric')"><div class="catpic"><img src="assets/images/dress-material.jpg"></div><b>Dress Material</b></div>
+   <div class="cat" onclick="filterCat('computer')"><div class="catpic"><img src="assets/images/computer-work.jpg"></div><b>Computer Work</b></div>
+   <div class="cat" onclick="filterCat('wedding')"><div class="catpic"><img src="assets/images/wedding.jpg"></div><b>Wedding</b></div>
   </div>
  </div>
-</div></section>
+</section>
 
-<section class="section" id="about"><div class="shell">
- <div class="about">
-  <div class="aboutimg"><img src="assets/images/about-srilatha.jpg" alt="Srilatha Konduri - Founder"></div>
-  <div class="aboutbox"><span class="eyebrow">Founder & Owner</span><h2>Srilatha Konduri</h2><p>Founded in 2008, Srilatha Creations serves customers in Jagtial with designer blouse works, maggam work, stitching, sarees, 1 gram gold jewellery, computer work and event-shopping support.</p><p>Our goal is to make special-occasion shopping easier through customised work, thoughtful design and personal attention.</p>
-   <div class="info"><div><b>Since</b><span>2008</span></div><div><b>Location</b><span>Bukawada, Jagtial</span></div><div><b>Hours</b><span>10 AM – 9 PM</span></div></div>
+<section class="section" id="shop">
+ <div class="shell">
+  <div class="head">
+   <div>
+    <h2>Featured Products</h2>
+    <p>Live catalogue from Srilatha Creations. Product prices, stock and availability update from our store database.</p>
+   </div>
+   <button class="link" onclick="filterCat('all')">Show All →</button>
+  </div>
+  <div class="products" id="products"></div>
+ </div>
+</section>
+
+<section class="section">
+ <div class="shell">
+  <div class="wedding">
+   <div><img src="assets/images/wedding.jpg" alt="Wedding collection"></div>
+   <div class="weddingcopy">
+    <span class="eyebrow">One Stop Event Shopping</span>
+    <h2>Your special occasion, beautifully put together.</h2>
+    <p>From blouse designing and maggam work to sarees, stitching, jewellery and personalised finishing, Srilatha Creations brings multiple event-shopping needs together in one place.</p>
+    <div class="pills">
+     <span>Blouse Design</span><span>Maggam Work</span><span>Stitching</span><span>Sarees</span><span>1 Gram Jewellery</span><span>Computer Embroidery</span>
+    </div>
+    <a class="btn primary" href="https://wa.me/917981686569" target="_blank">Plan on WhatsApp</a>
+   </div>
   </div>
  </div>
-</div></section>
+</section>
 
-<section class="section"><div class="shell">
- <div class="insta"><div><h2>Follow Srilatha Creations</h2><p>See new designs, reels, collections and boutique updates on Instagram.</p></div><a class="btn" href="https://www.instagram.com/srilatha_creations_9" target="_blank">Open Instagram ↗</a></div>
-</div></section>
-
-<section class="section" id="contact"><div class="shell">
- <div class="head"><div><h2>Contact & Visit</h2><p>For custom orders, wedding shopping or product enquiries.</p></div></div>
- <div class="info">
-  <div><b>Call / WhatsApp</b><span>7981686569</span></div>
-  <div><b>Email</b><span>Srilathascreations@gmail.com</span></div>
-  <div><b>Address</b><span>Bukawada, Jagtial</span></div>
+<section class="section" id="about">
+ <div class="shell">
+  <div class="about">
+   <div class="aboutimg"><img src="assets/images/about-srilatha.jpg" alt="Srilatha Konduri - Founder"></div>
+   <div class="aboutbox">
+    <span class="eyebrow">Founder & Owner</span>
+    <h2>Srilatha Konduri</h2>
+    <p>Founded in 2008, Srilatha Creations serves customers in Jagtial with designer blouse works, maggam work, stitching, sarees, 1 gram gold jewellery, computer work and event-shopping support.</p>
+    <p>Our goal is to make special-occasion shopping easier through customised work, thoughtful design and personal attention.</p>
+    <div class="info">
+     <div><b>Since</b><span>2008</span></div>
+     <div><b>Location</b><span>Bukawada, Jagtial</span></div>
+     <div><b>Hours</b><span>10 AM – 9 PM</span></div>
+    </div>
+   </div>
+  </div>
  </div>
-</div></section>
+</section>
+
+<section class="section">
+ <div class="shell">
+  <div class="insta">
+   <div><h2>Follow Srilatha Creations</h2><p>See new designs, reels, collections and boutique updates on Instagram.</p></div>
+   <a class="btn" href="https://www.instagram.com/srilatha_creations_9" target="_blank">Open Instagram ↗</a>
+  </div>
+ </div>
+</section>
+
+<section class="section" id="contact">
+ <div class="shell">
+  <div class="head"><div><h2>Contact & Visit</h2><p>For custom orders, wedding shopping or product enquiries.</p></div></div>
+  <div class="info">
+   <div><b>Call / WhatsApp</b><span>7981686569</span></div>
+   <div><b>Email</b><span>Srilathascreations@gmail.com</span></div>
+   <div><b>Address</b><span>Bukawada, Jagtial</span></div>
+  </div>
+ </div>
+</section>
+
 </main>
 
 <footer>
@@ -252,93 +352,129 @@ footer{margin-top:38px;background:#351024;color:#fff}
   <div><h4>Help</h4><a href="#">Shipping Policy</a><a href="#">Return Policy</a><a href="#">Privacy Policy</a><a href="#">Terms & Conditions</a></div>
   <div><h4>Contact</h4><p>7981686569<br>Srilathascreations@gmail.com<br>Bukawada, Jagtial<br>10 AM – 9 PM</p></div>
  </div>
- <div class="copy">© 2026 Srilatha Creations. All rights reserved. • E‑commerce payment integration pending merchant account setup.</div>
+ <div class="copy">© 2026 Srilatha Creations. All rights reserved. • E-commerce payment integration pending merchant account setup.</div>
 </footer>
 
 <a class="floatwa" href="https://wa.me/917981686569" target="_blank" aria-label="WhatsApp">☏</a>
-<div class="overlay" id="overlay" onclick="toggleCart(false)"></div>
+
+<div class="overlay" id="overlay" onclick="closeDrawers()"></div>
+
+<aside class="drawer" id="wishlistDrawer">
+ <div class="drawerhead"><h2>Your Wishlist</h2><button onclick="toggleWishlist(false)">×</button></div>
+ <div id="wishlistItems"></div>
+ <p class="note">Wishlist is saved on this device/browser.</p>
+</aside>
+
 <aside class="drawer" id="drawer">
  <div class="drawerhead"><h2>Your Cart</h2><button onclick="toggleCart(false)">×</button></div>
  <div id="cartItems"></div>
  <div class="total"><span>Total</span><span id="total">₹0</span></div>
  <button class="checkout" onclick="checkout()">Proceed to Checkout</button>
- <p class="note">Your cart is live. Secure online payment and final order checkout will be connected in the next step.</p>
+ <p class="note">Cash on Delivery checkout is active. Online payment can be connected later.</p>
 </aside>
 
 <div class="checkout-modal" id="checkoutModal">
-  <div class="checkout-card">
-    <div class="checkout-head">
-      <h2>Checkout</h2>
-      <button class="close-checkout" type="button" onclick="closeCheckout()">×</button>
-    </div>
-
-    <div id="checkoutFormWrap">
-      <div class="checkout-grid">
-        <div class="checkout-field">
-          <label>Full Name *</label>
-          <input id="coName" autocomplete="name" placeholder="Your full name">
-        </div>
-
-        <div class="checkout-field">
-          <label>Mobile Number *</label>
-          <input id="coPhone" inputmode="numeric" autocomplete="tel" placeholder="10 digit mobile number or +91">
-        </div>
-
-        <div class="checkout-field full">
-          <label>Email</label>
-          <input id="coEmail" type="email" autocomplete="email" placeholder="Optional">
-        </div>
-
-        <div class="checkout-field full">
-          <label>Delivery Address *</label>
-          <textarea id="coAddress" autocomplete="street-address" placeholder="House / Flat, Street, Area"></textarea>
-        </div>
-
-        <div class="checkout-field">
-          <label>City</label>
-          <input id="coCity" value="Jagtial" autocomplete="address-level2">
-        </div>
-
-        <div class="checkout-field">
-          <label>State</label>
-          <input id="coState" value="Telangana" autocomplete="address-level1">
-        </div>
-
-        <div class="checkout-field">
-          <label>PIN Code</label>
-          <input id="coPincode" inputmode="numeric" autocomplete="postal-code" placeholder="PIN code">
-        </div>
-
-        <div class="checkout-field">
-          <label>Payment Method</label>
-          <select id="coPayment">
-            <option value="COD">Cash on Delivery</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="cod-box">
-        Cash on Delivery is currently available. Online payment will be connected separately.
-      </div>
-
-      <div class="checkout-summary">
-        <div class="checkout-summary-row"><span>Subtotal</span><b id="coSubtotal">₹0</b></div>
-        <div class="checkout-summary-row"><span>Delivery</span><b id="coDelivery">₹0</b></div>
-        <div class="checkout-summary-row total"><span>Total</span><span id="coTotal">₹0</span></div>
-      </div>
-
-      <button class="place-order" id="placeOrderBtn" type="button" onclick="placeOrder()">Place COD Order</button>
-    </div>
-
-    <div id="orderSuccess" class="order-success" style="display:none">
-      <div class="tick">✓</div>
-      <h3>Order Placed</h3>
-      <p>Your order has been saved successfully.</p>
-      <div class="order-number" id="successOrderNumber"></div>
-      <p id="successOrderTotal"></p>
-      <button class="btn primary" type="button" onclick="finishOrder()">Continue Shopping</button>
-    </div>
+ <div class="checkout-card">
+  <div class="checkout-head">
+   <h2>Checkout</h2>
+   <button class="close-checkout" type="button" onclick="closeCheckout()">×</button>
   </div>
+
+  <div id="checkoutFormWrap">
+   <div class="checkout-grid">
+
+    <div class="checkout-field">
+     <label>Full Name *</label>
+     <input id="coName" autocomplete="name" placeholder="Your full name">
+    </div>
+
+    <div class="checkout-field">
+     <label>Mobile Number *</label>
+     <input id="coPhone" inputmode="numeric" autocomplete="tel" placeholder="10 digit mobile number or +91">
+    </div>
+
+    <div class="checkout-field full">
+     <label>Email</label>
+     <input id="coEmail" type="email" autocomplete="email" placeholder="Optional">
+    </div>
+
+    <div class="checkout-field full">
+     <label>Delivery Address *</label>
+     <textarea id="coAddress" autocomplete="street-address" placeholder="House / Flat, Street, Area"></textarea>
+    </div>
+
+    <div class="checkout-field">
+     <label>City</label>
+     <input id="coCity" value="Jagtial" autocomplete="address-level2">
+    </div>
+
+    <div class="checkout-field">
+     <label>State</label>
+     <input id="coState" value="Telangana" autocomplete="address-level1">
+    </div>
+
+    <div class="checkout-field">
+     <label>PIN Code</label>
+     <input id="coPincode" inputmode="numeric" autocomplete="postal-code" placeholder="PIN code">
+    </div>
+
+    <div class="checkout-field">
+     <label>Payment Method</label>
+     <select id="coPayment">
+      <option value="COD">Cash on Delivery</option>
+     </select>
+    </div>
+
+   </div>
+
+   <div class="cod-box">
+    Cash on Delivery is currently available. Online payment will be connected separately.
+   </div>
+
+   <div class="checkout-summary">
+    <div class="checkout-summary-row"><span>Subtotal</span><b id="coSubtotal">₹0</b></div>
+    <div class="checkout-summary-row"><span>Delivery</span><b id="coDelivery">₹0</b></div>
+    <div class="checkout-summary-row total"><span>Total</span><span id="coTotal">₹0</span></div>
+   </div>
+
+   <button class="place-order" id="placeOrderBtn" type="button" onclick="placeOrder()">Place COD Order</button>
+  </div>
+
+  <div id="orderSuccess" class="order-success" style="display:none">
+   <div class="tick">✓</div>
+   <h3>Order Placed</h3>
+   <p>Your order has been saved successfully.</p>
+   <div class="order-number" id="successOrderNumber"></div>
+   <p id="successOrderTotal"></p>
+   <button class="btn primary" type="button" onclick="finishOrder()">Continue Shopping</button>
+  </div>
+ </div>
+</div>
+
+<div class="track-modal" id="trackModal">
+ <div class="track-card">
+
+  <div class="checkout-head">
+   <h2>Track Your Order</h2>
+   <button class="close-checkout" type="button" onclick="closeTrackOrder()">×</button>
+  </div>
+
+  <div class="track-grid">
+   <div class="checkout-field">
+    <label>Order Number *</label>
+    <input id="trackOrderNumber" placeholder="SC-20260828-123456">
+   </div>
+
+   <div class="checkout-field">
+    <label>Mobile Number *</label>
+    <input id="trackPhone" inputmode="numeric" placeholder="10 digit mobile number">
+   </div>
+  </div>
+
+  <button class="place-order" type="button" onclick="trackOrder()">Track Order</button>
+
+  <div id="trackResult"></div>
+ </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -347,374 +483,1051 @@ footer{margin-top:38px;background:#351024;color:#fff}
 let products = [];
 let current = "all";
 let cart = JSON.parse(localStorage.getItem("srilatha_cart") || "[]");
+let wishlist = JSON.parse(localStorage.getItem("srilatha_wishlist") || "[]");
 let slide = 0;
 
 function money(n){
-  const value = Number(n || 0);
-  return "₹" + value.toLocaleString("en-IN");
+ const value = Number(n || 0);
+ return "₹" + value.toLocaleString("en-IN");
 }
 
 function normalizeCategory(value){
-  const v = String(value || "").trim().toLowerCase();
-  if(v.includes("blouse")) return "blouse";
-  if(v.includes("maggam")) return "maggam";
-  if(v.includes("jewel")) return "jewellery";
-  if(v.includes("stitch")) return "stitching";
-  if(v.includes("saree")) return "sarees";
-  if(v.includes("fabric") || v.includes("dress material")) return "fabric";
-  if(v.includes("computer") || v.includes("embroidery")) return "computer";
-  if(v.includes("wedding") || v.includes("bridal")) return "wedding";
-  return v.replace(/\s+/g,"-");
+ const v = String(value || "").trim().toLowerCase();
+ if(v.includes("blouse")) return "blouse";
+ if(v.includes("maggam")) return "maggam";
+ if(v.includes("jewel")) return "jewellery";
+ if(v.includes("stitch")) return "stitching";
+ if(v.includes("saree")) return "sarees";
+ if(v.includes("fabric") || v.includes("dress material")) return "fabric";
+ if(v.includes("computer") || v.includes("embroidery")) return "computer";
+ if(v.includes("wedding") || v.includes("bridal")) return "wedding";
+ return v.replace(/\s+/g,"-");
 }
 
 function fallbackImage(category){
-  const cat = normalizeCategory(category);
-  const images = {
-    blouse: "assets/images/blouse.jpg",
-    maggam: "assets/images/maggam.jpg",
-    jewellery: "assets/images/jewellery.jpg",
-    stitching: "assets/images/stitching.jpg",
-    sarees: "assets/images/sarees.jpg",
-    fabric: "assets/images/dress-material.jpg",
-    computer: "assets/images/computer-work.jpg",
-    wedding: "assets/images/wedding.jpg"
-  };
-  return images[cat] || "assets/images/og-cover.jpg";
+ const cat = normalizeCategory(category);
+
+ const images = {
+  blouse:"assets/images/blouse.jpg",
+  maggam:"assets/images/maggam.jpg",
+  jewellery:"assets/images/jewellery.jpg",
+  stitching:"assets/images/stitching.jpg",
+  sarees:"assets/images/sarees.jpg",
+  fabric:"assets/images/dress-material.jpg",
+  computer:"assets/images/computer-work.jpg",
+  wedding:"assets/images/wedding.jpg"
+ };
+
+ return images[cat] || "assets/images/og-cover.jpg";
 }
 
 function mapApiProduct(p){
-  const originalPrice = Number(p.price || 0);
-  const salePrice = p.sale_price !== null && p.sale_price !== "" ? Number(p.sale_price) : null;
-  const effectivePrice = salePrice && salePrice > 0 ? salePrice : originalPrice;
+ const originalPrice = Number(p.price || 0);
 
-  return {
-    id: Number(p.id),
-    name: p.name || "Product",
-    cat: normalizeCategory(p.category),
-    category: p.category || "",
-    description: p.description || "Srilatha Creations product",
-    price: effectivePrice,
-    old: salePrice && originalPrice > salePrice ? originalPrice : null,
-    img: p.image_url && String(p.image_url).trim() ? p.image_url : fallbackImage(p.category),
-    stock: Number(p.stock || 0),
-    is_active: Number(p.is_active ?? 1)
-  };
+ const salePrice =
+  p.sale_price !== null &&
+  p.sale_price !== ""
+   ? Number(p.sale_price)
+   : null;
+
+ const effectivePrice =
+  salePrice && salePrice > 0
+   ? salePrice
+   : originalPrice;
+
+ return {
+  id:Number(p.id),
+  name:p.name || "Product",
+  cat:normalizeCategory(p.category),
+  category:p.category || "",
+  description:p.description || "Srilatha Creations product",
+  price:effectivePrice,
+  old:salePrice && originalPrice > salePrice ? originalPrice : null,
+  img:p.image_url && String(p.image_url).trim()
+   ? p.image_url
+   : fallbackImage(p.category),
+  stock:Number(p.stock || 0),
+  is_active:Number(p.is_active ?? 1)
+ };
 }
 
 async function loadProducts(){
-  const container = document.getElementById("products");
-  container.innerHTML = `<div style="grid-column:1/-1;padding:28px;text-align:center;color:#745e69">Loading products...</div>`;
+ const container = document.getElementById("products");
 
-  try{
-    const response = await fetch("/api/products", { cache: "no-store" });
-    if(!response.ok) throw new Error("Products API returned " + response.status);
+ container.innerHTML =
+  `<div style="grid-column:1/-1;padding:28px;text-align:center;color:#745e69">
+   Loading products...
+  </div>`;
 
-    const data = await response.json();
-    if(!Array.isArray(data)) throw new Error("Invalid products response");
+ try{
+  const response = await fetch("/api/products",{cache:"no-store"});
 
-    products = data.map(mapApiProduct).filter(p => p.is_active === 1);
-    render();
-  }catch(error){
-    console.error("Product loading error:", error);
-    container.innerHTML = `
-      <div style="grid-column:1/-1;padding:30px;text-align:center;background:#fff;border:1px solid #efd8df;border-radius:18px">
-        <b style="display:block;color:#6c1247;margin-bottom:7px">Products are temporarily unavailable.</b>
-        <span style="font-size:12px;color:#745e69">Please refresh the page or contact us on WhatsApp.</span>
-      </div>`;
+  if(!response.ok){
+   throw new Error("Products API returned " + response.status);
   }
+
+  const data = await response.json();
+
+  if(!Array.isArray(data)){
+   throw new Error("Invalid products response");
+  }
+
+  products =
+   data
+    .map(mapApiProduct)
+    .filter(p => p.is_active === 1);
+
+  render();
+  updateWishlist();
+
+ }catch(error){
+  console.error("Product loading error:",error);
+
+  container.innerHTML = `
+   <div style="grid-column:1/-1;padding:30px;text-align:center;background:#fff;border:1px solid #efd8df;border-radius:18px">
+    <b style="display:block;color:#6c1247;margin-bottom:7px">
+     Products are temporarily unavailable.
+    </b>
+    <span style="font-size:12px;color:#745e69">
+     Please refresh the page or contact us on WhatsApp.
+    </span>
+   </div>`;
+ }
 }
 
 function escapeHtml(value){
-  return String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[ch]));
+ return String(value ?? "").replace(/[&<>"']/g,ch => ({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#039;"
+ }[ch]));
 }
 
 function render(){
-  const container = document.getElementById("products");
-  const q = (document.getElementById("search")?.value || "").toLowerCase().trim();
+ const container = document.getElementById("products");
 
-  const list = products.filter(p => {
-    const categoryMatch = current === "all" || p.cat === current;
-    const textMatch = !q ||
-      p.name.toLowerCase().includes(q) ||
-      p.description.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q);
-    return categoryMatch && textMatch;
-  });
+ const q =
+  (document.getElementById("search")?.value || "")
+   .toLowerCase()
+   .trim();
 
-  if(!list.length){
-    container.innerHTML = `<div style="grid-column:1/-1;padding:28px;text-align:center;color:#745e69;background:#fff;border:1px solid #efd8df;border-radius:18px">No products found in this selection.</div>`;
-    return;
-  }
+ const list = products.filter(p => {
 
-  container.innerHTML = list.map(p => {
-    const inStock = p.stock > 0;
-    return `<article class="product">
-      <div class="productimg">
-        <img src="${p.img}" alt="${escapeHtml(p.name)}" onerror="this.src='${fallbackImage(p.cat)}'">
-        <span class="badge">${inStock ? "IN STOCK" : "OUT OF STOCK"}</span>
-        <button class="heart" type="button" aria-label="Wishlist">♡</button>
+  const categoryMatch =
+   current === "all" ||
+   p.cat === current;
+
+  const textMatch =
+   !q ||
+   p.name.toLowerCase().includes(q) ||
+   p.description.toLowerCase().includes(q) ||
+   p.category.toLowerCase().includes(q);
+
+  return categoryMatch && textMatch;
+ });
+
+ if(!list.length){
+  container.innerHTML =
+   `<div style="grid-column:1/-1;padding:28px;text-align:center;color:#745e69;background:#fff;border:1px solid #efd8df;border-radius:18px">
+    No products found in this selection.
+   </div>`;
+
+  return;
+ }
+
+ container.innerHTML =
+  list.map(p => {
+
+   const inStock = p.stock > 0;
+
+   return `
+    <article class="product">
+
+     <div class="productimg">
+
+      <img
+       src="${p.img}"
+       alt="${escapeHtml(p.name)}"
+       onerror="this.src='${fallbackImage(p.cat)}'"
+      >
+
+      <span class="badge">
+       ${inStock ? "IN STOCK" : "OUT OF STOCK"}
+      </span>
+
+      <button
+       class="heart ${wishlist.includes(p.id) ? "active" : ""}"
+       type="button"
+       aria-label="Wishlist"
+       onclick="toggleWishlistItem(${p.id})"
+      >
+       ${wishlist.includes(p.id) ? "♥" : "♡"}
+      </button>
+
+     </div>
+
+     <div class="pinfo">
+
+      <h3>${escapeHtml(p.name)}</h3>
+
+      <small>${escapeHtml(p.description)}</small>
+
+      <div class="price">
+       <b>${money(p.price)}</b>
+       ${p.old ? `<del>${money(p.old)}</del>` : ""}
       </div>
-      <div class="pinfo">
-        <h3>${escapeHtml(p.name)}</h3>
-        <small>${escapeHtml(p.description)}</small>
-        <div class="price">
-          <b>${money(p.price)}</b>
-          ${p.old ? `<del>${money(p.old)}</del>` : ""}
-        </div>
-        <div style="margin-top:6px;font-size:10px;color:#745e69">
-          ${inStock ? `${p.stock} available` : "Currently unavailable"}
-        </div>
-        <div class="pbuttons">
-          <button class="add" type="button" onclick="addCart(${p.id})" ${inStock ? "" : "disabled"}>Add to Cart</button>
-          <button class="buy" type="button" onclick="buyNow(${p.id})" ${inStock ? "" : "disabled"}>Buy Now</button>
-        </div>
+
+      <div style="margin-top:6px;font-size:10px;color:#745e69">
+       ${inStock ? `${p.stock} available` : "Currently unavailable"}
       </div>
+
+      <div class="pbuttons">
+
+       <button
+        class="add"
+        type="button"
+        onclick="addCart(${p.id})"
+        ${inStock ? "" : "disabled"}
+       >
+        Add to Cart
+       </button>
+
+       <button
+        class="buy"
+        type="button"
+        onclick="buyNow(${p.id})"
+        ${inStock ? "" : "disabled"}
+       >
+        Buy Now
+       </button>
+
+      </div>
+
+     </div>
+
     </article>`;
   }).join("");
 }
 
 function filterCat(cat,el){
-  current = cat;
-  document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
-  if(el) el.classList.add("active");
-  render();
-  document.querySelector("#shop").scrollIntoView({behavior:"smooth"});
+ current = cat;
+
+ document
+  .querySelectorAll(".nav button")
+  .forEach(b => b.classList.remove("active"));
+
+ if(el){
+  el.classList.add("active");
+ }
+
+ render();
+
+ document
+  .querySelector("#shop")
+  .scrollIntoView({behavior:"smooth"});
 }
 
 function applySearch(){
-  current = "all";
-  render();
-  document.querySelector("#shop").scrollIntoView({behavior:"smooth"});
+ current = "all";
+ render();
+
+ document
+  .querySelector("#shop")
+  .scrollIntoView({behavior:"smooth"});
 }
 
-document.getElementById("search").addEventListener("input", render);
+document
+ .getElementById("search")
+ .addEventListener("input",render);
+
+function saveWishlist(){
+ localStorage.setItem(
+  "srilatha_wishlist",
+  JSON.stringify(wishlist)
+ );
+}
+
+function toggleWishlistItem(id){
+ const n = Number(id);
+
+ if(wishlist.includes(n)){
+  wishlist =
+   wishlist.filter(x => Number(x) !== n);
+
+  toast("Removed from wishlist");
+
+ }else{
+  wishlist.push(n);
+  toast("Added to wishlist");
+ }
+
+ saveWishlist();
+ updateWishlist();
+ render();
+}
+
+function updateWishlist(){
+ document.getElementById("wishlistCount").textContent =
+  wishlist.length;
+
+ const wrap =
+  document.getElementById("wishlistItems");
+
+ const items =
+  wishlist
+   .map(id =>
+    products.find(
+     p => Number(p.id) === Number(id)
+    )
+   )
+   .filter(Boolean);
+
+ wrap.innerHTML =
+  items.length
+   ? items.map(p => `
+
+    <div class="wishlistitem">
+
+     <img
+      src="${p.img}"
+      alt="${escapeHtml(p.name)}"
+      onerror="this.src='${fallbackImage(p.cat)}'"
+     >
+
+     <div>
+
+      <b>${escapeHtml(p.name)}</b>
+
+      <div style="font-size:11px;color:#765f6d;margin-top:4px">
+       ${money(p.price)}
+      </div>
+
+      <button
+       type="button"
+       onclick="addCart(${p.id})"
+       style="margin-top:7px;border:1px solid #df1f73;background:#fff;color:#df1f73;border-radius:8px;padding:6px 9px;font-size:10px;font-weight:900;cursor:pointer"
+      >
+       Add to Cart
+      </button>
+
+     </div>
+
+     <button
+      type="button"
+      onclick="toggleWishlistItem(${p.id})"
+      style="border:0;background:transparent;color:#df1f73;font-size:18px;cursor:pointer"
+     >
+      ×
+     </button>
+
+    </div>
+
+   `).join("")
+   : "<p>Your wishlist is empty.</p>";
+}
+
+function closeDrawers(){
+ toggleCart(false);
+ toggleWishlist(false);
+}
+
+function toggleWishlist(force){
+ const drawer =
+  document.getElementById("wishlistDrawer");
+
+ const cartDrawer =
+  document.getElementById("drawer");
+
+ const overlay =
+  document.getElementById("overlay");
+
+ const open =
+  typeof force === "boolean"
+   ? force
+   : !drawer.classList.contains("open");
+
+ cartDrawer.classList.remove("open");
+ drawer.classList.toggle("open",open);
+ overlay.classList.toggle("show",open);
+}
 
 function saveCart(){
-  localStorage.setItem("srilatha_cart", JSON.stringify(cart));
+ localStorage.setItem(
+  "srilatha_cart",
+  JSON.stringify(cart)
+ );
 }
 
 function addCart(id){
-  const p = products.find(x => x.id === id);
-  if(!p){ toast("Product not found"); return; }
-  if(p.stock <= 0){ toast("This product is out of stock"); return; }
+ const p =
+  products.find(x => x.id === id);
 
-  const existing = cart.find(x => x.id === id);
-  if(existing){
-    if(existing.qty >= p.stock){ toast("Maximum available stock reached"); return; }
-    existing.qty++;
-  } else {
-    cart.push({...p, qty:1});
+ if(!p){
+  toast("Product not found");
+  return;
+ }
+
+ if(p.stock <= 0){
+  toast("This product is out of stock");
+  return;
+ }
+
+ const existing =
+  cart.find(x => x.id === id);
+
+ if(existing){
+
+  if(existing.qty >= p.stock){
+   toast("Maximum available stock reached");
+   return;
   }
 
-  saveCart();
-  updateCart();
-  toast("Added to cart");
+  existing.qty++;
+
+ }else{
+  cart.push({...p,qty:1});
+ }
+
+ saveCart();
+ updateCart();
+ toast("Added to cart");
 }
 
 function buyNow(id){
-  addCart(id);
-  toggleCart(true);
+ addCart(id);
+ toggleCart(true);
 }
 
-function changeQty(id, delta){
-  const item = cart.find(x => x.id === id);
-  if(!item) return;
+function changeQty(id,delta){
+ const item =
+  cart.find(x => x.id === id);
 
-  const latest = products.find(x => x.id === id);
-  const maxStock = latest ? latest.stock : item.stock;
-  item.qty += delta;
+ if(!item) return;
 
-  if(item.qty <= 0){
-    cart = cart.filter(x => x.id !== id);
-  } else if(item.qty > maxStock){
-    item.qty = maxStock;
-    toast("Maximum available stock reached");
-  }
+ const latest =
+  products.find(x => x.id === id);
 
-  saveCart();
-  updateCart();
+ const maxStock =
+  latest
+   ? latest.stock
+   : item.stock;
+
+ item.qty += delta;
+
+ if(item.qty <= 0){
+
+  cart =
+   cart.filter(x => x.id !== id);
+
+ }else if(item.qty > maxStock){
+
+  item.qty = maxStock;
+  toast("Maximum available stock reached");
+ }
+
+ saveCart();
+ updateCart();
 }
 
 function removeCart(id){
-  cart = cart.filter(x => x.id !== id);
-  saveCart();
-  updateCart();
-  toast("Removed from cart");
+ cart =
+  cart.filter(x => x.id !== id);
+
+ saveCart();
+ updateCart();
+
+ toast("Removed from cart");
 }
 
 function updateCart(){
-  document.getElementById("cartCount").textContent =
-    cart.reduce((sum, x) => sum + Number(x.qty || 0), 0);
 
-  const items = document.getElementById("cartItems");
-  items.innerHTML = cart.length
-    ? cart.map(x => `
-      <div class="cartitem">
-        <img src="${x.img}" alt="${escapeHtml(x.name)}" onerror="this.src='${fallbackImage(x.cat)}'">
-        <div>
-          <b>${escapeHtml(x.name)}</b>
-          <div style="font-size:11px;color:#765f6d;margin-top:5px">
-            <button type="button" onclick="changeQty(${x.id},-1)" style="border:1px solid #efd8df;background:#fff;border-radius:6px;width:24px;height:24px">−</button>
-            <span style="padding:0 7px">Qty ${x.qty}</span>
-            <button type="button" onclick="changeQty(${x.id},1)" style="border:1px solid #efd8df;background:#fff;border-radius:6px;width:24px;height:24px">+</button>
-          </div>
-          <button type="button" onclick="removeCart(${x.id})" style="margin-top:6px;border:0;background:transparent;color:#df1f73;font-size:10px;padding:0;cursor:pointer">Remove</button>
-        </div>
-        <b>${money(x.price * x.qty)}</b>
-      </div>`
-    ).join("")
-    : "<p>Your cart is empty.</p>";
+ document.getElementById("cartCount").textContent =
+  cart.reduce(
+   (sum,x) =>
+    sum + Number(x.qty || 0),
+   0
+  );
 
-  document.getElementById("total").textContent =
-    money(cart.reduce((sum, x) => sum + (Number(x.price) * Number(x.qty)), 0));
+ const items =
+  document.getElementById("cartItems");
+
+ items.innerHTML =
+  cart.length
+   ? cart.map(x => `
+
+    <div class="cartitem">
+
+     <img
+      src="${x.img}"
+      alt="${escapeHtml(x.name)}"
+      onerror="this.src='${fallbackImage(x.cat)}'"
+     >
+
+     <div>
+
+      <b>${escapeHtml(x.name)}</b>
+
+      <div style="font-size:11px;color:#765f6d;margin-top:5px">
+
+       <button
+        type="button"
+        onclick="changeQty(${x.id},-1)"
+        style="border:1px solid #efd8df;background:#fff;border-radius:6px;width:24px;height:24px"
+       >
+        −
+       </button>
+
+       <span style="padding:0 7px">
+        Qty ${x.qty}
+       </span>
+
+       <button
+        type="button"
+        onclick="changeQty(${x.id},1)"
+        style="border:1px solid #efd8df;background:#fff;border-radius:6px;width:24px;height:24px"
+       >
+        +
+       </button>
+
+      </div>
+
+      <button
+       type="button"
+       onclick="removeCart(${x.id})"
+       style="margin-top:6px;border:0;background:transparent;color:#df1f73;font-size:10px;padding:0;cursor:pointer"
+      >
+       Remove
+      </button>
+
+     </div>
+
+     <b>${money(x.price * x.qty)}</b>
+
+    </div>
+
+   `).join("")
+   : "<p>Your cart is empty.</p>";
+
+ document.getElementById("total").textContent =
+  money(
+   cart.reduce(
+    (sum,x) =>
+     sum +
+     (
+      Number(x.price) *
+      Number(x.qty)
+     ),
+    0
+   )
+  );
 }
 
 function toggleCart(force){
-  const drawer = document.getElementById("drawer");
-  const overlay = document.getElementById("overlay");
-  const open = typeof force === "boolean" ? force : !drawer.classList.contains("open");
-  drawer.classList.toggle("open", open);
-  overlay.classList.toggle("show", open);
+
+ const drawer =
+  document.getElementById("drawer");
+
+ const wish =
+  document.getElementById("wishlistDrawer");
+
+ const overlay =
+  document.getElementById("overlay");
+
+ const open =
+  typeof force === "boolean"
+   ? force
+   : !drawer.classList.contains("open");
+
+ wish.classList.remove("open");
+ drawer.classList.toggle("open",open);
+ overlay.classList.toggle("show",open);
 }
 
 function checkout(){
-  if(!cart.length){
-    toast("Your cart is empty");
-    return;
-  }
 
-  document.getElementById("coSubtotal").textContent =
-    money(cart.reduce((sum, x) => sum + (Number(x.price) * Number(x.qty)), 0));
+ if(!cart.length){
+  toast("Your cart is empty");
+  return;
+ }
 
-  document.getElementById("coDelivery").textContent = money(0);
-  document.getElementById("coTotal").textContent =
-    money(cart.reduce((sum, x) => sum + (Number(x.price) * Number(x.qty)), 0));
+ const subtotal =
+  cart.reduce(
+   (sum,x) =>
+    sum +
+    (
+     Number(x.price) *
+     Number(x.qty)
+    ),
+   0
+  );
 
-  document.getElementById("checkoutFormWrap").style.display = "block";
-  document.getElementById("orderSuccess").style.display = "none";
-  document.getElementById("checkoutModal").classList.add("show");
-  toggleCart(false);
+ document.getElementById("coSubtotal").textContent =
+  money(subtotal);
+
+ document.getElementById("coDelivery").textContent =
+  money(0);
+
+ document.getElementById("coTotal").textContent =
+  money(subtotal);
+
+ document.getElementById("checkoutFormWrap").style.display =
+  "block";
+
+ document.getElementById("orderSuccess").style.display =
+  "none";
+
+ document.getElementById("checkoutModal").classList.add(
+  "show"
+ );
+
+ toggleCart(false);
 }
 
 function closeCheckout(){
-  document.getElementById("checkoutModal").classList.remove("show");
+ document
+  .getElementById("checkoutModal")
+  .classList.remove("show");
 }
 
 async function placeOrder(){
-  const btn = document.getElementById("placeOrderBtn");
 
-  const customer = {
-    name: document.getElementById("coName").value.trim(),
-    phone: document.getElementById("coPhone").value.trim(),
-    email: document.getElementById("coEmail").value.trim(),
-    address: document.getElementById("coAddress").value.trim(),
-    city: document.getElementById("coCity").value.trim(),
-    state: document.getElementById("coState").value.trim(),
-    pincode: document.getElementById("coPincode").value.trim()
-  };
+ const btn =
+  document.getElementById("placeOrderBtn");
 
-  if(!customer.name){
-    toast("Please enter your name");
-    return;
-  }
+ const customer = {
+  name:
+   document.getElementById("coName").value.trim(),
 
-  const phoneDigits = customer.phone.replace(/\D/g, "");
-  let normalizedPhone = phoneDigits;
+  phone:
+   document.getElementById("coPhone").value.trim(),
 
-  if(phoneDigits.length === 12 && phoneDigits.startsWith("91")){
-    normalizedPhone = phoneDigits.slice(2);
-  }
+  email:
+   document.getElementById("coEmail").value.trim(),
 
-  if(normalizedPhone.length !== 10){
-    toast("Enter a valid 10 digit mobile number");
-    return;
-  }
+  address:
+   document.getElementById("coAddress").value.trim(),
 
-  customer.phone = normalizedPhone;
+  city:
+   document.getElementById("coCity").value.trim(),
 
-  if(!customer.address){
-    toast("Please enter delivery address");
-    return;
-  }
+  state:
+   document.getElementById("coState").value.trim(),
 
-  if(customer.pincode && !/^[0-9]{6}$/.test(customer.pincode)){
-    toast("Enter a valid 6 digit PIN code");
-    return;
-  }
+  pincode:
+   document.getElementById("coPincode").value.trim()
+ };
 
-  const payload = {
-    customer,
-    payment_method: "COD",
-    items: cart.map(x => ({
-      id: Number(x.id),
-      qty: Number(x.qty)
-    }))
-  };
+ if(!customer.name){
+  toast("Please enter your name");
+  return;
+ }
 
-  btn.disabled = true;
-  btn.textContent = "Placing Order...";
+ const phoneDigits =
+  customer.phone.replace(/\D/g,"");
 
-  try{
-    const response = await fetch("/api/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
+ let normalizedPhone =
+  phoneDigits;
 
-    const data = await response.json();
+ if(
+  phoneDigits.length === 12 &&
+  phoneDigits.startsWith("91")
+ ){
+  normalizedPhone =
+   phoneDigits.slice(2);
+ }
 
-    if(!response.ok || !data.success){
-      throw new Error(data.error || "Unable to place order");
+ if(normalizedPhone.length !== 10){
+  toast("Enter a valid 10 digit mobile number");
+  return;
+ }
+
+ customer.phone =
+  normalizedPhone;
+
+ if(!customer.address){
+  toast("Please enter delivery address");
+  return;
+ }
+
+ if(
+  customer.pincode &&
+  !/^[0-9]{6}$/.test(customer.pincode)
+ ){
+  toast("Enter a valid 6 digit PIN code");
+  return;
+ }
+
+ const payload = {
+  customer,
+  payment_method:"COD",
+
+  items:
+   cart.map(x => ({
+    id:Number(x.id),
+    qty:Number(x.qty)
+   }))
+ };
+
+ btn.disabled = true;
+ btn.textContent = "Placing Order...";
+
+ try{
+
+  const response =
+   await fetch(
+    "/api/orders",
+    {
+     method:"POST",
+
+     headers:{
+      "Content-Type":"application/json"
+     },
+
+     body:
+      JSON.stringify(payload)
     }
+   );
 
-    cart = [];
-    saveCart();
-    updateCart();
+  const data =
+   await response.json();
 
-    document.getElementById("checkoutFormWrap").style.display = "none";
-    document.getElementById("orderSuccess").style.display = "block";
-    document.getElementById("successOrderNumber").textContent =
-      data.order?.order_number || "Order confirmed";
-    document.getElementById("successOrderTotal").textContent =
-      data.order?.total_amount !== undefined
-        ? `Order Total: ${money(data.order.total_amount)}`
-        : "";
-
-    await loadProducts();
-  }catch(error){
-    console.error(error);
-    toast(error.message || "Unable to place order");
-  }finally{
-    btn.disabled = false;
-    btn.textContent = "Place COD Order";
+  if(
+   !response.ok ||
+   !data.success
+  ){
+   throw new Error(
+    data.error ||
+    "Unable to place order"
+   );
   }
+
+  cart = [];
+
+  saveCart();
+  updateCart();
+
+  document.getElementById("checkoutFormWrap").style.display =
+   "none";
+
+  document.getElementById("orderSuccess").style.display =
+   "block";
+
+  document.getElementById("successOrderNumber").textContent =
+   data.order?.order_number ||
+   "Order confirmed";
+
+  document.getElementById("successOrderTotal").innerHTML =
+   data.order?.total_amount !== undefined
+    ? `Order Total: ${money(data.order.total_amount)}<br><br><button class="btn secondary" type="button" onclick="openTrackOrder('${escapeHtml(data.order?.order_number || "")}','${escapeHtml(customer.phone)}')">Track This Order</button>`
+    : "";
+
+  localStorage.setItem(
+   "srilatha_last_order",
+   JSON.stringify({
+    order_number:
+     data.order?.order_number || "",
+    phone:
+     customer.phone
+   })
+  );
+
+  await loadProducts();
+
+ }catch(error){
+
+  console.error(error);
+
+  toast(
+   error.message ||
+   "Unable to place order"
+  );
+
+ }finally{
+
+  btn.disabled = false;
+  btn.textContent = "Place COD Order";
+ }
 }
 
 function finishOrder(){
-  closeCheckout();
-  window.scrollTo({top: document.querySelector("#shop").offsetTop - 90, behavior:"smooth"});
+
+ closeCheckout();
+
+ window.scrollTo({
+  top:
+   document.querySelector("#shop").offsetTop - 90,
+
+  behavior:"smooth"
+ });
+}
+
+function openTrackOrder(
+ orderNumber="",
+ phone=""
+){
+
+ document.getElementById("trackOrderNumber").value =
+  orderNumber || "";
+
+ document.getElementById("trackPhone").value =
+  phone || "";
+
+ document.getElementById("trackResult").innerHTML =
+  "";
+
+ document
+  .getElementById("trackModal")
+  .classList.add("show");
+}
+
+function closeTrackOrder(){
+
+ document
+  .getElementById("trackModal")
+  .classList.remove("show");
+}
+
+async function trackOrder(){
+
+ const orderNumber =
+  document
+   .getElementById("trackOrderNumber")
+   .value
+   .trim();
+
+ let phone =
+  document
+   .getElementById("trackPhone")
+   .value
+   .replace(/\D/g,"");
+
+ if(
+  phone.length === 12 &&
+  phone.startsWith("91")
+ ){
+  phone =
+   phone.slice(2);
+ }
+
+ if(!orderNumber){
+  toast("Enter your order number");
+  return;
+ }
+
+ if(phone.length !== 10){
+  toast(
+   "Enter the 10 digit mobile number used for the order"
+  );
+  return;
+ }
+
+ const result =
+  document.getElementById("trackResult");
+
+ result.innerHTML =
+  `<div class="track-result">
+   Checking order status...
+  </div>`;
+
+ try{
+
+  const response =
+   await fetch(
+    `/api/orders/${encodeURIComponent(orderNumber)}?phone=${encodeURIComponent(phone)}`,
+    {
+     cache:"no-store"
+    }
+   );
+
+  const data =
+   await response.json();
+
+  if(
+   !response.ok ||
+   !data.success
+  ){
+   throw new Error(
+    data.error ||
+    "Unable to track order"
+   );
+  }
+
+  const o =
+   data.order;
+
+  const states = [
+   "pending",
+   "confirmed",
+   "processing",
+   "packed",
+   "shipped",
+   "delivered"
+  ];
+
+  const currentStatus =
+   String(
+    o.order_status ||
+    "pending"
+   ).toLowerCase();
+
+  const currentIndex =
+   states.indexOf(
+    currentStatus
+   );
+
+  const timeline =
+   states.map(
+    (status,i) => {
+
+     const done =
+      currentStatus === "cancelled"
+       ? false
+       : i <= currentIndex;
+
+     return `
+      <div class="step ${done ? "done" : ""}">
+       <div class="dotstep">
+        ${done ? "✓" : (i + 1)}
+       </div>
+       ${status.charAt(0).toUpperCase() + status.slice(1)}
+      </div>`;
+    }
+   ).join("");
+
+  const shipping =
+   o.courier_name ||
+   o.tracking_id ||
+   o.tracking_url
+    ? `
+     <div class="shipbox">
+
+      <b>Shipping Details</b>
+
+      ${
+       o.courier_name
+        ? `<div>Courier: ${escapeHtml(o.courier_name)}</div>`
+        : ""
+      }
+
+      ${
+       o.tracking_id
+        ? `<div>Tracking ID: ${escapeHtml(o.tracking_id)}</div>`
+        : ""
+      }
+
+      ${
+       o.tracking_url
+        ? `<div style="margin-top:8px"><a class="btn primary" href="${escapeHtml(o.tracking_url)}" target="_blank" rel="noopener">Track Package ↗</a></div>`
+        : ""
+      }
+
+     </div>`
+    : `
+     <div class="shipbox">
+      Courier details will appear here after dispatch.
+     </div>`;
+
+  result.innerHTML = `
+   <div class="track-result">
+
+    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+
+     <div>
+      <b>${escapeHtml(o.order_number)}</b>
+      <div style="font-size:11px;color:#745e69;margin-top:4px">
+       ${escapeHtml(o.customer_name || "")}
+      </div>
+     </div>
+
+     <div style="font-weight:900">
+      ${money(o.total_amount)}
+     </div>
+
+    </div>
+
+    ${
+     currentStatus === "cancelled"
+      ? `
+       <div style="margin:15px 0;padding:12px;border-radius:12px;background:#fff0f3;color:#b21849;font-weight:900">
+        Order Cancelled
+       </div>`
+      : `
+       <div class="timeline">
+        ${timeline}
+       </div>`
+    }
+
+    ${shipping}
+
+   </div>`;
+
+ }catch(error){
+
+  result.innerHTML = `
+   <div class="track-result" style="color:#b21849">
+    ${escapeHtml(error.message)}
+   </div>`;
+ }
 }
 
 function toast(t){
-  const e = document.getElementById("toast");
-  e.textContent = t;
-  e.classList.add("show");
-  setTimeout(() => e.classList.remove("show"), 2200);
+
+ const e =
+  document.getElementById("toast");
+
+ e.textContent =
+  t;
+
+ e.classList.add("show");
+
+ setTimeout(
+  () =>
+   e.classList.remove("show"),
+  2200
+ );
 }
 
 function goSlide(i){
-  slide = i;
-  document.querySelectorAll(".slide").forEach((s,n) => s.classList.toggle("active", n === i));
-  document.querySelectorAll(".dot").forEach((d,n) => d.classList.toggle("active", n === i));
+
+ slide =
+  i;
+
+ document
+  .querySelectorAll(".slide")
+  .forEach(
+   (s,n) =>
+    s.classList.toggle(
+     "active",
+     n === i
+    )
+  );
+
+ document
+  .querySelectorAll(".dot")
+  .forEach(
+   (d,n) =>
+    d.classList.toggle(
+     "active",
+     n === i
+    )
+  );
 }
 
-setInterval(() => goSlide((slide + 1) % 3), 5500);
+setInterval(
+ () =>
+  goSlide(
+   (slide + 1) % 3
+  ),
+ 5500
+);
 
 updateCart();
+updateWishlist();
 loadProducts();
+
 </script>
-</body></html>
+
+</body>
+</html>
