@@ -1541,6 +1541,188 @@ export default {
     // STATIC WEBSITE / ADMIN PAGE / ASSETS
     // =====================================================
 
+   
+    
+    
+        // =====================================================
+    // ADMIN PRODUCT IMAGE UPLOAD TO GITHUB
+    // =====================================================
+
+    if (
+      url.pathname === "/api/admin/upload-image" &&
+      request.method === "POST"
+    ) {
+      const denied = requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        if (!env.GITHUB_TOKEN) {
+          return json(
+            {
+              success: false,
+              error: "GITHUB_TOKEN is not configured"
+            },
+            503
+          );
+        }
+
+        const formData = await request.formData();
+        const file = formData.get("file");
+
+        if (!file || typeof file.arrayBuffer !== "function") {
+          return json(
+            {
+              success: false,
+              error: "Image file is required"
+            },
+            400
+          );
+        }
+
+        const allowedTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/webp"
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+          return json(
+            {
+              success: false,
+              error: "Only JPG, PNG or WEBP images are allowed"
+            },
+            400
+          );
+        }
+
+        const maxSize = 5 * 1024 * 1024;
+
+        if (file.size > maxSize) {
+          return json(
+            {
+              success: false,
+              error: "Image must be smaller than 5 MB"
+            },
+            400
+          );
+        }
+
+        const extension =
+          file.type === "image/png"
+            ? "png"
+            : file.type === "image/webp"
+              ? "webp"
+              : "jpg";
+
+        const safeName =
+          `product-${Date.now()}-${Math.floor(
+            Math.random() * 100000
+          )}.${extension}`;
+
+        const repoOwner = "srilathacreations";
+        const repoName = "srilathacreations";
+
+        const repoPath =
+          `assets/images/products/${safeName}`;
+
+        const buffer = await file.arrayBuffer();
+
+        let binary = "";
+        const bytes = new Uint8Array(buffer);
+
+        const chunkSize = 0x8000;
+
+        for (
+          let i = 0;
+          i < bytes.length;
+          i += chunkSize
+        ) {
+          binary += String.fromCharCode(
+            ...bytes.subarray(
+              i,
+              i + chunkSize
+            )
+          );
+        }
+
+        const base64 = btoa(binary);
+
+        const githubResponse = await fetch(
+          `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${repoPath}`,
+          {
+            method: "PUT",
+
+            headers: {
+              Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+              Accept: "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28",
+              "User-Agent": "Srilatha-Creations-Worker",
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+              message: `Upload product image ${safeName}`,
+              content: base64,
+              branch: "main"
+            })
+          }
+        );
+
+        const githubData =
+          await githubResponse.json();
+
+        if (!githubResponse.ok) {
+          console.error(
+            "GitHub upload error:",
+            githubData
+          );
+
+          return json(
+            {
+              success: false,
+              error:
+                githubData.message ||
+                "Unable to upload image to GitHub"
+            },
+            githubResponse.status
+          );
+        }
+
+        return json(
+          {
+            success: true,
+            message: "Image uploaded successfully",
+
+            filename: safeName,
+
+            image_url:
+              `/assets/images/products/${safeName}`,
+
+            github_path: repoPath
+          },
+          201
+        );
+      } catch (error) {
+        console.error(
+          "Image upload error:",
+          error
+        );
+
+        return json(
+          {
+            success: false,
+            error:
+              error.message ||
+              "Unable to upload image"
+          },
+          500
+        );
+      }
+    }
+    
     return env.ASSETS.fetch(request);
   }
 };
