@@ -735,19 +735,25 @@ th{
 
       <div class="field full">
 
-        <label>Image URL</label>
+        <label>Product Image</label>
 
-        <input
-          id="pImage"
-          placeholder="assets/images/product.jpg or full URL"
-          oninput="updateImagePreview()"
-        >
+<input
+  type="file"
+  id="pImageFile"
+  accept="image/jpeg,image/png,image/webp"
+  onchange="previewSelectedImage()"
+>
 
-        <img
-          id="imagePreview"
-          class="preview"
-          alt="Preview"
-        >
+<input
+  type="hidden"
+  id="pImage"
+>
+
+<img
+  id="imagePreview"
+  class="preview"
+  alt="Product Image Preview"
+>
 
       </div>
 
@@ -1882,7 +1888,6 @@ function closeProductModal(){
 
 }
 
-
 function updateImagePreview(){
 
   const url =
@@ -1893,366 +1898,141 @@ function updateImagePreview(){
       .value
       .trim();
 
-
   const preview =
     document
       .getElementById(
         "imagePreview"
       );
 
-
   if(!url){
 
-    preview.style.display =
-      "none";
-
-    preview.removeAttribute(
-      "src"
-    );
+    preview.style.display = "none";
+    preview.removeAttribute("src");
 
     return;
-
   }
 
-
   preview.src = url;
-
-  preview.style.display =
-    "block";
-
+  preview.style.display = "block";
 }
 
 
-// =====================================================
-// SAVE PRODUCT
-// =====================================================
+function previewSelectedImage(){
 
-async function saveProduct(){
+  const input =
+    document.getElementById(
+      "pImageFile"
+    );
 
-  const name =
-    document
-      .getElementById(
-        "pName"
-      )
-      .value
-      .trim();
+  const preview =
+    document.getElementById(
+      "imagePreview"
+    );
 
-  const category =
-    document
-      .getElementById(
-        "pCategory"
-      )
-      .value
-      .trim();
+  const file =
+    input.files &&
+    input.files[0];
 
-  const description =
-    document
-      .getElementById(
-        "pDescription"
-      )
-      .value
-      .trim();
+  if(!file){
+    updateImagePreview();
+    return;
+  }
 
-  const price =
-    document
-      .getElementById(
-        "pPrice"
-      )
-      .value;
+  const allowed = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ];
 
-  const salePrice =
-    document
-      .getElementById(
-        "pSalePrice"
-      )
-      .value;
+  if(!allowed.includes(file.type)){
 
-  const stock =
-    document
-      .getElementById(
-        "pStock"
-      )
-      .value;
+    toast(
+      "Only JPG, PNG or WEBP images are allowed"
+    );
 
-  const active =
-    document
-      .getElementById(
-        "pActive"
-      )
-      .value;
+    input.value = "";
+    updateImagePreview();
+    return;
+  }
 
-  const image =
-    document
+  if(file.size > 5 * 1024 * 1024){
+
+    toast(
+      "Image must be smaller than 5 MB"
+    );
+
+    input.value = "";
+    updateImagePreview();
+    return;
+  }
+
+  const objectUrl =
+    URL.createObjectURL(file);
+
+  preview.src = objectUrl;
+  preview.style.display = "block";
+}
+
+
+async function uploadSelectedProductImage(){
+
+  const input =
+    document.getElementById(
+      "pImageFile"
+    );
+
+  const file =
+    input.files &&
+    input.files[0];
+
+  if(!file){
+
+    return document
       .getElementById(
         "pImage"
       )
       .value
       .trim();
-
-
-  if(!name){
-
-    toast(
-      "Product name is required"
-    );
-
-    return;
-
   }
 
+  const formData =
+    new FormData();
+
+  formData.append(
+    "file",
+    file
+  );
+
+  const response =
+    await fetch(
+      "/api/admin/upload-image",
+      {
+        method:"POST",
+        headers:headers(),
+        body:formData
+      }
+    );
+
+  const data =
+    await response.json();
 
   if(
-    price === "" ||
-    Number(price) < 0
+    !response.ok ||
+    !data.success
   ){
 
-    toast(
-      "Enter valid product price"
+    throw new Error(
+      data.error ||
+      "Unable to upload image"
     );
-
-    return;
-
   }
 
+  document
+    .getElementById(
+      "pImage"
+    )
+    .value =
+    data.image_url;
 
-  if(
-    stock === "" ||
-    Number(stock) < 0
-  ){
-
-    toast(
-      "Enter valid stock"
-    );
-
-    return;
-
-  }
-
-
-  const payload = {
-
-    name,
-
-    category,
-
-    description,
-
-    price:Number(price),
-
-    sale_price:
-      salePrice === ""
-        ? null
-        : Number(salePrice),
-
-    stock:Number(stock),
-
-    image_url:
-      image || null,
-
-    is_active:
-      Number(active)
-
-  };
-
-
-  const button =
-    document
-      .getElementById(
-        "saveProductBtn"
-      );
-
-
-  button.disabled = true;
-
-  button.textContent =
-    "Saving...";
-
-
-  try{
-
-    const isEdit =
-      editingProductId !== null;
-
-
-    const response =
-      await fetch(
-        isEdit
-          ? `/api/admin/products/${editingProductId}`
-          : "/api/admin/products",
-        {
-          method:
-            isEdit
-              ? "PUT"
-              : "POST",
-
-          headers:headers({
-            "Content-Type":
-              "application/json"
-          }),
-
-          body:
-            JSON.stringify(
-              payload
-            )
-        }
-      );
-
-
-    const data =
-      await response.json();
-
-
-    if(
-      !response.ok ||
-      !data.success
-    ){
-
-      throw new Error(
-        data.error ||
-        "Unable to save product"
-      );
-
-    }
-
-
-    toast(
-      isEdit
-        ? "Product updated"
-        : "Product added"
-    );
-
-
-    closeProductModal();
-
-    await loadProducts();
-
-  }
-  catch(error){
-
-    toast(error.message);
-
-  }
-  finally{
-
-    button.disabled = false;
-
-    button.textContent =
-      "Save Product";
-
-  }
-
+  return data.image_url;
 }
-
-
-// =====================================================
-// PRODUCT STATUS
-// =====================================================
-
-async function toggleProductStatus(
-  id,
-  isActive
-){
-
-  try{
-
-    const response =
-      await fetch(
-        `/api/admin/products/${id}/status`,
-        {
-          method:"PUT",
-
-          headers:headers({
-            "Content-Type":
-              "application/json"
-          }),
-
-          body:
-            JSON.stringify({
-              is_active:isActive
-            })
-        }
-      );
-
-
-    const data =
-      await response.json();
-
-
-    if(
-      !response.ok ||
-      !data.success
-    ){
-
-      throw new Error(
-        data.error ||
-        "Unable to update product"
-      );
-
-    }
-
-
-    toast(
-      isActive
-        ? "Product activated"
-        : "Product hidden"
-    );
-
-
-    await loadProducts();
-
-  }
-  catch(error){
-
-    toast(error.message);
-
-  }
-
-}
-
-
-// =====================================================
-// AUTO LOGIN
-// =====================================================
-
-(async function(){
-
-  if(!adminToken){
-    return;
-  }
-
-
-  try{
-
-    const response =
-      await fetch(
-        "/api/admin/check",
-        {
-          headers:headers()
-        }
-      );
-
-
-    if(response.ok){
-
-      openAdmin();
-
-    }
-    else{
-
-      logout();
-
-    }
-
-  }
-  catch{
-
-    logout();
-
-  }
-
-})();
-
-</script>
-
-</body>
-</html>
