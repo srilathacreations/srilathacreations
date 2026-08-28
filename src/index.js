@@ -609,7 +609,8 @@ export default {
     }
 
     // =====================================================
-    // PUBLIC ORDER LOOKUP
+    // PUBLIC ORDER LOOKUP / TRACKING
+    // Customer must provide both order number and phone.
     // =====================================================
 
     if (
@@ -625,7 +626,32 @@ export default {
               "/api/orders/",
               ""
             )
+          ).trim();
+
+        const phone =
+          cleanPhone(
+            url.searchParams.get("phone") || ""
           );
+
+        if (!orderNumber) {
+          return json(
+            {
+              success: false,
+              error: "Order number is required"
+            },
+            400
+          );
+        }
+
+        if (!/^[0-9]{10}$/.test(phone)) {
+          return json(
+            {
+              success: false,
+              error: "Enter the 10 digit mobile number used for the order"
+            },
+            400
+          );
+        }
 
         const order =
           await env.DB
@@ -633,22 +659,32 @@ export default {
               `SELECT
                 order_number,
                 customer_name,
+                phone,
                 total_amount,
                 payment_method,
                 payment_status,
                 order_status,
+                courier_name,
+                tracking_id,
+                tracking_url,
+                shipped_at,
                 created_at
                FROM orders
-               WHERE order_number = ?`
+               WHERE order_number = ?
+               AND phone = ?`
             )
-            .bind(orderNumber)
+            .bind(
+              orderNumber,
+              phone
+            )
             .first();
 
         if (!order) {
           return json(
             {
               success: false,
-              error: "Order not found"
+              error:
+                "Order not found. Check the order number and mobile number."
             },
             404
           );
@@ -870,6 +906,7 @@ export default {
           "pending",
           "confirmed",
           "processing",
+          "packed",
           "shipped",
           "delivered",
           "cancelled"
@@ -973,17 +1010,36 @@ export default {
           }
         }
 
-        await env.DB
-          .prepare(
-            `UPDATE orders
-             SET order_status = ?
-             WHERE id = ?`
-          )
-          .bind(
-            newStatus,
-            orderId
-          )
-          .run();
+        if (newStatus === "shipped") {
+          await env.DB
+            .prepare(
+              `UPDATE orders
+               SET
+                 order_status = ?,
+                 shipped_at = COALESCE(
+                   shipped_at,
+                   CURRENT_TIMESTAMP
+                 )
+               WHERE id = ?`
+            )
+            .bind(
+              newStatus,
+              orderId
+            )
+            .run();
+        } else {
+          await env.DB
+            .prepare(
+              `UPDATE orders
+               SET order_status = ?
+               WHERE id = ?`
+            )
+            .bind(
+              newStatus,
+              orderId
+            )
+            .run();
+        }
 
         return json({
           success: true,
@@ -992,6 +1048,122 @@ export default {
           order_id: orderId,
           order_status:
             newStatus
+        });
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN SHIPPING / TRACKING UPDATE
+    // =====================================================
+
+    const shippingMatch =
+      url.pathname.match(
+        /^\/api\/admin\/orders\/(\d+)\/shipping$/
+      );
+
+    if (
+      shippingMatch &&
+      (
+        request.method === "PUT" ||
+        request.method === "PATCH"
+      )
+    ) {
+      const denied = requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const orderId =
+          Number(shippingMatch[1]);
+
+        const body =
+          await request.json();
+
+        const courierName =
+          nullableText(
+            body.courier_name
+          );
+
+        const trackingId =
+          nullableText(
+            body.tracking_id
+          );
+
+        const trackingUrl =
+          nullableText(
+            body.tracking_url
+          );
+
+        if (
+          trackingUrl &&
+          !/^https?:\/\//i.test(
+            trackingUrl
+          )
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Tracking link must start with http:// or https://"
+            },
+            400
+          );
+        }
+
+        const existing =
+          await env.DB
+            .prepare(
+              `SELECT id
+               FROM orders
+               WHERE id = ?`
+            )
+            .bind(orderId)
+            .first();
+
+        if (!existing) {
+          return json(
+            {
+              success: false,
+              error: "Order not found"
+            },
+            404
+          );
+        }
+
+        const order =
+          await env.DB
+            .prepare(
+              `UPDATE orders
+               SET
+                 courier_name = ?,
+                 tracking_id = ?,
+                 tracking_url = ?
+               WHERE id = ?
+               RETURNING *`
+            )
+            .bind(
+              courierName,
+              trackingId,
+              trackingUrl,
+              orderId
+            )
+            .first();
+
+        return json({
+          success: true,
+          message:
+            "Shipping details updated",
+          order
         });
       } catch (error) {
         return json(
@@ -1541,10 +1713,7 @@ export default {
     // STATIC WEBSITE / ADMIN PAGE / ASSETS
     // =====================================================
 
-   
-    
-    
-        // =====================================================
+    // =====================================================
     // ADMIN PRODUCT IMAGE UPLOAD TO GITHUB
     // =====================================================
 
@@ -1722,7 +1891,7 @@ export default {
         );
       }
     }
-    
+
     return env.ASSETS.fetch(request);
   }
 };
