@@ -17,6 +17,7 @@ export default {
 
     const getAdminToken = () => {
       const auth = request.headers.get("Authorization") || "";
+
       if (auth.startsWith("Bearer ")) {
         return auth.slice(7).trim();
       }
@@ -27,6 +28,45 @@ export default {
     const isAdmin = () => {
       if (!env.ADMIN_TOKEN) return false;
       return getAdminToken() === env.ADMIN_TOKEN;
+    };
+
+    const requireAdmin = () => {
+      if (!env.ADMIN_TOKEN) {
+        return json(
+          {
+            success: false,
+            error: "ADMIN_TOKEN is not configured"
+          },
+          503
+        );
+      }
+
+      if (!isAdmin()) {
+        return json(
+          {
+            success: false,
+            error: "Unauthorized"
+          },
+          401
+        );
+      }
+
+      return null;
+    };
+
+    const cleanPhone = value => {
+      let digits = String(value || "").replace(/\D/g, "");
+
+      if (digits.length === 12 && digits.startsWith("91")) {
+        digits = digits.slice(2);
+      }
+
+      return digits;
+    };
+
+    const nullableText = value => {
+      const v = String(value ?? "").trim();
+      return v ? v : null;
     };
 
     // =====================================================
@@ -59,14 +99,17 @@ export default {
     }
 
     // =====================================================
-    // PUBLIC PRODUCTS API
+    // PUBLIC PRODUCTS
     // =====================================================
 
     if (url.pathname === "/api/products" && request.method === "GET") {
       try {
         const products = await env.DB
           .prepare(
-            "SELECT * FROM products WHERE is_active = 1 ORDER BY id DESC"
+            `SELECT *
+             FROM products
+             WHERE is_active = 1
+             ORDER BY id DESC`
           )
           .all();
 
@@ -83,97 +126,179 @@ export default {
     }
 
     // =====================================================
-    // CREATE COD ORDER
+    // CREATE ORDER - COD
+    // Supports current frontend:
+    // {
+    //   customer:{name,phone,email,address,city,state,pincode},
+    //   items:[{id,qty}]
+    // }
     // =====================================================
 
     if (url.pathname === "/api/orders" && request.method === "POST") {
       try {
         const body = await request.json();
 
-        const customerName = String(body.customer_name || "").trim();
-        const phone = String(body.phone || "").replace(/\D/g, "");
-        const email = String(body.email || "").trim();
-        const address = String(body.address || "").trim();
-        const city = String(body.city || "").trim();
-        const state = String(body.state || "").trim();
-        const pincode = String(body.pincode || "").replace(/\D/g, "");
-        const items = Array.isArray(body.items) ? body.items : [];
+        const customer = body.customer || {};
+
+        const customerName = String(
+          customer.name ||
+          body.customer_name ||
+          ""
+        ).trim();
+
+        const phone = cleanPhone(
+          customer.phone ||
+          body.phone ||
+          ""
+        );
+
+        const email = String(
+          customer.email ||
+          body.email ||
+          ""
+        ).trim();
+
+        const address = String(
+          customer.address ||
+          body.address ||
+          ""
+        ).trim();
+
+        const city = String(
+          customer.city ||
+          body.city ||
+          ""
+        ).trim();
+
+        const state = String(
+          customer.state ||
+          body.state ||
+          ""
+        ).trim();
+
+        const pincode = String(
+          customer.pincode ||
+          body.pincode ||
+          ""
+        )
+          .replace(/\D/g, "");
+
+        const items =
+          Array.isArray(body.items)
+            ? body.items
+            : [];
+
+        // -------------------------
+        // VALIDATION
+        // -------------------------
 
         if (!customerName) {
           return json(
-            { success: false, error: "Customer name is required" },
+            {
+              success: false,
+              error: "Customer name is required"
+            },
             400
           );
         }
 
-        if (phone.length !== 10) {
+        if (!/^[0-9]{10}$/.test(phone)) {
           return json(
-            { success: false, error: "Enter a valid 10 digit phone number" },
+            {
+              success: false,
+              error: "Enter a valid 10 digit mobile number"
+            },
             400
           );
         }
 
         if (!address) {
           return json(
-            { success: false, error: "Delivery address is required" },
+            {
+              success: false,
+              error: "Delivery address is required"
+            },
             400
           );
         }
 
-        if (!city) {
+        if (pincode && !/^[0-9]{6}$/.test(pincode)) {
           return json(
-            { success: false, error: "City is required" },
-            400
-          );
-        }
-
-        if (!state) {
-          return json(
-            { success: false, error: "State is required" },
-            400
-          );
-        }
-
-        if (pincode.length !== 6) {
-          return json(
-            { success: false, error: "Enter a valid 6 digit PIN code" },
+            {
+              success: false,
+              error: "Enter a valid 6 digit PIN code"
+            },
             400
           );
         }
 
         if (!items.length) {
           return json(
-            { success: false, error: "Cart is empty" },
+            {
+              success: false,
+              error: "Cart is empty"
+            },
             400
           );
         }
 
-        let subtotal = 0;
+        // -------------------------
+        // VERIFY PRODUCTS
+        // -------------------------
+
         const verifiedItems = [];
+        let subtotal = 0;
 
         for (const item of items) {
-          const productId = Number(item.id || item.product_id);
-          const quantity = Math.max(1, Number(item.qty || item.quantity || 1));
+          const productId = Number(
+            item.id ||
+            item.product_id
+          );
 
-          if (!Number.isInteger(productId) || productId <= 0) {
+          const quantity = Number(
+            item.qty ||
+            item.quantity ||
+            0
+          );
+
+          if (
+            !Number.isInteger(productId) ||
+            productId <= 0 ||
+            !Number.isInteger(quantity) ||
+            quantity <= 0
+          ) {
             return json(
-              { success: false, error: "Invalid product" },
+              {
+                success: false,
+                error: "Invalid cart item"
+              },
               400
             );
           }
 
           const product = await env.DB
             .prepare(
-              "SELECT * FROM products WHERE id = ? AND is_active = 1"
+              `SELECT
+                id,
+                name,
+                price,
+                sale_price,
+                stock,
+                is_active
+               FROM products
+               WHERE id = ?`
             )
             .bind(productId)
             .first();
 
-          if (!product) {
+          if (
+            !product ||
+            Number(product.is_active) !== 1
+          ) {
             return json(
               {
                 success: false,
-                error: `Product ${productId} is not available`
+                error: "One of the selected products is unavailable"
               },
               400
             );
@@ -183,19 +308,31 @@ export default {
             return json(
               {
                 success: false,
-                error: `${product.name} has only ${product.stock} available`
+                error:
+                  `${product.name} has only ` +
+                  `${product.stock} item(s) available`
               },
               400
             );
           }
 
-          const unitPrice =
-            product.sale_price !== null &&
-            product.sale_price !== undefined
-              ? Number(product.sale_price)
-              : Number(product.price);
+          const regularPrice =
+            Number(product.price || 0);
 
-          const itemTotal = unitPrice * quantity;
+          const salePrice =
+            product.sale_price !== null &&
+            product.sale_price !== undefined &&
+            Number(product.sale_price) > 0
+              ? Number(product.sale_price)
+              : null;
+
+          const finalPrice =
+            salePrice !== null
+              ? salePrice
+              : regularPrice;
+
+          const itemTotal =
+            finalPrice * quantity;
 
           subtotal += itemTotal;
 
@@ -203,119 +340,177 @@ export default {
             product_id: Number(product.id),
             product_name: product.name,
             quantity,
-            price: unitPrice,
+            price: finalPrice,
             total: itemTotal
           });
         }
 
+        // -------------------------
+        // TOTALS
+        // -------------------------
+
         const deliveryCharge = 0;
-        const totalAmount = subtotal + deliveryCharge;
+        const totalAmount =
+          subtotal + deliveryCharge;
 
-        const now = new Date();
+        // -------------------------
+        // CUSTOMER
+        // -------------------------
 
-        const datePart =
-          now.getUTCFullYear().toString() +
-          String(now.getUTCMonth() + 1).padStart(2, "0") +
-          String(now.getUTCDate()).padStart(2, "0");
-
-        const randomPart = Math.floor(100000 + Math.random() * 900000);
-
-        const orderNumber = `SC-${datePart}-${randomPart}`;
-
-        let customer = await env.DB
-          .prepare("SELECT * FROM customers WHERE phone = ? LIMIT 1")
+        let existingCustomer = await env.DB
+          .prepare(
+            `SELECT id
+             FROM customers
+             WHERE phone = ?
+             ORDER BY id DESC
+             LIMIT 1`
+          )
           .bind(phone)
           .first();
 
         let customerId;
 
-        if (customer) {
-          customerId = customer.id;
+        if (existingCustomer) {
+          customerId =
+            Number(existingCustomer.id);
 
           await env.DB
             .prepare(
               `UPDATE customers
-               SET name = ?,
-                   email = ?,
-                   address = ?,
-                   city = ?,
-                   state = ?,
-                   pincode = ?
+               SET
+                 name = ?,
+                 email = ?,
+                 address = ?,
+                 city = ?,
+                 state = ?,
+                 pincode = ?
                WHERE id = ?`
             )
             .bind(
               customerName,
               email || null,
               address,
-              city,
-              state,
-              pincode,
+              city || null,
+              state || null,
+              pincode || null,
               customerId
             )
             .run();
         } else {
-          const customerInsert = await env.DB
+          const createdCustomer =
+            await env.DB
+              .prepare(
+                `INSERT INTO customers
+                (
+                  name,
+                  phone,
+                  email,
+                  address,
+                  city,
+                  state,
+                  pincode
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                RETURNING id`
+              )
+              .bind(
+                customerName,
+                phone,
+                email || null,
+                address,
+                city || null,
+                state || null,
+                pincode || null
+              )
+              .first();
+
+          customerId =
+            Number(createdCustomer.id);
+        }
+
+        // -------------------------
+        // ORDER NUMBER
+        // -------------------------
+
+        const now = new Date();
+
+        const datePart =
+          now.getUTCFullYear().toString() +
+          String(
+            now.getUTCMonth() + 1
+          ).padStart(2, "0") +
+          String(
+            now.getUTCDate()
+          ).padStart(2, "0");
+
+        const randomPart =
+          Math.floor(
+            100000 +
+            Math.random() * 900000
+          );
+
+        const orderNumber =
+          `SC-${datePart}-${randomPart}`;
+
+        // -------------------------
+        // CREATE ORDER
+        // -------------------------
+
+        const createdOrder =
+          await env.DB
             .prepare(
-              `INSERT INTO customers
-               (name, phone, email, address, city, state, pincode)
-               VALUES (?, ?, ?, ?, ?, ?, ?)`
+              `INSERT INTO orders
+              (
+                order_number,
+                customer_id,
+                customer_name,
+                phone,
+                email,
+                address,
+                city,
+                state,
+                pincode,
+                subtotal,
+                delivery_charge,
+                total_amount,
+                payment_method,
+                payment_status,
+                payment_id,
+                order_status
+              )
+              VALUES
+              (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?
+              )
+              RETURNING id`
             )
             .bind(
+              orderNumber,
+              customerId,
               customerName,
               phone,
               email || null,
               address,
-              city,
-              state,
-              pincode
-            )
-            .run();
-
-          customerId = customerInsert.meta.last_row_id;
-        }
-
-        const orderInsert = await env.DB
-          .prepare(
-            `INSERT INTO orders
-            (
-              order_number,
-              customer_id,
-              customer_name,
-              phone,
-              email,
-              address,
-              city,
-              state,
-              pincode,
+              city || null,
+              state || null,
+              pincode || null,
               subtotal,
-              delivery_charge,
-              total_amount,
-              payment_method,
-              payment_status,
-              order_status
+              deliveryCharge,
+              totalAmount,
+              "COD",
+              "pending",
+              null,
+              "pending"
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-          )
-          .bind(
-            orderNumber,
-            customerId,
-            customerName,
-            phone,
-            email || null,
-            address,
-            city,
-            state,
-            pincode,
-            subtotal,
-            deliveryCharge,
-            totalAmount,
-            "COD",
-            "pending",
-            "pending"
-          )
-          .run();
+            .first();
 
-        const orderId = orderInsert.meta.last_row_id;
+        const orderId =
+          Number(createdOrder.id);
+
+        // -------------------------
+        // ORDER ITEMS + STOCK
+        // -------------------------
 
         for (const item of verifiedItems) {
           await env.DB
@@ -341,106 +536,72 @@ export default {
             )
             .run();
 
-          await env.DB
-            .prepare(
-              `UPDATE products
-               SET stock = stock - ?
-               WHERE id = ?`
-            )
-            .bind(item.quantity, item.product_id)
-            .run();
+          const stockUpdate =
+            await env.DB
+              .prepare(
+                `UPDATE products
+                 SET stock = stock - ?
+                 WHERE id = ?
+                 AND stock >= ?`
+              )
+              .bind(
+                item.quantity,
+                item.product_id,
+                item.quantity
+              )
+              .run();
+
+          if (
+            Number(
+              stockUpdate.meta?.changes || 0
+            ) !== 1
+          ) {
+            throw new Error(
+              `Unable to update stock for ${item.product_name}`
+            );
+          }
         }
 
-        return json({
-          success: true,
-          message: "Order placed successfully",
-          order_id: orderId,
-          order_number: orderNumber,
-          total: totalAmount
-        });
-      } catch (error) {
         return json(
           {
-            success: false,
-            error: error.message
-          },
-          500
-        );
-      }
-    }
+            success: true,
+            message: "Order placed successfully",
 
-    // =====================================================
-    // ADMIN AUTH CHECK
-    // =====================================================
-
-    if (url.pathname === "/api/admin/check" && request.method === "GET") {
-      if (!isAdmin()) {
-        return json(
-          {
-            success: false,
-            error: "Unauthorized"
-          },
-          401
-        );
-      }
-
-      return json({
-        success: true,
-        message: "Admin authenticated"
-      });
-    }
-
-    // =====================================================
-    // ADMIN - GET ALL ORDERS
-    // =====================================================
-
-    if (url.pathname === "/api/admin/orders" && request.method === "GET") {
-      if (!isAdmin()) {
-        return json(
-          {
-            success: false,
-            error: "Unauthorized"
-          },
-          401
-        );
-      }
-
-      try {
-        const result = await env.DB
-          .prepare(
-            `SELECT
-              id,
-              order_number,
-              customer_name,
+            order: {
+              id: orderId,
+              order_number: orderNumber,
+              customer_name: customerName,
               phone,
-              email,
-              address,
-              city,
-              state,
-              pincode,
               subtotal,
-              delivery_charge,
-              total_amount,
-              payment_method,
-              payment_status,
-              payment_id,
-              order_status,
-              created_at
-             FROM orders
-             ORDER BY id DESC
-             LIMIT 500`
-          )
-          .all();
+              delivery_charge:
+                deliveryCharge,
+              total_amount:
+                totalAmount,
+              payment_method: "COD",
+              payment_status:
+                "pending",
+              order_status:
+                "pending"
+            },
 
-        return json({
-          success: true,
-          orders: result.results
-        });
+            order_id: orderId,
+            order_number: orderNumber,
+            total: totalAmount
+          },
+          201
+        );
       } catch (error) {
+        console.error(
+          "Order API error:",
+          error
+        );
+
         return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message ||
+              "Unable to place order"
           },
           500
         );
@@ -448,31 +609,40 @@ export default {
     }
 
     // =====================================================
-    // ADMIN - GET ONE ORDER
+    // PUBLIC ORDER LOOKUP
     // =====================================================
 
-    const orderMatch = url.pathname.match(
-      /^\/api\/admin\/orders\/(\d+)$/
-    );
-
-    if (orderMatch && request.method === "GET") {
-      if (!isAdmin()) {
-        return json(
-          {
-            success: false,
-            error: "Unauthorized"
-          },
-          401
-        );
-      }
-
+    if (
+      url.pathname.startsWith(
+        "/api/orders/"
+      ) &&
+      request.method === "GET"
+    ) {
       try {
-        const orderId = Number(orderMatch[1]);
+        const orderNumber =
+          decodeURIComponent(
+            url.pathname.replace(
+              "/api/orders/",
+              ""
+            )
+          );
 
-        const order = await env.DB
-          .prepare("SELECT * FROM orders WHERE id = ?")
-          .bind(orderId)
-          .first();
+        const order =
+          await env.DB
+            .prepare(
+              `SELECT
+                order_number,
+                customer_name,
+                total_amount,
+                payment_method,
+                payment_status,
+                order_status,
+                created_at
+               FROM orders
+               WHERE order_number = ?`
+            )
+            .bind(orderNumber)
+            .first();
 
         if (!order) {
           return json(
@@ -484,17 +654,9 @@ export default {
           );
         }
 
-        const items = await env.DB
-          .prepare(
-            "SELECT * FROM order_items WHERE order_id = ? ORDER BY id ASC"
-          )
-          .bind(orderId)
-          .all();
-
         return json({
           success: true,
-          order,
-          items: items.results
+          order
         });
       } catch (error) {
         return json(
@@ -508,31 +670,201 @@ export default {
     }
 
     // =====================================================
-    // ADMIN - UPDATE ORDER STATUS
+    // ADMIN AUTH
     // =====================================================
 
-    const statusMatch = url.pathname.match(
-      /^\/api\/admin\/orders\/(\d+)\/status$/
-    );
+    if (
+      (
+        url.pathname ===
+          "/api/admin/check" ||
+        url.pathname ===
+          "/api/admin/session"
+      ) &&
+      request.method === "GET"
+    ) {
+      const denied = requireAdmin();
 
-    if (statusMatch && request.method === "PUT") {
-      if (!isAdmin()) {
-        return json(
-          {
-            success: false,
-            error: "Unauthorized"
-          },
-          401
-        );
+      if (denied) {
+        return denied;
+      }
+
+      return json({
+        success: true,
+        message:
+          "Admin authenticated"
+      });
+    }
+
+    // =====================================================
+    // ADMIN ORDERS - LIST
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/admin/orders" &&
+      request.method === "GET"
+    ) {
+      const denied = requireAdmin();
+
+      if (denied) {
+        return denied;
       }
 
       try {
-        const orderId = Number(statusMatch[1]);
-        const body = await request.json();
+        const orders =
+          await env.DB
+            .prepare(
+              `SELECT
+                id,
+                order_number,
+                customer_name,
+                phone,
+                email,
+                address,
+                city,
+                state,
+                pincode,
+                subtotal,
+                delivery_charge,
+                total_amount,
+                payment_method,
+                payment_status,
+                payment_id,
+                order_status,
+                created_at
+               FROM orders
+               ORDER BY id DESC
+               LIMIT 500`
+            )
+            .all();
 
-        const newStatus = String(body.order_status || "")
-          .trim()
-          .toLowerCase();
+        return json({
+          success: true,
+          orders:
+            orders.results
+        });
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN ORDER DETAIL
+    // =====================================================
+
+    const adminOrderMatch =
+      url.pathname.match(
+        /^\/api\/admin\/orders\/(\d+)$/
+      );
+
+    if (
+      adminOrderMatch &&
+      request.method === "GET"
+    ) {
+      const denied = requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const orderId =
+          Number(
+            adminOrderMatch[1]
+          );
+
+        const order =
+          await env.DB
+            .prepare(
+              `SELECT *
+               FROM orders
+               WHERE id = ?`
+            )
+            .bind(orderId)
+            .first();
+
+        if (!order) {
+          return json(
+            {
+              success: false,
+              error: "Order not found"
+            },
+            404
+          );
+        }
+
+        const items =
+          await env.DB
+            .prepare(
+              `SELECT *
+               FROM order_items
+               WHERE order_id = ?
+               ORDER BY id ASC`
+            )
+            .bind(orderId)
+            .all();
+
+        return json({
+          success: true,
+          order,
+          items:
+            items.results
+        });
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN UPDATE ORDER STATUS
+    // Supports PUT used by current admin.html
+    // =====================================================
+
+    const statusMatch =
+      url.pathname.match(
+        /^\/api\/admin\/orders\/(\d+)\/status$/
+      );
+
+    if (
+      statusMatch &&
+      (
+        request.method === "PUT" ||
+        request.method === "PATCH"
+      )
+    ) {
+      const denied = requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const orderId =
+          Number(statusMatch[1]);
+
+        const body =
+          await request.json();
+
+        const newStatus =
+          String(
+            body.order_status ||
+            body.status ||
+            ""
+          )
+            .trim()
+            .toLowerCase();
 
         const allowedStatuses = [
           "pending",
@@ -543,22 +875,34 @@ export default {
           "cancelled"
         ];
 
-        if (!allowedStatuses.includes(newStatus)) {
+        if (
+          !allowedStatuses.includes(
+            newStatus
+          )
+        ) {
           return json(
             {
               success: false,
-              error: "Invalid order status"
+              error:
+                "Invalid order status"
             },
             400
           );
         }
 
-        const existingOrder = await env.DB
-          .prepare("SELECT * FROM orders WHERE id = ?")
-          .bind(orderId)
-          .first();
+        const order =
+          await env.DB
+            .prepare(
+              `SELECT
+                id,
+                order_status
+               FROM orders
+               WHERE id = ?`
+            )
+            .bind(orderId)
+            .first();
 
-        if (!existingOrder) {
+        if (!order) {
           return json(
             {
               success: false,
@@ -568,40 +912,61 @@ export default {
           );
         }
 
-        const oldStatus = String(
-          existingOrder.order_status || "pending"
-        ).toLowerCase();
+        const oldStatus =
+          String(
+            order.order_status ||
+            "pending"
+          ).toLowerCase();
 
-        if (oldStatus === "cancelled" && newStatus !== "cancelled") {
+        if (
+          oldStatus === "cancelled" &&
+          newStatus !== "cancelled"
+        ) {
           return json(
             {
               success: false,
-              error: "Cancelled order cannot be reopened"
+              error:
+                "Cancelled order cannot be reopened automatically"
             },
             400
           );
         }
 
-        // Restore stock only when cancelling for the first time
-        if (newStatus === "cancelled" && oldStatus !== "cancelled") {
-          const items = await env.DB
-            .prepare(
-              "SELECT * FROM order_items WHERE order_id = ?"
-            )
-            .bind(orderId)
-            .all();
+        // Restore stock when cancelled
+        if (
+          oldStatus !== "cancelled" &&
+          newStatus === "cancelled"
+        ) {
+          const items =
+            await env.DB
+              .prepare(
+                `SELECT
+                  product_id,
+                  quantity
+                 FROM order_items
+                 WHERE order_id = ?`
+              )
+              .bind(orderId)
+              .all();
 
-          for (const item of items.results) {
+          for (
+            const item of items.results
+          ) {
             if (item.product_id) {
               await env.DB
                 .prepare(
                   `UPDATE products
-                   SET stock = stock + ?
+                   SET stock =
+                     stock + ?
                    WHERE id = ?`
                 )
                 .bind(
-                  Number(item.quantity),
-                  Number(item.product_id)
+                  Number(
+                    item.quantity || 0
+                  ),
+                  Number(
+                    item.product_id
+                  )
                 )
                 .run();
             }
@@ -614,14 +979,19 @@ export default {
              SET order_status = ?
              WHERE id = ?`
           )
-          .bind(newStatus, orderId)
+          .bind(
+            newStatus,
+            orderId
+          )
           .run();
 
         return json({
           success: true,
-          message: "Order status updated",
+          message:
+            "Order status updated",
           order_id: orderId,
-          order_status: newStatus
+          order_status:
+            newStatus
         });
       } catch (error) {
         return json(
@@ -635,7 +1005,540 @@ export default {
     }
 
     // =====================================================
-    // STATIC WEBSITE
+    // ADMIN PRODUCTS - LIST ALL
+    // Includes inactive products
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/admin/products" &&
+      request.method === "GET"
+    ) {
+      const denied = requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const products =
+          await env.DB
+            .prepare(
+              `SELECT *
+               FROM products
+               ORDER BY id DESC`
+            )
+            .all();
+
+        return json({
+          success: true,
+          products:
+            products.results
+        });
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN PRODUCTS - CREATE
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/admin/products" &&
+      request.method === "POST"
+    ) {
+      const denied = requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const body =
+          await request.json();
+
+        const name =
+          String(
+            body.name || ""
+          ).trim();
+
+        const category =
+          String(
+            body.category || ""
+          ).trim();
+
+        const description =
+          nullableText(
+            body.description
+          );
+
+        const price =
+          Number(body.price);
+
+        const salePrice =
+          body.sale_price === "" ||
+          body.sale_price === null ||
+          body.sale_price === undefined
+            ? null
+            : Number(
+                body.sale_price
+              );
+
+        const imageUrl =
+          nullableText(
+            body.image_url
+          );
+
+        const stock =
+          Number(body.stock ?? 0);
+
+        const isActive =
+          body.is_active === false ||
+          Number(body.is_active) === 0
+            ? 0
+            : 1;
+
+        if (!name) {
+          return json(
+            {
+              success: false,
+              error:
+                "Product name is required"
+            },
+            400
+          );
+        }
+
+        if (!category) {
+          return json(
+            {
+              success: false,
+              error:
+                "Category is required"
+            },
+            400
+          );
+        }
+
+        if (
+          !Number.isFinite(price) ||
+          price < 0
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Valid product price is required"
+            },
+            400
+          );
+        }
+
+        if (
+          salePrice !== null &&
+          (
+            !Number.isFinite(
+              salePrice
+            ) ||
+            salePrice < 0
+          )
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Invalid sale price"
+            },
+            400
+          );
+        }
+
+        if (
+          !Number.isInteger(stock) ||
+          stock < 0
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Stock must be 0 or more"
+            },
+            400
+          );
+        }
+
+        const product =
+          await env.DB
+            .prepare(
+              `INSERT INTO products
+              (
+                name,
+                category,
+                description,
+                price,
+                sale_price,
+                image_url,
+                stock,
+                is_active
+              )
+              VALUES
+              (?, ?, ?, ?, ?, ?, ?, ?)
+              RETURNING *`
+            )
+            .bind(
+              name,
+              category,
+              description,
+              price,
+              salePrice,
+              imageUrl,
+              stock,
+              isActive
+            )
+            .first();
+
+        return json(
+          {
+            success: true,
+            message:
+              "Product created",
+            product
+          },
+          201
+        );
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN PRODUCT - UPDATE
+    // =====================================================
+
+    const adminProductMatch =
+      url.pathname.match(
+        /^\/api\/admin\/products\/(\d+)$/
+      );
+
+    if (
+      adminProductMatch &&
+      request.method === "PUT"
+    ) {
+      const denied = requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const productId =
+          Number(
+            adminProductMatch[1]
+          );
+
+        const existing =
+          await env.DB
+            .prepare(
+              `SELECT *
+               FROM products
+               WHERE id = ?`
+            )
+            .bind(productId)
+            .first();
+
+        if (!existing) {
+          return json(
+            {
+              success: false,
+              error:
+                "Product not found"
+            },
+            404
+          );
+        }
+
+        const body =
+          await request.json();
+
+        const name =
+          String(
+            body.name ??
+            existing.name
+          ).trim();
+
+        const category =
+          String(
+            body.category ??
+            existing.category
+          ).trim();
+
+        const description =
+          body.description === undefined
+            ? existing.description
+            : nullableText(
+                body.description
+              );
+
+        const price =
+          body.price === undefined
+            ? Number(
+                existing.price
+              )
+            : Number(body.price);
+
+        let salePrice;
+
+        if (
+          body.sale_price === undefined
+        ) {
+          salePrice =
+            existing.sale_price;
+        } else if (
+          body.sale_price === "" ||
+          body.sale_price === null
+        ) {
+          salePrice = null;
+        } else {
+          salePrice =
+            Number(
+              body.sale_price
+            );
+        }
+
+        const imageUrl =
+          body.image_url === undefined
+            ? existing.image_url
+            : nullableText(
+                body.image_url
+              );
+
+        const stock =
+          body.stock === undefined
+            ? Number(
+                existing.stock
+              )
+            : Number(body.stock);
+
+        const isActive =
+          body.is_active === undefined
+            ? Number(
+                existing.is_active
+              )
+            : (
+                body.is_active === false ||
+                Number(
+                  body.is_active
+                ) === 0
+                  ? 0
+                  : 1
+              );
+
+        if (
+          !name ||
+          !category
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Name and category are required"
+            },
+            400
+          );
+        }
+
+        if (
+          !Number.isFinite(price) ||
+          price < 0
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Invalid price"
+            },
+            400
+          );
+        }
+
+        if (
+          salePrice !== null &&
+          (
+            !Number.isFinite(
+              Number(salePrice)
+            ) ||
+            Number(salePrice) < 0
+          )
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Invalid sale price"
+            },
+            400
+          );
+        }
+
+        if (
+          !Number.isInteger(stock) ||
+          stock < 0
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Stock must be 0 or more"
+            },
+            400
+          );
+        }
+
+        const product =
+          await env.DB
+            .prepare(
+              `UPDATE products
+               SET
+                 name = ?,
+                 category = ?,
+                 description = ?,
+                 price = ?,
+                 sale_price = ?,
+                 image_url = ?,
+                 stock = ?,
+                 is_active = ?
+               WHERE id = ?
+               RETURNING *`
+            )
+            .bind(
+              name,
+              category,
+              description,
+              price,
+              salePrice,
+              imageUrl,
+              stock,
+              isActive,
+              productId
+            )
+            .first();
+
+        return json({
+          success: true,
+          message:
+            "Product updated",
+          product
+        });
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN PRODUCT - ACTIVE / INACTIVE
+    // =====================================================
+
+    const productStatusMatch =
+      url.pathname.match(
+        /^\/api\/admin\/products\/(\d+)\/status$/
+      );
+
+    if (
+      productStatusMatch &&
+      (
+        request.method === "PUT" ||
+        request.method === "PATCH"
+      )
+    ) {
+      const denied = requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const productId =
+          Number(
+            productStatusMatch[1]
+          );
+
+        const body =
+          await request.json();
+
+        const isActive =
+          body.is_active === true ||
+          Number(
+            body.is_active
+          ) === 1
+            ? 1
+            : 0;
+
+        const product =
+          await env.DB
+            .prepare(
+              `UPDATE products
+               SET is_active = ?
+               WHERE id = ?
+               RETURNING *`
+            )
+            .bind(
+              isActive,
+              productId
+            )
+            .first();
+
+        if (!product) {
+          return json(
+            {
+              success: false,
+              error:
+                "Product not found"
+            },
+            404
+          );
+        }
+
+        return json({
+          success: true,
+          message:
+            isActive
+              ? "Product activated"
+              : "Product hidden",
+          product
+        });
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // STATIC WEBSITE / ADMIN PAGE / ASSETS
     // =====================================================
 
     return env.ASSETS.fetch(request);
