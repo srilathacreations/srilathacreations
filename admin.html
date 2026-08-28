@@ -34,6 +34,7 @@ button,input,select,textarea{font:inherit}
   max-width:1280px;
   margin:auto;
   padding:22px;
+
 }
 
 .card{
@@ -1767,6 +1768,12 @@ function openProductModal(){
     )
     .value = "";
 
+  document
+    .getElementById(
+      "pImageFile"
+    )
+    .value = "";
+
   updateImagePreview();
 
 
@@ -1862,6 +1869,12 @@ function editProduct(id){
     )
     .value =
     product.image_url || "";
+
+  document
+    .getElementById(
+      "pImageFile"
+    )
+    .value = "";
 
 
   updateImagePreview();
@@ -2036,3 +2049,228 @@ async function uploadSelectedProductImage(){
 
   return data.image_url;
 }
+
+// =====================================================
+// SAVE PRODUCT
+// =====================================================
+
+async function saveProduct(){
+
+  const name =
+    document.getElementById("pName").value.trim();
+
+  const category =
+    document.getElementById("pCategory").value.trim();
+
+  const description =
+    document.getElementById("pDescription").value.trim();
+
+  const price =
+    document.getElementById("pPrice").value;
+
+  const salePrice =
+    document.getElementById("pSalePrice").value;
+
+  const stock =
+    document.getElementById("pStock").value;
+
+  const active =
+    document.getElementById("pActive").value;
+
+  if(!name){
+    toast("Product name is required");
+    return;
+  }
+
+  if(price === "" || Number(price) < 0){
+    toast("Enter valid product price");
+    return;
+  }
+
+  if(stock === "" || Number(stock) < 0){
+    toast("Enter valid stock");
+    return;
+  }
+
+  const button =
+    document.getElementById("saveProductBtn");
+
+  button.disabled = true;
+  button.textContent = "Saving...";
+
+  try{
+
+    // Upload newly selected image first.
+    // While editing, if no new file is selected,
+    // the existing image URL is retained.
+    const image =
+      await uploadSelectedProductImage();
+
+    const payload = {
+      name,
+      category,
+      description,
+      price:Number(price),
+      sale_price:
+        salePrice === ""
+          ? null
+          : Number(salePrice),
+      stock:Number(stock),
+      image_url:
+        image || null,
+      is_active:
+        Number(active)
+    };
+
+    const isEdit =
+      editingProductId !== null;
+
+    const response =
+      await fetch(
+        isEdit
+          ? `/api/admin/products/${editingProductId}`
+          : "/api/admin/products",
+        {
+          method:
+            isEdit
+              ? "PUT"
+              : "POST",
+
+          headers:headers({
+            "Content-Type":"application/json"
+          }),
+
+          body:
+            JSON.stringify(payload)
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if(!response.ok || !data.success){
+      throw new Error(
+        data.error ||
+        "Unable to save product"
+      );
+    }
+
+    toast(
+      isEdit
+        ? "Product updated"
+        : "Product added"
+    );
+
+    closeProductModal();
+    await loadProducts();
+
+  }
+  catch(error){
+
+    toast(error.message);
+
+  }
+  finally{
+
+    button.disabled = false;
+    button.textContent = "Save Product";
+
+  }
+
+}
+
+
+// =====================================================
+// PRODUCT STATUS
+// =====================================================
+
+async function toggleProductStatus(
+  id,
+  isActive
+){
+
+  try{
+
+    const response =
+      await fetch(
+        `/api/admin/products/${id}/status`,
+        {
+          method:"PUT",
+
+          headers:headers({
+            "Content-Type":"application/json"
+          }),
+
+          body:
+            JSON.stringify({
+              is_active:isActive
+            })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if(!response.ok || !data.success){
+      throw new Error(
+        data.error ||
+        "Unable to update product"
+      );
+    }
+
+    toast(
+      isActive
+        ? "Product activated"
+        : "Product hidden"
+    );
+
+    await loadProducts();
+
+  }
+  catch(error){
+
+    toast(error.message);
+
+  }
+
+}
+
+
+// =====================================================
+// AUTO LOGIN
+// =====================================================
+
+(async function(){
+
+  if(!adminToken){
+    return;
+  }
+
+  try{
+
+    const response =
+      await fetch(
+        "/api/admin/check",
+        {
+          headers:headers()
+        }
+      );
+
+    if(response.ok){
+      openAdmin();
+    }
+    else{
+      logout();
+    }
+
+  }
+  catch{
+    logout();
+  }
+
+})();
+
+</script>
+
+</body>
+</html>
