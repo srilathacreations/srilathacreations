@@ -27,14 +27,12 @@ body{
 }
 
 button,input,select,textarea{font:inherit}
-
 .hidden{display:none!important}
 
 .shell{
   max-width:1280px;
   margin:auto;
   padding:22px;
-
 }
 
 .card{
@@ -457,8 +455,6 @@ th{
   </div>
 
 
-  <!-- ORDERS -->
-
   <section id="ordersSection">
 
     <div class="toolbar">
@@ -511,8 +507,6 @@ th{
 
   </section>
 
-
-  <!-- PRODUCTS -->
 
   <section
     id="productsSection"
@@ -579,8 +573,6 @@ th{
 </div>
 
 
-<!-- ORDER DETAILS MODAL -->
-
 <div
   id="orderModal"
   class="modal"
@@ -610,8 +602,6 @@ th{
 
 </div>
 
-
-<!-- PRODUCT MODAL -->
 
 <div
   id="productModal"
@@ -648,7 +638,6 @@ th{
         <label>Category *</label>
 
         <select id="pCategory">
-
           <option value="Blouse">Blouse</option>
           <option value="Maggam">Maggam</option>
           <option value="Jewellery">Jewellery</option>
@@ -657,23 +646,18 @@ th{
           <option value="Dress Material">Dress Material</option>
           <option value="Computer Work">Computer Work</option>
           <option value="Wedding">Wedding</option>
-
         </select>
 
       </div>
 
 
       <div class="field full">
-
         <label>Description</label>
-
         <textarea id="pDescription"></textarea>
-
       </div>
 
 
       <div class="field">
-
         <label>Regular Price *</label>
 
         <input
@@ -682,12 +666,10 @@ th{
           min="0"
           step="1"
         >
-
       </div>
 
 
       <div class="field">
-
         <label>Sale Price</label>
 
         <input
@@ -696,12 +678,10 @@ th{
           min="0"
           step="1"
         >
-
       </div>
 
 
       <div class="field">
-
         <label>Stock *</label>
 
         <input
@@ -711,26 +691,16 @@ th{
           step="1"
           value="0"
         >
-
       </div>
 
 
       <div class="field">
-
         <label>Status</label>
 
         <select id="pActive">
-
-          <option value="1">
-            Active
-          </option>
-
-          <option value="0">
-            Hidden
-          </option>
-
+          <option value="1">Active</option>
+          <option value="0">Hidden</option>
         </select>
-
       </div>
 
 
@@ -738,23 +708,23 @@ th{
 
         <label>Product Image</label>
 
-<input
-  type="file"
-  id="pImageFile"
-  accept="image/jpeg,image/png,image/webp"
-  onchange="previewSelectedImage()"
->
+        <input
+          type="file"
+          id="pImageFile"
+          accept="image/jpeg,image/png,image/webp"
+          onchange="previewSelectedImage()"
+        >
 
-<input
-  type="hidden"
-  id="pImage"
->
+        <input
+          type="hidden"
+          id="pImage"
+        >
 
-<img
-  id="imagePreview"
-  class="preview"
-  alt="Product Image Preview"
->
+        <img
+          id="imagePreview"
+          class="preview"
+          alt="Product Image Preview"
+        >
 
       </div>
 
@@ -775,10 +745,7 @@ th{
 </div>
 
 
-<div
-  id="toast"
-  class="toast"
-></div>
+<div id="toast" class="toast"></div>
 
 
 <script>
@@ -790,21 +757,17 @@ let adminToken =
 
 let allOrders = [];
 let allProducts = [];
-
 let editingProductId = null;
 
 
 function money(value){
-
   return "₹" +
     Number(value || 0)
       .toLocaleString("en-IN");
-
 }
 
 
 function esc(value){
-
   return String(value ?? "")
     .replace(
       /[&<>"']/g,
@@ -816,36 +779,29 @@ function esc(value){
         "'":"&#039;"
       }[c])
     );
-
 }
 
 
 function headers(extra = {}){
-
   return {
     ...extra,
     Authorization:
       `Bearer ${adminToken}`
   };
-
 }
 
 
 function toast(message){
-
   const el =
     document.getElementById("toast");
 
   el.textContent = message;
-
   el.classList.add("show");
 
   setTimeout(
-    () =>
-      el.classList.remove("show"),
+    () => el.classList.remove("show"),
     2300
   );
-
 }
 
 
@@ -861,11 +817,8 @@ async function login(){
       .trim();
 
   if(!adminToken){
-
     toast("Enter admin token");
-
     return;
-
   }
 
   try{
@@ -885,12 +838,10 @@ async function login(){
       !response.ok ||
       !data.success
     ){
-
       throw new Error(
         data.error ||
         "Invalid admin token"
       );
-
     }
 
     sessionStorage.setItem(
@@ -902,9 +853,7 @@ async function login(){
 
   }
   catch(error){
-
     toast(error.message);
-
   }
 
 }
@@ -940,7 +889,6 @@ async function openAdmin(){
     .classList.remove("hidden");
 
   await loadOrders();
-
 }
 
 
@@ -954,51 +902,27 @@ function showTab(tab){
     tab === "orders";
 
   document
-    .getElementById(
-      "ordersSection"
-    )
+    .getElementById("ordersSection")
     .classList
-    .toggle(
-      "hidden",
-      !orders
-    );
+    .toggle("hidden",!orders);
 
   document
-    .getElementById(
-      "productsSection"
-    )
+    .getElementById("productsSection")
     .classList
-    .toggle(
-      "hidden",
-      orders
-    );
-
+    .toggle("hidden",orders);
 
   document
-    .getElementById(
-      "ordersTab"
-    )
+    .getElementById("ordersTab")
     .classList
-    .toggle(
-      "active",
-      orders
-    );
+    .toggle("active",orders);
 
   document
-    .getElementById(
-      "productsTab"
-    )
+    .getElementById("productsTab")
     .classList
-    .toggle(
-      "active",
-      !orders
-    );
-
+    .toggle("active",!orders);
 
   if(!orders){
-
     loadProducts();
-
   }
 
 }
@@ -1023,28 +947,21 @@ async function loadOrders(){
     const data =
       await response.json();
 
-    if(
-      response.status === 401
-    ){
-
+    if(response.status === 401){
       logout();
-
       throw new Error(
         "Admin login expired"
       );
-
     }
 
     if(
       !response.ok ||
       !data.success
     ){
-
       throw new Error(
         data.error ||
         "Unable to load orders"
       );
-
     }
 
     allOrders =
@@ -1054,9 +971,7 @@ async function loadOrders(){
 
   }
   catch(error){
-
     toast(error.message);
-
   }
 
 }
@@ -1067,14 +982,11 @@ function renderOrders(){
   const q =
     (
       document
-        .getElementById(
-          "orderSearch"
-        )
+        .getElementById("orderSearch")
         .value || ""
     )
       .toLowerCase()
       .trim();
-
 
   const list =
     allOrders.filter(
@@ -1085,47 +997,31 @@ function renderOrders(){
         }
 
         return (
-          String(
-            order.order_number || ""
-          )
+          String(order.order_number || "")
             .toLowerCase()
             .includes(q)
-
           ||
-
-          String(
-            order.customer_name || ""
-          )
+          String(order.customer_name || "")
             .toLowerCase()
             .includes(q)
-
           ||
-
-          String(
-            order.phone || ""
-          )
+          String(order.phone || "")
             .includes(q)
         );
 
       }
     );
 
-
   document
-    .getElementById(
-      "ordersEmpty"
-    )
+    .getElementById("ordersEmpty")
     .classList
     .toggle(
       "hidden",
       list.length > 0
     );
 
-
   document
-    .getElementById(
-      "ordersBody"
-    )
+    .getElementById("ordersBody")
     .innerHTML =
 
     list.map(
@@ -1175,15 +1071,10 @@ function renderOrders(){
 
             <button
               class="btn secondary small"
-              onclick="
-                viewOrder(
-                  ${order.id}
-                )
-              "
+              onclick="viewOrder(${order.id})"
             >
               View
             </button>
-
 
             <select
               class="status"
@@ -1200,6 +1091,7 @@ function renderOrders(){
                   "pending",
                   "confirmed",
                   "processing",
+                  "packed",
                   "shipped",
                   "delivered",
                   "cancelled"
@@ -1258,30 +1150,22 @@ async function viewOrder(id){
       !response.ok ||
       !data.success
     ){
-
       throw new Error(
         data.error ||
         "Unable to load order"
       );
-
     }
 
     const order =
       data.order;
 
-
     document
-      .getElementById(
-        "orderModalTitle"
-      )
+      .getElementById("orderModalTitle")
       .textContent =
       order.order_number;
 
-
     document
-      .getElementById(
-        "orderModalContent"
-      )
+      .getElementById("orderModalContent")
       .innerHTML = `
 
       <div class="details">
@@ -1332,6 +1216,80 @@ async function viewOrder(id){
 
         </div>
 
+
+        <div class="detail full">
+
+          <b>Shipping / Tracking</b>
+
+          <div
+            class="product-form"
+            style="margin-top:8px"
+          >
+
+            <div class="field">
+
+              <label>
+                Courier Name
+              </label>
+
+              <input
+                id="shipCourier"
+                value="${esc(order.courier_name || "")}"
+                placeholder="DTDC / Delhivery / India Post..."
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Tracking ID / AWB
+              </label>
+
+              <input
+                id="shipTrackingId"
+                value="${esc(order.tracking_id || "")}"
+                placeholder="Courier tracking number"
+              >
+
+            </div>
+
+
+            <div class="field full">
+
+              <label>
+                Tracking Link
+              </label>
+
+              <input
+                id="shipTrackingUrl"
+                value="${esc(order.tracking_url || "")}"
+                placeholder="https://courier-website.com/track/..."
+              >
+
+            </div>
+
+          </div>
+
+
+          <button
+            class="btn primary"
+            style="margin-top:10px"
+            onclick="saveShipping(${order.id})"
+          >
+            Save Shipping Details
+          </button>
+
+
+          <p
+            style="font-size:10px;color:#745e69;line-height:1.5;margin:9px 0 0"
+          >
+            Use the courier/AWB number given when the parcel is dispatched. Then set the order status to Shipped.
+          </p>
+
+        </div>
+
       </div>
 
 
@@ -1377,19 +1335,14 @@ async function viewOrder(id){
 
     `;
 
-
     document
-      .getElementById(
-        "orderModal"
-      )
+      .getElementById("orderModal")
       .classList
       .add("show");
 
   }
   catch(error){
-
     toast(error.message);
-
   }
 
 }
@@ -1398,9 +1351,7 @@ async function viewOrder(id){
 function closeOrderModal(){
 
   document
-    .getElementById(
-      "orderModal"
-    )
+    .getElementById("orderModal")
     .classList
     .remove("show");
 
@@ -1420,15 +1371,11 @@ async function changeOrderStatus(
       );
 
     if(!confirmed){
-
       loadOrders();
-
       return;
-
     }
 
   }
-
 
   try{
 
@@ -1449,28 +1396,22 @@ async function changeOrderStatus(
         }
       );
 
-
     const data =
       await response.json();
-
 
     if(
       !response.ok ||
       !data.success
     ){
-
       throw new Error(
         data.error ||
         "Unable to update order"
       );
-
     }
-
 
     toast(
       "Order status updated"
     );
-
 
     await loadOrders();
 
@@ -1478,9 +1419,93 @@ async function changeOrderStatus(
   catch(error){
 
     toast(error.message);
+    await loadOrders();
+
+  }
+
+}
+
+
+// =====================================================
+// SHIPPING / TRACKING
+// =====================================================
+
+async function saveShipping(id){
+
+  const courier =
+    document
+      .getElementById("shipCourier")
+      .value
+      .trim();
+
+  const trackingId =
+    document
+      .getElementById("shipTrackingId")
+      .value
+      .trim();
+
+  const trackingUrl =
+    document
+      .getElementById("shipTrackingUrl")
+      .value
+      .trim();
+
+  if(
+    trackingUrl &&
+    !/^https?:\/\//i.test(trackingUrl)
+  ){
+    toast(
+      "Tracking link must start with http:// or https://"
+    );
+    return;
+  }
+
+  try{
+
+    const response =
+      await fetch(
+        `/api/admin/orders/${id}/shipping`,
+        {
+          method:"PUT",
+
+          headers:headers({
+            "Content-Type":
+              "application/json"
+          }),
+
+          body:JSON.stringify({
+            courier_name:
+              courier || null,
+            tracking_id:
+              trackingId || null,
+            tracking_url:
+              trackingUrl || null
+          })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if(
+      !response.ok ||
+      !data.success
+    ){
+      throw new Error(
+        data.error ||
+        "Unable to save shipping details"
+      );
+    }
+
+    toast(
+      "Shipping details saved"
+    );
 
     await loadOrders();
 
+  }
+  catch(error){
+    toast(error.message);
   }
 
 }
@@ -1509,12 +1534,10 @@ async function loadProducts(){
       !response.ok ||
       !data.success
     ){
-
       throw new Error(
         data.error ||
         "Unable to load products"
       );
-
     }
 
     allProducts =
@@ -1524,9 +1547,7 @@ async function loadProducts(){
 
   }
   catch(error){
-
     toast(error.message);
-
   }
 
 }
@@ -1537,14 +1558,11 @@ function renderProducts(){
   const q =
     (
       document
-        .getElementById(
-          "productSearch"
-        )
+        .getElementById("productSearch")
         .value || ""
     )
       .toLowerCase()
       .trim();
-
 
   const list =
     allProducts.filter(
@@ -1555,17 +1573,11 @@ function renderProducts(){
         }
 
         return (
-          String(
-            product.name || ""
-          )
+          String(product.name || "")
             .toLowerCase()
             .includes(q)
-
           ||
-
-          String(
-            product.category || ""
-          )
+          String(product.category || "")
             .toLowerCase()
             .includes(q)
         );
@@ -1573,22 +1585,16 @@ function renderProducts(){
       }
     );
 
-
   document
-    .getElementById(
-      "productsEmpty"
-    )
+    .getElementById("productsEmpty")
     .classList
     .toggle(
       "hidden",
       list.length > 0
     );
 
-
   document
-    .getElementById(
-      "productsBody"
-    )
+    .getElementById("productsBody")
     .innerHTML =
 
     list.map(
@@ -1715,72 +1721,50 @@ function openProductModal(){
   editingProductId = null;
 
   document
-    .getElementById(
-      "productModalTitle"
-    )
+    .getElementById("productModalTitle")
     .textContent =
     "Add Product";
-
 
   document
     .getElementById("pName")
     .value = "";
 
   document
-    .getElementById(
-      "pCategory"
-    )
+    .getElementById("pCategory")
     .value = "Blouse";
 
   document
-    .getElementById(
-      "pDescription"
-    )
+    .getElementById("pDescription")
     .value = "";
 
   document
-    .getElementById(
-      "pPrice"
-    )
+    .getElementById("pPrice")
     .value = "";
 
   document
-    .getElementById(
-      "pSalePrice"
-    )
+    .getElementById("pSalePrice")
     .value = "";
 
   document
-    .getElementById(
-      "pStock"
-    )
+    .getElementById("pStock")
     .value = "0";
 
   document
-    .getElementById(
-      "pActive"
-    )
+    .getElementById("pActive")
     .value = "1";
 
   document
-    .getElementById(
-      "pImage"
-    )
+    .getElementById("pImage")
     .value = "";
 
   document
-    .getElementById(
-      "pImageFile"
-    )
+    .getElementById("pImageFile")
     .value = "";
 
   updateImagePreview();
 
-
   document
-    .getElementById(
-      "productModal"
-    )
+    .getElementById("productModal")
     .classList
     .add("show");
 
@@ -1800,18 +1784,13 @@ function editProduct(id){
     return;
   }
 
-
   editingProductId =
     Number(product.id);
 
-
   document
-    .getElementById(
-      "productModalTitle"
-    )
+    .getElementById("productModalTitle")
     .textContent =
     "Edit Product";
-
 
   document
     .getElementById("pName")
@@ -1819,44 +1798,32 @@ function editProduct(id){
     product.name || "";
 
   document
-    .getElementById(
-      "pCategory"
-    )
+    .getElementById("pCategory")
     .value =
     product.category || "Blouse";
 
   document
-    .getElementById(
-      "pDescription"
-    )
+    .getElementById("pDescription")
     .value =
     product.description || "";
 
   document
-    .getElementById(
-      "pPrice"
-    )
+    .getElementById("pPrice")
     .value =
     product.price ?? "";
 
   document
-    .getElementById(
-      "pSalePrice"
-    )
+    .getElementById("pSalePrice")
     .value =
     product.sale_price ?? "";
 
   document
-    .getElementById(
-      "pStock"
-    )
+    .getElementById("pStock")
     .value =
     product.stock ?? 0;
 
   document
-    .getElementById(
-      "pActive"
-    )
+    .getElementById("pActive")
     .value =
     Number(product.is_active)
     === 1
@@ -1864,26 +1831,18 @@ function editProduct(id){
       : "0";
 
   document
-    .getElementById(
-      "pImage"
-    )
+    .getElementById("pImage")
     .value =
     product.image_url || "";
 
   document
-    .getElementById(
-      "pImageFile"
-    )
+    .getElementById("pImageFile")
     .value = "";
-
 
   updateImagePreview();
 
-
   document
-    .getElementById(
-      "productModal"
-    )
+    .getElementById("productModal")
     .classList
     .add("show");
 
@@ -1893,40 +1852,42 @@ function editProduct(id){
 function closeProductModal(){
 
   document
-    .getElementById(
-      "productModal"
-    )
+    .getElementById("productModal")
     .classList
     .remove("show");
 
 }
 
+
 function updateImagePreview(){
 
   const url =
     document
-      .getElementById(
-        "pImage"
-      )
+      .getElementById("pImage")
       .value
       .trim();
 
   const preview =
     document
-      .getElementById(
-        "imagePreview"
-      );
+      .getElementById("imagePreview");
 
   if(!url){
 
-    preview.style.display = "none";
-    preview.removeAttribute("src");
+    preview.style.display =
+      "none";
+
+    preview.removeAttribute(
+      "src"
+    );
 
     return;
   }
 
-  preview.src = url;
-  preview.style.display = "block";
+  preview.src =
+    url;
+
+  preview.style.display =
+    "block";
 }
 
 
@@ -1968,7 +1929,10 @@ function previewSelectedImage(){
     return;
   }
 
-  if(file.size > 5 * 1024 * 1024){
+  if(
+    file.size >
+    5 * 1024 * 1024
+  ){
 
     toast(
       "Image must be smaller than 5 MB"
@@ -1982,8 +1946,11 @@ function previewSelectedImage(){
   const objectUrl =
     URL.createObjectURL(file);
 
-  preview.src = objectUrl;
-  preview.style.display = "block";
+  preview.src =
+    objectUrl;
+
+  preview.style.display =
+    "block";
 }
 
 
@@ -2001,9 +1968,7 @@ async function uploadSelectedProductImage(){
   if(!file){
 
     return document
-      .getElementById(
-        "pImage"
-      )
+      .getElementById("pImage")
       .value
       .trim();
   }
@@ -2033,7 +1998,6 @@ async function uploadSelectedProductImage(){
     !response.ok ||
     !data.success
   ){
-
     throw new Error(
       data.error ||
       "Unable to upload image"
@@ -2041,14 +2005,13 @@ async function uploadSelectedProductImage(){
   }
 
   document
-    .getElementById(
-      "pImage"
-    )
+    .getElementById("pImage")
     .value =
     data.image_url;
 
   return data.image_url;
 }
+
 
 // =====================================================
 // SAVE PRODUCT
@@ -2057,52 +2020,76 @@ async function uploadSelectedProductImage(){
 async function saveProduct(){
 
   const name =
-    document.getElementById("pName").value.trim();
+    document.getElementById("pName")
+      .value
+      .trim();
 
   const category =
-    document.getElementById("pCategory").value.trim();
+    document.getElementById("pCategory")
+      .value
+      .trim();
 
   const description =
-    document.getElementById("pDescription").value.trim();
+    document.getElementById("pDescription")
+      .value
+      .trim();
 
   const price =
-    document.getElementById("pPrice").value;
+    document.getElementById("pPrice")
+      .value;
 
   const salePrice =
-    document.getElementById("pSalePrice").value;
+    document.getElementById("pSalePrice")
+      .value;
 
   const stock =
-    document.getElementById("pStock").value;
+    document.getElementById("pStock")
+      .value;
 
   const active =
-    document.getElementById("pActive").value;
+    document.getElementById("pActive")
+      .value;
 
   if(!name){
-    toast("Product name is required");
+    toast(
+      "Product name is required"
+    );
     return;
   }
 
-  if(price === "" || Number(price) < 0){
-    toast("Enter valid product price");
+  if(
+    price === "" ||
+    Number(price) < 0
+  ){
+    toast(
+      "Enter valid product price"
+    );
     return;
   }
 
-  if(stock === "" || Number(stock) < 0){
-    toast("Enter valid stock");
+  if(
+    stock === "" ||
+    Number(stock) < 0
+  ){
+    toast(
+      "Enter valid stock"
+    );
     return;
   }
 
   const button =
-    document.getElementById("saveProductBtn");
+    document.getElementById(
+      "saveProductBtn"
+    );
 
-  button.disabled = true;
-  button.textContent = "Saving...";
+  button.disabled =
+    true;
+
+  button.textContent =
+    "Saving...";
 
   try{
 
-    // Upload newly selected image first.
-    // While editing, if no new file is selected,
-    // the existing image URL is retained.
     const image =
       await uploadSelectedProductImage();
 
@@ -2110,14 +2097,20 @@ async function saveProduct(){
       name,
       category,
       description,
-      price:Number(price),
+      price:
+        Number(price),
+
       sale_price:
         salePrice === ""
           ? null
           : Number(salePrice),
-      stock:Number(stock),
+
+      stock:
+        Number(stock),
+
       image_url:
         image || null,
+
       is_active:
         Number(active)
     };
@@ -2137,7 +2130,8 @@ async function saveProduct(){
               : "POST",
 
           headers:headers({
-            "Content-Type":"application/json"
+            "Content-Type":
+              "application/json"
           }),
 
           body:
@@ -2148,7 +2142,10 @@ async function saveProduct(){
     const data =
       await response.json();
 
-    if(!response.ok || !data.success){
+    if(
+      !response.ok ||
+      !data.success
+    ){
       throw new Error(
         data.error ||
         "Unable to save product"
@@ -2162,19 +2159,20 @@ async function saveProduct(){
     );
 
     closeProductModal();
+
     await loadProducts();
 
   }
   catch(error){
-
     toast(error.message);
-
   }
   finally{
 
-    button.disabled = false;
-    button.textContent = "Save Product";
+    button.disabled =
+      false;
 
+    button.textContent =
+      "Save Product";
   }
 
 }
@@ -2198,7 +2196,8 @@ async function toggleProductStatus(
           method:"PUT",
 
           headers:headers({
-            "Content-Type":"application/json"
+            "Content-Type":
+              "application/json"
           }),
 
           body:
@@ -2211,7 +2210,10 @@ async function toggleProductStatus(
     const data =
       await response.json();
 
-    if(!response.ok || !data.success){
+    if(
+      !response.ok ||
+      !data.success
+    ){
       throw new Error(
         data.error ||
         "Unable to update product"
@@ -2228,9 +2230,7 @@ async function toggleProductStatus(
 
   }
   catch(error){
-
     toast(error.message);
-
   }
 
 }
