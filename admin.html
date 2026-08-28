@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Srilatha Creations | Admin Orders</title>
+
+<style>
+:root{
+  --cream:#fff8ec;
+  --pink:#df1f73;
+  --wine:#6c1247;
+  --line:#efd8df;
+  --ink:#23181e;
+  --muted:#745e69;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+}
+
+button,input,select{font:inherit}
+
+.shell{
+  max-width:1250px;
+  margin:auto;
+  padding:22px;
+}
+
+.hidden{display:none!important}
+
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:20px;
+  box-shadow:0 12px 35px rgba(80,20,50,.08);
+}
+
+.login{
+  max-width:500px;
+  margin:70px auto;
+  padding:30px;
+}
+
+.login h1{
+  font:700 34px Georgia,serif;
+  margin:0 0 8px;
+  color:var(--wine);
+}
+
+.login p{
+  color:var(--muted);
+  line-height:1.6;
+  font-size:13px;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  margin-top:16px;
+}
+
+.field label{
+  font-size:11px;
+  font-weight:900;
+}
+
+.field input{
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  outline:none;
+}
+
+.btn{
+  border:0;
+  border-radius:11px;
+  padding:11px 16px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.primary{
+  background:linear-gradient(135deg,var(--wine),var(--pink));
+  color:#fff;
+}
+
+.secondary{
+  background:#fff;
+  color:var(--wine);
+  border:1px solid var(--line);
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.top h1{
+  font:700 34px Georgia,serif;
+  margin:0;
+  color:var(--wine);
+}
+
+.top p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:13px;
+}
+
+.toolbar{
+  display:flex;
+  gap:10px;
+  margin-bottom:15px;
+  flex-wrap:wrap;
+}
+
+.toolbar input{
+  flex:1;
+  min-width:240px;
+  padding:11px 13px;
+  border:1px solid var(--line);
+  border-radius:11px;
+}
+
+.tablewrap{overflow:auto}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1050px;
+}
+
+th,td{
+  padding:12px 10px;
+  border-bottom:1px solid var(--line);
+  text-align:left;
+  font-size:12px;
+  vertical-align:top;
+}
+
+th{
+  background:#fff8fb;
+  color:#745e69;
+  font-size:10px;
+  text-transform:uppercase;
+}
+
+.order-number{
+  color:var(--wine);
+  font-weight:900;
+}
+
+.amount{font-weight:900}
+
+.badge{
+  display:inline-block;
+  padding:6px 9px;
+  background:#fff0f6;
+  border:1px solid #efcddd;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:900;
+  text-transform:capitalize;
+}
+
+.status{
+  border:1px solid var(--line);
+  background:#fff;
+  padding:8px;
+  border-radius:9px;
+  font-size:11px;
+}
+
+.actions{
+  display:flex;
+  gap:7px;
+  align-items:center;
+}
+
+.small{
+  padding:8px 10px;
+  font-size:10px;
+}
+
+.empty{
+  text-align:center;
+  padding:40px;
+  color:var(--muted);
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:#0007;
+  z-index:50;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  padding:18px;
+}
+
+.modal.show{display:flex}
+
+.modal-card{
+  width:min(760px,96vw);
+  max-height:92vh;
+  overflow:auto;
+  background:#fff;
+  padding:24px;
+  border-radius:22px;
+}
+
+.modal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.modal-head h2{
+  margin:0;
+  font:700 28px Georgia,serif;
+  color:var(--wine);
+}
+
+.close{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  border:0;
+  background:#fdeaf2;
+  color:var(--wine);
+  font-size:22px;
+}
+
+.details{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:18px;
+}
+
+.detail{
+  padding:12px;
+  background:#fffafb;
+  border:1px solid var(--line);
+  border-radius:12px;
+}
+
+.detail.full{
+  grid-column:1/-1;
+}
+
+.detail b{
+  display:block;
+  font-size:10px;
+  color:var(--muted);
+  text-transform:uppercase;
+  margin-bottom:5px;
+}
+
+.item{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:15px;
+  padding:12px 0;
+  border-bottom:1px solid var(--line);
+  font-size:12px;
+}
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:25px;
+  transform:translate(-50%,20px);
+  opacity:0;
+  background:#351024;
+  color:white;
+  padding:11px 17px;
+  border-radius:999px;
+  transition:.2s;
+  z-index:80;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+@media(max-width:650px){
+  .shell{padding:13px}
+  .top{align-items:flex-start;flex-direction:column}
+  .details{grid-template-columns:1fr}
+  .detail.full{grid-column:auto}
+}
+</style>
+</head>
+
+<body>
+
+<div id="loginView" class="shell">
+
+  <div class="card login">
+
+    <h1>Srilatha Admin</h1>
+
+    <p>
+      Enter your private admin token to manage orders.
+    </p>
+
+    <div class="field">
+      <label>ADMIN TOKEN</label>
+      <input
+        id="token"
+        type="password"
+        placeholder="Enter private admin token"
+        autocomplete="off"
+      >
+    </div>
+
+    <button
+      class="btn primary"
+      style="width:100%;margin-top:16px"
+      onclick="login()"
+    >
+      Login
+    </button>
+
+  </div>
+
+</div>
+
+
+<div id="adminView" class="shell hidden">
+
+  <div class="top">
+
+    <div>
+      <h1>Orders Dashboard</h1>
+      <p>Srilatha Creations Order Management</p>
+    </div>
+
+    <button class="btn secondary" onclick="logout()">
+      Logout
+    </button>
+
+  </div>
+
+
+  <div class="toolbar">
+
+    <input
+      id="search"
+      placeholder="Search order, customer or mobile..."
+      oninput="renderOrders()"
+    >
+
+    <button class="btn secondary" onclick="loadOrders()">
+      Refresh Orders
+    </button>
+
+  </div>
+
+
+  <div class="card tablewrap">
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Order</th>
+          <th>Customer</th>
+          <th>Phone</th>
+          <th>Total</th>
+          <th>Payment</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Manage</th>
+        </tr>
+      </thead>
+
+      <tbody id="orders"></tbody>
+
+    </table>
+
+    <div id="empty" class="empty hidden">
+      No orders found.
+    </div>
+
+  </div>
+
+</div>
+
+
+<div
+  id="modal"
+  class="modal"
+  onclick="if(event.target===this) closeModal()"
+>
+
+  <div class="modal-card">
+
+    <div class="modal-head">
+
+      <h2 id="modalTitle">
+        Order Details
+      </h2>
+
+      <button class="close" onclick="closeModal()">
+        ×
+      </button>
+
+    </div>
+
+    <div id="modalContent"></div>
+
+  </div>
+
+</div>
+
+
+<div id="toast" class="toast"></div>
+
+
+<script>
+
+let adminToken =
+  sessionStorage.getItem("srilatha_admin_token") || "";
+
+let allOrders = [];
+
+
+function money(value){
+  return "₹" + Number(value || 0).toLocaleString("en-IN");
+}
+
+
+function escapeHtml(value){
+
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    c => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[c])
+  );
+
+}
+
+
+function headers(extra = {}){
+
+  return {
+    ...extra,
+    Authorization: `Bearer ${adminToken}`
+  };
+
+}
+
+
+function showToast(message){
+
+  const toast = document.getElementById("toast");
+
+  toast.textContent = message;
+
+  toast.classList.add("show");
+
+  setTimeout(
+    () => toast.classList.remove("show"),
+    2200
+  );
+
+}
+
+
+async function login(){
+
+  adminToken =
+    document.getElementById("token").value.trim();
+
+  if(!adminToken){
+
+    showToast("Enter admin token");
+
+    return;
+
+  }
+
+  try{
+
+    const response = await fetch(
+      "/api/admin/check",
+      {
+        headers:headers()
+      }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+
+      throw new Error(
+        data.error || "Invalid admin token"
+      );
+
+    }
+
+    sessionStorage.setItem(
+      "srilatha_admin_token",
+      adminToken
+    );
+
+    openAdmin();
+
+  }
+  catch(error){
+
+    showToast(error.message);
+
+  }
+
+}
+
+
+function logout(){
+
+  adminToken = "";
+
+  sessionStorage.removeItem(
+    "srilatha_admin_token"
+  );
+
+  document
+    .getElementById("adminView")
+    .classList.add("hidden");
+
+  document
+    .getElementById("loginView")
+    .classList.remove("hidden");
+
+  document.getElementById("token").value = "";
+
+}
+
+
+async function openAdmin(){
+
+  document
+    .getElementById("loginView")
+    .classList.add("hidden");
+
+  document
+    .getElementById("adminView")
+    .classList.remove("hidden");
+
+  await loadOrders();
+
+}
+
+
+async function loadOrders(){
+
+  try{
+
+    const response = await fetch(
+      "/api/admin/orders",
+      {
+        headers:headers()
+      }
+    );
+
+    const data = await response.json();
+
+    if(response.status === 401){
+
+      logout();
+
+      throw new Error(
+        "Admin login expired"
+      );
+
+    }
+
+    if(!response.ok || !data.success){
+
+      throw new Error(
+        data.error || "Unable to load orders"
+      );
+
+    }
+
+    allOrders = data.orders || [];
+
+    renderOrders();
+
+  }
+  catch(error){
+
+    showToast(error.message);
+
+  }
+
+}
+
+
+function renderOrders(){
+
+  const query =
+    (
+      document.getElementById("search").value || ""
+    )
+    .toLowerCase()
+    .trim();
+
+  const list =
+    allOrders.filter(order => {
+
+      if(!query) return true;
+
+      return (
+        String(order.order_number || "")
+          .toLowerCase()
+          .includes(query)
+
+        ||
+
+        String(order.customer_name || "")
+          .toLowerCase()
+          .includes(query)
+
+        ||
+
+        String(order.phone || "")
+          .includes(query)
+      );
+
+    });
+
+
+  document
+    .getElementById("empty")
+    .classList
+    .toggle(
+      "hidden",
+      list.length > 0
+    );
+
+
+  document.getElementById("orders").innerHTML =
+
+    list.map(order => `
+
+      <tr>
+
+        <td>
+          <span class="order-number">
+            ${escapeHtml(order.order_number)}
+          </span>
+        </td>
+
+        <td>
+          ${escapeHtml(order.customer_name)}
+        </td>
+
+        <td>
+          ${escapeHtml(order.phone)}
+        </td>
+
+        <td class="amount">
+          ${money(order.total_amount)}
+        </td>
+
+        <td>
+          ${escapeHtml(order.payment_method)}
+          <br>
+          <small>
+            ${escapeHtml(order.payment_status)}
+          </small>
+        </td>
+
+        <td>
+          <span class="badge">
+            ${escapeHtml(order.order_status)}
+          </span>
+        </td>
+
+        <td>
+          ${escapeHtml(order.created_at)}
+        </td>
+
+        <td>
+
+          <div class="actions">
+
+            <button
+              class="btn secondary small"
+              onclick="viewOrder(${order.id})"
+            >
+              View
+            </button>
+
+            <select
+              class="status"
+              onchange="
+                changeStatus(
+                  ${order.id},
+                  this.value
+                )
+              "
+            >
+
+              ${[
+                "pending",
+                "confirmed",
+                "processing",
+                "shipped",
+                "delivered",
+                "cancelled"
+              ]
+              .map(status => `
+
+                <option
+                  value="${status}"
+                  ${
+                    status === order.order_status
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  ${status}
+                </option>
+
+              `)
+              .join("")}
+
+            </select>
+
+          </div>
+
+        </td>
+
+      </tr>
+
+    `).join("");
+
+}
+
+
+async function viewOrder(id){
+
+  try{
+
+    const response = await fetch(
+      `/api/admin/orders/${id}`,
+      {
+        headers:headers()
+      }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+
+      throw new Error(
+        data.error || "Unable to load order"
+      );
+
+    }
+
+    const order = data.order;
+
+    document.getElementById(
+      "modalTitle"
+    ).textContent =
+      order.order_number;
+
+
+    document.getElementById(
+      "modalContent"
+    ).innerHTML = `
+
+      <div class="details">
+
+        <div class="detail">
+          <b>Customer</b>
+          ${escapeHtml(order.customer_name)}
+        </div>
+
+        <div class="detail">
+          <b>Phone</b>
+          ${escapeHtml(order.phone)}
+        </div>
+
+        <div class="detail">
+          <b>Email</b>
+          ${escapeHtml(order.email || "-")}
+        </div>
+
+        <div class="detail">
+          <b>Order Status</b>
+          ${escapeHtml(order.order_status)}
+        </div>
+
+        <div class="detail">
+          <b>Payment</b>
+          ${escapeHtml(order.payment_method)}
+          /
+          ${escapeHtml(order.payment_status)}
+        </div>
+
+        <div class="detail">
+          <b>Total</b>
+          ${money(order.total_amount)}
+        </div>
+
+        <div class="detail full">
+
+          <b>Delivery Address</b>
+
+          ${escapeHtml(order.address)}
+
+          <br>
+
+          ${escapeHtml(order.city || "")},
+
+          ${escapeHtml(order.state || "")}
+
+          ${escapeHtml(order.pincode || "")}
+
+        </div>
+
+      </div>
+
+
+      <h3>Products</h3>
+
+      ${(data.items || [])
+
+        .map(item => `
+
+          <div class="item">
+
+            <div>
+
+              <b>
+                ${escapeHtml(item.product_name)}
+              </b>
+
+              <br>
+
+              <small>
+                Quantity ${item.quantity}
+              </small>
+
+            </div>
+
+            <div>
+              ${money(item.price)}
+            </div>
+
+            <div>
+              <b>
+                ${money(item.total)}
+              </b>
+            </div>
+
+          </div>
+
+        `)
+
+        .join("")}
+
+    `;
+
+
+    document
+      .getElementById("modal")
+      .classList
+      .add("show");
+
+  }
+  catch(error){
+
+    showToast(error.message);
+
+  }
+
+}
+
+
+function closeModal(){
+
+  document
+    .getElementById("modal")
+    .classList
+    .remove("show");
+
+}
+
+
+async function changeStatus(
+  orderId,
+  newStatus
+){
+
+  if(newStatus === "cancelled"){
+
+    const confirmed = confirm(
+      "Cancel this order? Product stock will be restored."
+    );
+
+    if(!confirmed){
+
+      loadOrders();
+
+      return;
+
+    }
+
+  }
+
+
+  try{
+
+    const response = await fetch(
+      `/api/admin/orders/${orderId}/status`,
+      {
+        method:"PUT",
+
+        headers:headers({
+          "Content-Type":"application/json"
+        }),
+
+        body:JSON.stringify({
+          order_status:newStatus
+        })
+      }
+    );
+
+
+    const data = await response.json();
+
+
+    if(!response.ok || !data.success){
+
+      throw new Error(
+        data.error || "Unable to update order"
+      );
+
+    }
+
+
+    showToast(
+      "Order status updated"
+    );
+
+
+    await loadOrders();
+
+  }
+  catch(error){
+
+    showToast(error.message);
+
+    await loadOrders();
+
+  }
+
+}
+
+
+(async function(){
+
+  if(!adminToken) return;
+
+  try{
+
+    const response = await fetch(
+      "/api/admin/check",
+      {
+        headers:headers()
+      }
+    );
+
+    if(response.ok){
+
+      openAdmin();
+
+    }
+    else{
+
+      logout();
+
+    }
+
+  }
+  catch{
+
+    logout();
+
+  }
+
+})();
+
+</script>
+
+</body>
+</html>
