@@ -1,0 +1,14 @@
+{
+  "name": "srilatha",
+  "compatibility_date": "2026-08-28",
+  "assets": {
+    "directory": "."
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "srilatha-store-db",
+      "database_id": "c07b8893-1355-4eff-8b25-6cd070dd7ae4"
+    }
+  ]
+}
