@@ -2,9 +2,37 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // -----------------------------
+    // =====================================================
+    // HELPERS
+    // =====================================================
+
+    const json = (data, status = 200) =>
+      new Response(JSON.stringify(data), {
+        status,
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          "Cache-Control": "no-store"
+        }
+      });
+
+    const getAdminToken = () => {
+      const auth = request.headers.get("Authorization") || "";
+      if (auth.startsWith("Bearer ")) {
+        return auth.slice(7).trim();
+      }
+
+      return request.headers.get("X-Admin-Token") || "";
+    };
+
+    const isAdmin = () => {
+      if (!env.ADMIN_TOKEN) return false;
+      return getAdminToken() === env.ADMIN_TOKEN;
+    };
+
+    // =====================================================
     // API TEST
-    // -----------------------------
+    // =====================================================
+
     if (url.pathname === "/api/test" && request.method === "GET") {
       try {
         const result = await env.DB
@@ -13,26 +41,27 @@ export default {
           )
           .all();
 
-        return Response.json({
+        return json({
           success: true,
           message: "Srilatha Creations backend is working",
           database: "Connected",
           tables: result.results
         });
       } catch (error) {
-        return Response.json(
+        return json(
           {
             success: false,
             error: error.message
           },
-          { status: 500 }
+          500
         );
       }
     }
 
-    // -----------------------------
-    // PRODUCTS
-    // -----------------------------
+    // =====================================================
+    // PUBLIC PRODUCTS API
+    // =====================================================
+
     if (url.pathname === "/api/products" && request.method === "GET") {
       try {
         const products = await env.DB
@@ -41,211 +70,147 @@ export default {
           )
           .all();
 
-        return Response.json(products.results);
+        return json(products.results);
       } catch (error) {
-        return Response.json(
+        return json(
           {
             success: false,
             error: error.message
           },
-          { status: 500 }
+          500
         );
       }
     }
 
-    // -----------------------------
-    // CREATE ORDER - COD
-    // -----------------------------
+    // =====================================================
+    // CREATE COD ORDER
+    // =====================================================
+
     if (url.pathname === "/api/orders" && request.method === "POST") {
       try {
         const body = await request.json();
 
-        const customer = body.customer || {};
+        const customerName = String(body.customer_name || "").trim();
+        const phone = String(body.phone || "").replace(/\D/g, "");
+        const email = String(body.email || "").trim();
+        const address = String(body.address || "").trim();
+        const city = String(body.city || "").trim();
+        const state = String(body.state || "").trim();
+        const pincode = String(body.pincode || "").replace(/\D/g, "");
         const items = Array.isArray(body.items) ? body.items : [];
 
-        const name = String(customer.name || "").trim();
-        const phone = String(customer.phone || "").trim();
-        const email = String(customer.email || "").trim();
-        const address = String(customer.address || "").trim();
-        const city = String(customer.city || "").trim();
-        const state = String(customer.state || "").trim();
-        const pincode = String(customer.pincode || "").trim();
-
-        // Basic validation
-        if (!name) {
-          return Response.json(
+        if (!customerName) {
+          return json(
             { success: false, error: "Customer name is required" },
-            { status: 400 }
+            400
           );
         }
 
-        if (!phone || phone.length < 10) {
-          return Response.json(
-            { success: false, error: "Valid phone number is required" },
-            { status: 400 }
+        if (phone.length !== 10) {
+          return json(
+            { success: false, error: "Enter a valid 10 digit phone number" },
+            400
           );
         }
 
         if (!address) {
-          return Response.json(
+          return json(
             { success: false, error: "Delivery address is required" },
-            { status: 400 }
+            400
+          );
+        }
+
+        if (!city) {
+          return json(
+            { success: false, error: "City is required" },
+            400
+          );
+        }
+
+        if (!state) {
+          return json(
+            { success: false, error: "State is required" },
+            400
+          );
+        }
+
+        if (pincode.length !== 6) {
+          return json(
+            { success: false, error: "Enter a valid 6 digit PIN code" },
+            400
           );
         }
 
         if (!items.length) {
-          return Response.json(
+          return json(
             { success: false, error: "Cart is empty" },
-            { status: 400 }
+            400
           );
         }
 
-        // -------------------------------------------------
-        // Validate products and calculate totals on server
-        // Never trust price sent by browser
-        // -------------------------------------------------
-        const validatedItems = [];
         let subtotal = 0;
+        const verifiedItems = [];
 
-        for (const cartItem of items) {
-          const productId = Number(cartItem.id || cartItem.product_id);
-          const quantity = Number(cartItem.qty || cartItem.quantity || 0);
+        for (const item of items) {
+          const productId = Number(item.id || item.product_id);
+          const quantity = Math.max(1, Number(item.qty || item.quantity || 1));
 
-          if (!productId || !Number.isInteger(quantity) || quantity <= 0) {
-            return Response.json(
-              { success: false, error: "Invalid cart item" },
-              { status: 400 }
+          if (!Number.isInteger(productId) || productId <= 0) {
+            return json(
+              { success: false, error: "Invalid product" },
+              400
             );
           }
 
           const product = await env.DB
             .prepare(
-              `SELECT
-                id,
-                name,
-                price,
-                sale_price,
-                stock,
-                is_active
-               FROM products
-               WHERE id = ?`
+              "SELECT * FROM products WHERE id = ? AND is_active = 1"
             )
             .bind(productId)
             .first();
 
-          if (!product || Number(product.is_active) !== 1) {
-            return Response.json(
+          if (!product) {
+            return json(
               {
                 success: false,
-                error: "One of the selected products is unavailable"
+                error: `Product ${productId} is not available`
               },
-              { status: 400 }
+              400
             );
           }
 
           if (Number(product.stock) < quantity) {
-            return Response.json(
+            return json(
               {
                 success: false,
-                error: `${product.name} has only ${product.stock} item(s) available`
+                error: `${product.name} has only ${product.stock} available`
               },
-              { status: 400 }
+              400
             );
           }
 
-          const regularPrice = Number(product.price || 0);
-          const salePrice =
-            product.sale_price !== null
+          const unitPrice =
+            product.sale_price !== null &&
+            product.sale_price !== undefined
               ? Number(product.sale_price)
-              : 0;
+              : Number(product.price);
 
-          const finalPrice =
-            salePrice > 0 ? salePrice : regularPrice;
+          const itemTotal = unitPrice * quantity;
 
-          const lineTotal = finalPrice * quantity;
+          subtotal += itemTotal;
 
-          subtotal += lineTotal;
-
-          validatedItems.push({
+          verifiedItems.push({
             product_id: Number(product.id),
             product_name: product.name,
             quantity,
-            price: finalPrice,
-            total: lineTotal
+            price: unitPrice,
+            total: itemTotal
           });
         }
 
-        // -------------------------------------------------
-        // Delivery charge
-        // Currently ₹0
-        // We can add shipping rules later
-        // -------------------------------------------------
         const deliveryCharge = 0;
         const totalAmount = subtotal + deliveryCharge;
 
-        // -------------------------------------------------
-        // Find existing customer by phone
-        // -------------------------------------------------
-        let customerRow = await env.DB
-          .prepare(
-            "SELECT id FROM customers WHERE phone = ? ORDER BY id DESC LIMIT 1"
-          )
-          .bind(phone)
-          .first();
-
-        let customerId;
-
-        if (customerRow) {
-          customerId = customerRow.id;
-
-          await env.DB
-            .prepare(
-              `UPDATE customers
-               SET
-                 name = ?,
-                 email = ?,
-                 address = ?,
-                 city = ?,
-                 state = ?,
-                 pincode = ?
-               WHERE id = ?`
-            )
-            .bind(
-              name,
-              email || null,
-              address,
-              city || null,
-              state || null,
-              pincode || null,
-              customerId
-            )
-            .run();
-        } else {
-          const newCustomer = await env.DB
-            .prepare(
-              `INSERT INTO customers
-               (name, phone, email, address, city, state, pincode)
-               VALUES (?, ?, ?, ?, ?, ?, ?)
-               RETURNING id`
-            )
-            .bind(
-              name,
-              phone,
-              email || null,
-              address,
-              city || null,
-              state || null,
-              pincode || null
-            )
-            .first();
-
-          customerId = newCustomer.id;
-        }
-
-        // -------------------------------------------------
-        // Generate order number
-        // Example: SC-20260828-123456
-        // -------------------------------------------------
         const now = new Date();
 
         const datePart =
@@ -253,18 +218,66 @@ export default {
           String(now.getUTCMonth() + 1).padStart(2, "0") +
           String(now.getUTCDate()).padStart(2, "0");
 
-        const randomPart = Math.floor(
-          100000 + Math.random() * 900000
-        );
+        const randomPart = Math.floor(100000 + Math.random() * 900000);
 
         const orderNumber = `SC-${datePart}-${randomPart}`;
 
-        // -------------------------------------------------
-        // Create main order
-        // -------------------------------------------------
-        const order = await env.DB
+        let customer = await env.DB
+          .prepare("SELECT * FROM customers WHERE phone = ? LIMIT 1")
+          .bind(phone)
+          .first();
+
+        let customerId;
+
+        if (customer) {
+          customerId = customer.id;
+
+          await env.DB
+            .prepare(
+              `UPDATE customers
+               SET name = ?,
+                   email = ?,
+                   address = ?,
+                   city = ?,
+                   state = ?,
+                   pincode = ?
+               WHERE id = ?`
+            )
+            .bind(
+              customerName,
+              email || null,
+              address,
+              city,
+              state,
+              pincode,
+              customerId
+            )
+            .run();
+        } else {
+          const customerInsert = await env.DB
+            .prepare(
+              `INSERT INTO customers
+               (name, phone, email, address, city, state, pincode)
+               VALUES (?, ?, ?, ?, ?, ?, ?)`
+            )
+            .bind(
+              customerName,
+              phone,
+              email || null,
+              address,
+              city,
+              state,
+              pincode
+            )
+            .run();
+
+          customerId = customerInsert.meta.last_row_id;
+        }
+
+        const orderInsert = await env.DB
           .prepare(
-            `INSERT INTO orders (
+            `INSERT INTO orders
+            (
               order_number,
               customer_id,
               customer_name,
@@ -279,149 +292,195 @@ export default {
               total_amount,
               payment_method,
               payment_status,
-              payment_id,
               order_status
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            RETURNING id`
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
           )
           .bind(
             orderNumber,
             customerId,
-            name,
+            customerName,
             phone,
             email || null,
             address,
-            city || null,
-            state || null,
-            pincode || null,
+            city,
+            state,
+            pincode,
             subtotal,
             deliveryCharge,
             totalAmount,
             "COD",
             "pending",
-            null,
             "pending"
           )
-          .first();
+          .run();
 
-        const orderId = order.id;
+        const orderId = orderInsert.meta.last_row_id;
 
-        // -------------------------------------------------
-        // Insert order items + reduce stock
-        // -------------------------------------------------
-        const statements = [];
+        for (const item of verifiedItems) {
+          await env.DB
+            .prepare(
+              `INSERT INTO order_items
+              (
+                order_id,
+                product_id,
+                product_name,
+                quantity,
+                price,
+                total
+              )
+              VALUES (?, ?, ?, ?, ?, ?)`
+            )
+            .bind(
+              orderId,
+              item.product_id,
+              item.product_name,
+              item.quantity,
+              item.price,
+              item.total
+            )
+            .run();
 
-        for (const item of validatedItems) {
-          statements.push(
-            env.DB
-              .prepare(
-                `INSERT INTO order_items
-                 (
-                   order_id,
-                   product_id,
-                   product_name,
-                   quantity,
-                   price,
-                   total
-                 )
-                 VALUES (?, ?, ?, ?, ?, ?)`
-              )
-              .bind(
-                orderId,
-                item.product_id,
-                item.product_name,
-                item.quantity,
-                item.price,
-                item.total
-              )
-          );
-
-          statements.push(
-            env.DB
-              .prepare(
-                `UPDATE products
-                 SET stock = stock - ?
-                 WHERE id = ?
-                 AND stock >= ?`
-              )
-              .bind(
-                item.quantity,
-                item.product_id,
-                item.quantity
-              )
-          );
+          await env.DB
+            .prepare(
+              `UPDATE products
+               SET stock = stock - ?
+               WHERE id = ?`
+            )
+            .bind(item.quantity, item.product_id)
+            .run();
         }
 
-        if (statements.length) {
-          await env.DB.batch(statements);
-        }
-
-        // -------------------------------------------------
-        // Success
-        // -------------------------------------------------
-        return Response.json(
-          {
-            success: true,
-            message: "Order placed successfully",
-            order: {
-              id: orderId,
-              order_number: orderNumber,
-              customer_name: name,
-              phone,
-              subtotal,
-              delivery_charge: deliveryCharge,
-              total_amount: totalAmount,
-              payment_method: "COD",
-              payment_status: "pending",
-              order_status: "pending"
-            }
-          },
-          { status: 201 }
-        );
+        return json({
+          success: true,
+          message: "Order placed successfully",
+          order_id: orderId,
+          order_number: orderNumber,
+          total: totalAmount
+        });
       } catch (error) {
-        console.error("Order API error:", error);
-
-        return Response.json(
+        return json(
           {
             success: false,
-            error: error.message || "Unable to place order"
+            error: error.message
           },
-          { status: 500 }
+          500
         );
       }
     }
 
-    // -----------------------------
-    // GET ORDER BY ORDER NUMBER
-    // -----------------------------
-    if (
-      url.pathname.startsWith("/api/orders/") &&
-      request.method === "GET"
-    ) {
-      try {
-        const orderNumber = decodeURIComponent(
-          url.pathname.replace("/api/orders/", "")
-        );
+    // =====================================================
+    // ADMIN AUTH CHECK
+    // =====================================================
 
-        if (!orderNumber) {
-          return Response.json(
-            { success: false, error: "Order number required" },
-            { status: 400 }
-          );
-        }
+    if (url.pathname === "/api/admin/check" && request.method === "GET") {
+      if (!isAdmin()) {
+        return json(
+          {
+            success: false,
+            error: "Unauthorized"
+          },
+          401
+        );
+      }
+
+      return json({
+        success: true,
+        message: "Admin authenticated"
+      });
+    }
+
+    // =====================================================
+    // ADMIN - GET ALL ORDERS
+    // =====================================================
+
+    if (url.pathname === "/api/admin/orders" && request.method === "GET") {
+      if (!isAdmin()) {
+        return json(
+          {
+            success: false,
+            error: "Unauthorized"
+          },
+          401
+        );
+      }
+
+      try {
+        const result = await env.DB
+          .prepare(
+            `SELECT
+              id,
+              order_number,
+              customer_name,
+              phone,
+              email,
+              address,
+              city,
+              state,
+              pincode,
+              subtotal,
+              delivery_charge,
+              total_amount,
+              payment_method,
+              payment_status,
+              payment_id,
+              order_status,
+              created_at
+             FROM orders
+             ORDER BY id DESC
+             LIMIT 500`
+          )
+          .all();
+
+        return json({
+          success: true,
+          orders: result.results
+        });
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN - GET ONE ORDER
+    // =====================================================
+
+    const orderMatch = url.pathname.match(
+      /^\/api\/admin\/orders\/(\d+)$/
+    );
+
+    if (orderMatch && request.method === "GET") {
+      if (!isAdmin()) {
+        return json(
+          {
+            success: false,
+            error: "Unauthorized"
+          },
+          401
+        );
+      }
+
+      try {
+        const orderId = Number(orderMatch[1]);
 
         const order = await env.DB
-          .prepare(
-            "SELECT * FROM orders WHERE order_number = ?"
-          )
-          .bind(orderNumber)
+          .prepare("SELECT * FROM orders WHERE id = ?")
+          .bind(orderId)
           .first();
 
         if (!order) {
-          return Response.json(
-            { success: false, error: "Order not found" },
-            { status: 404 }
+          return json(
+            {
+              success: false,
+              error: "Order not found"
+            },
+            404
           );
         }
 
@@ -429,28 +488,156 @@ export default {
           .prepare(
             "SELECT * FROM order_items WHERE order_id = ? ORDER BY id ASC"
           )
-          .bind(order.id)
+          .bind(orderId)
           .all();
 
-        return Response.json({
+        return json({
           success: true,
           order,
           items: items.results
         });
       } catch (error) {
-        return Response.json(
+        return json(
           {
             success: false,
             error: error.message
           },
-          { status: 500 }
+          500
         );
       }
     }
 
-    // -----------------------------
-    // Existing website / assets
-    // -----------------------------
+    // =====================================================
+    // ADMIN - UPDATE ORDER STATUS
+    // =====================================================
+
+    const statusMatch = url.pathname.match(
+      /^\/api\/admin\/orders\/(\d+)\/status$/
+    );
+
+    if (statusMatch && request.method === "PUT") {
+      if (!isAdmin()) {
+        return json(
+          {
+            success: false,
+            error: "Unauthorized"
+          },
+          401
+        );
+      }
+
+      try {
+        const orderId = Number(statusMatch[1]);
+        const body = await request.json();
+
+        const newStatus = String(body.order_status || "")
+          .trim()
+          .toLowerCase();
+
+        const allowedStatuses = [
+          "pending",
+          "confirmed",
+          "processing",
+          "shipped",
+          "delivered",
+          "cancelled"
+        ];
+
+        if (!allowedStatuses.includes(newStatus)) {
+          return json(
+            {
+              success: false,
+              error: "Invalid order status"
+            },
+            400
+          );
+        }
+
+        const existingOrder = await env.DB
+          .prepare("SELECT * FROM orders WHERE id = ?")
+          .bind(orderId)
+          .first();
+
+        if (!existingOrder) {
+          return json(
+            {
+              success: false,
+              error: "Order not found"
+            },
+            404
+          );
+        }
+
+        const oldStatus = String(
+          existingOrder.order_status || "pending"
+        ).toLowerCase();
+
+        if (oldStatus === "cancelled" && newStatus !== "cancelled") {
+          return json(
+            {
+              success: false,
+              error: "Cancelled order cannot be reopened"
+            },
+            400
+          );
+        }
+
+        // Restore stock only when cancelling for the first time
+        if (newStatus === "cancelled" && oldStatus !== "cancelled") {
+          const items = await env.DB
+            .prepare(
+              "SELECT * FROM order_items WHERE order_id = ?"
+            )
+            .bind(orderId)
+            .all();
+
+          for (const item of items.results) {
+            if (item.product_id) {
+              await env.DB
+                .prepare(
+                  `UPDATE products
+                   SET stock = stock + ?
+                   WHERE id = ?`
+                )
+                .bind(
+                  Number(item.quantity),
+                  Number(item.product_id)
+                )
+                .run();
+            }
+          }
+        }
+
+        await env.DB
+          .prepare(
+            `UPDATE orders
+             SET order_status = ?
+             WHERE id = ?`
+          )
+          .bind(newStatus, orderId)
+          .run();
+
+        return json({
+          success: true,
+          message: "Order status updated",
+          order_id: orderId,
+          order_status: newStatus
+        });
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // STATIC WEBSITE
+    // =====================================================
+
     return env.ASSETS.fetch(request);
   }
 };
