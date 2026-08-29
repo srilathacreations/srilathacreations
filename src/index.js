@@ -69,23 +69,217 @@ export default {
       return v ? v : null;
     };
 
+    const normalizeCouponCode = value =>
+      String(value || "")
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, "");
+
+    const calculateCouponDiscount = (
+      coupon,
+      subtotal
+    ) => {
+      if (!coupon) return 0;
+
+      let discount = 0;
+
+      const type =
+        String(
+          coupon.discount_type || ""
+        ).toLowerCase();
+
+      const value =
+        Number(
+          coupon.discount_value || 0
+        );
+
+      if (
+        type === "percent" ||
+        type === "percentage"
+      ) {
+        discount =
+          subtotal * (value / 100);
+      } else if (
+        type === "flat" ||
+        type === "fixed"
+      ) {
+        discount = value;
+      }
+
+      if (
+        coupon.max_discount !== null &&
+        coupon.max_discount !== undefined &&
+        Number(coupon.max_discount) > 0
+      ) {
+        discount =
+          Math.min(
+            discount,
+            Number(
+              coupon.max_discount
+            )
+          );
+      }
+
+      discount =
+        Math.max(
+          0,
+          Math.min(
+            discount,
+            subtotal
+          )
+        );
+
+      return Math.round(
+        discount * 100
+      ) / 100;
+    };
+
+    const getValidCoupon =
+      async (
+        code,
+        subtotal
+      ) => {
+
+        const normalized =
+          normalizeCouponCode(code);
+
+        if (!normalized) {
+          return {
+            coupon: null,
+            discount: 0
+          };
+        }
+
+        const coupon =
+          await env.DB
+            .prepare(
+              `SELECT *
+               FROM coupons
+               WHERE UPPER(code) = ?
+               AND is_active = 1
+               LIMIT 1`
+            )
+            .bind(normalized)
+            .first();
+
+        if (!coupon) {
+          throw new Error(
+            "Invalid or inactive coupon code"
+          );
+        }
+
+        const now =
+          new Date();
+
+        if (coupon.start_at) {
+          const start =
+            new Date(
+              coupon.start_at
+            );
+
+          if (
+            !Number.isNaN(
+              start.getTime()
+            ) &&
+            now < start
+          ) {
+            throw new Error(
+              "This coupon is not active yet"
+            );
+          }
+        }
+
+        if (coupon.end_at) {
+          const end =
+            new Date(
+              coupon.end_at
+            );
+
+          if (
+            !Number.isNaN(
+              end.getTime()
+            ) &&
+            now > end
+          ) {
+            throw new Error(
+              "This coupon has expired"
+            );
+          }
+        }
+
+        const minOrder =
+          Number(
+            coupon.min_order_amount || 0
+          );
+
+        if (
+          subtotal < minOrder
+        ) {
+          throw new Error(
+            `Minimum order amount for this coupon is ₹${minOrder.toLocaleString("en-IN")}`
+          );
+        }
+
+        if (
+          coupon.usage_limit !== null &&
+          coupon.usage_limit !== undefined &&
+          Number(
+            coupon.usage_limit
+          ) > 0 &&
+          Number(
+            coupon.used_count || 0
+          ) >=
+          Number(
+            coupon.usage_limit
+          )
+        ) {
+          throw new Error(
+            "This coupon usage limit has been reached"
+          );
+        }
+
+        const discount =
+          calculateCouponDiscount(
+            coupon,
+            subtotal
+          );
+
+        if (discount <= 0) {
+          throw new Error(
+            "This coupon does not provide a valid discount"
+          );
+        }
+
+        return {
+          coupon,
+          discount
+        };
+      };
+
     // =====================================================
     // API TEST
     // =====================================================
 
-    if (url.pathname === "/api/test" && request.method === "GET") {
+    if (
+      url.pathname === "/api/test" &&
+      request.method === "GET"
+    ) {
       try {
-        const result = await env.DB
-          .prepare(
-            "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
-          )
-          .all();
+        const result =
+          await env.DB
+            .prepare(
+              "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+            )
+            .all();
 
         return json({
           success: true,
-          message: "Srilatha Creations backend is working",
-          database: "Connected",
-          tables: result.results
+          message:
+            "Srilatha Creations backend is working",
+          database:
+            "Connected",
+          tables:
+            result.results
         });
       } catch (error) {
         return json(
@@ -102,18 +296,25 @@ export default {
     // PUBLIC PRODUCTS
     // =====================================================
 
-    if (url.pathname === "/api/products" && request.method === "GET") {
+    if (
+      url.pathname ===
+        "/api/products" &&
+      request.method === "GET"
+    ) {
       try {
-        const products = await env.DB
-          .prepare(
-            `SELECT *
-             FROM products
-             WHERE is_active = 1
-             ORDER BY id DESC`
-          )
-          .all();
+        const products =
+          await env.DB
+            .prepare(
+              `SELECT *
+               FROM products
+               WHERE is_active = 1
+               ORDER BY id DESC`
+            )
+            .all();
 
-        return json(products.results);
+        return json(
+          products.results
+        );
       } catch (error) {
         return json(
           {
@@ -126,65 +327,336 @@ export default {
     }
 
     // =====================================================
-    // CREATE ORDER - COD
-    // Supports current frontend:
+    // PUBLIC ACTIVE OFFERS
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/offers" &&
+      request.method === "GET"
+    ) {
+      try {
+        const offers =
+          await env.DB
+            .prepare(
+              `SELECT *
+               FROM offers
+               WHERE is_active = 1
+               AND
+               (
+                 start_at IS NULL
+                 OR
+                 datetime(start_at)
+                 <= CURRENT_TIMESTAMP
+               )
+               AND
+               (
+                 end_at IS NULL
+                 OR
+                 datetime(end_at)
+                 >= CURRENT_TIMESTAMP
+               )
+               ORDER BY id DESC`
+            )
+            .all();
+
+        return json({
+          success: true,
+          offers:
+            offers.results
+        });
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error: error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // PUBLIC COUPON VALIDATION
+    // Secure: subtotal is recalculated using DB product prices.
+    // POST:
     // {
-    //   customer:{name,phone,email,address,city,state,pincode},
+    //   code:"WELCOME10",
     //   items:[{id,qty}]
     // }
     // =====================================================
 
-    if (url.pathname === "/api/orders" && request.method === "POST") {
+    if (
+      url.pathname ===
+        "/api/coupons/validate" &&
+      request.method === "POST"
+    ) {
       try {
-        const body = await request.json();
+        const body =
+          await request.json();
 
-        const customer = body.customer || {};
-
-        const customerName = String(
-          customer.name ||
-          body.customer_name ||
-          ""
-        ).trim();
-
-        const phone = cleanPhone(
-          customer.phone ||
-          body.phone ||
-          ""
-        );
-
-        const email = String(
-          customer.email ||
-          body.email ||
-          ""
-        ).trim();
-
-        const address = String(
-          customer.address ||
-          body.address ||
-          ""
-        ).trim();
-
-        const city = String(
-          customer.city ||
-          body.city ||
-          ""
-        ).trim();
-
-        const state = String(
-          customer.state ||
-          body.state ||
-          ""
-        ).trim();
-
-        const pincode = String(
-          customer.pincode ||
-          body.pincode ||
-          ""
-        )
-          .replace(/\D/g, "");
+        const code =
+          normalizeCouponCode(
+            body.code
+          );
 
         const items =
-          Array.isArray(body.items)
+          Array.isArray(
+            body.items
+          )
+            ? body.items
+            : [];
+
+        if (!code) {
+          return json(
+            {
+              success: false,
+              error:
+                "Coupon code is required"
+            },
+            400
+          );
+        }
+
+        if (!items.length) {
+          return json(
+            {
+              success: false,
+              error:
+                "Cart is empty"
+            },
+            400
+          );
+        }
+
+        let subtotal = 0;
+
+        for (
+          const item of items
+        ) {
+          const productId =
+            Number(
+              item.id ||
+              item.product_id
+            );
+
+          const quantity =
+            Number(
+              item.qty ||
+              item.quantity ||
+              0
+            );
+
+          if (
+            !Number.isInteger(
+              productId
+            ) ||
+            productId <= 0 ||
+            !Number.isInteger(
+              quantity
+            ) ||
+            quantity <= 0
+          ) {
+            return json(
+              {
+                success: false,
+                error:
+                  "Invalid cart item"
+              },
+              400
+            );
+          }
+
+          const product =
+            await env.DB
+              .prepare(
+                `SELECT
+                  id,
+                  price,
+                  sale_price,
+                  stock,
+                  is_active
+                 FROM products
+                 WHERE id = ?`
+              )
+              .bind(productId)
+              .first();
+
+          if (
+            !product ||
+            Number(
+              product.is_active
+            ) !== 1
+          ) {
+            return json(
+              {
+                success: false,
+                error:
+                  "One of the selected products is unavailable"
+              },
+              400
+            );
+          }
+
+          const regularPrice =
+            Number(
+              product.price || 0
+            );
+
+          const salePrice =
+            product.sale_price !==
+              null &&
+            product.sale_price !==
+              undefined &&
+            Number(
+              product.sale_price
+            ) > 0
+              ? Number(
+                  product.sale_price
+                )
+              : null;
+
+          const price =
+            salePrice !== null
+              ? salePrice
+              : regularPrice;
+
+          subtotal +=
+            price * quantity;
+        }
+
+        const result =
+          await getValidCoupon(
+            code,
+            subtotal
+          );
+
+        const total =
+          Math.max(
+            0,
+            subtotal -
+            result.discount
+          );
+
+        return json({
+          success: true,
+
+          coupon: {
+            code:
+              normalizeCouponCode(
+                result.coupon.code
+              ),
+
+            discount_type:
+              result.coupon
+                .discount_type,
+
+            discount_value:
+              Number(
+                result.coupon
+                  .discount_value
+              )
+          },
+
+          subtotal,
+          discount_amount:
+            result.discount,
+          total_amount:
+            total
+        });
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message ||
+              "Unable to apply coupon"
+          },
+          400
+        );
+      }
+    }
+
+    // =====================================================
+    // CREATE ORDER - COD + COUPONS
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/orders" &&
+      request.method === "POST"
+    ) {
+      try {
+        const body =
+          await request.json();
+
+        const customer =
+          body.customer || {};
+
+        const customerName =
+          String(
+            customer.name ||
+            body.customer_name ||
+            ""
+          ).trim();
+
+        const phone =
+          cleanPhone(
+            customer.phone ||
+            body.phone ||
+            ""
+          );
+
+        const email =
+          String(
+            customer.email ||
+            body.email ||
+            ""
+          ).trim();
+
+        const address =
+          String(
+            customer.address ||
+            body.address ||
+            ""
+          ).trim();
+
+        const city =
+          String(
+            customer.city ||
+            body.city ||
+            ""
+          ).trim();
+
+        const state =
+          String(
+            customer.state ||
+            body.state ||
+            ""
+          ).trim();
+
+        const pincode =
+          String(
+            customer.pincode ||
+            body.pincode ||
+            ""
+          )
+            .replace(
+              /\D/g,
+              ""
+            );
+
+        const couponCode =
+          normalizeCouponCode(
+            body.coupon_code ||
+            body.coupon ||
+            ""
+          );
+
+        const items =
+          Array.isArray(
+            body.items
+          )
             ? body.items
             : [];
 
@@ -196,17 +668,23 @@ export default {
           return json(
             {
               success: false,
-              error: "Customer name is required"
+              error:
+                "Customer name is required"
             },
             400
           );
         }
 
-        if (!/^[0-9]{10}$/.test(phone)) {
+        if (
+          !/^[0-9]{10}$/.test(
+            phone
+          )
+        ) {
           return json(
             {
               success: false,
-              error: "Enter a valid 10 digit mobile number"
+              error:
+                "Enter a valid 10 digit mobile number"
             },
             400
           );
@@ -216,17 +694,24 @@ export default {
           return json(
             {
               success: false,
-              error: "Delivery address is required"
+              error:
+                "Delivery address is required"
             },
             400
           );
         }
 
-        if (pincode && !/^[0-9]{6}$/.test(pincode)) {
+        if (
+          pincode &&
+          !/^[0-9]{6}$/.test(
+            pincode
+          )
+        ) {
           return json(
             {
               success: false,
-              error: "Enter a valid 6 digit PIN code"
+              error:
+                "Enter a valid 6 digit PIN code"
             },
             400
           );
@@ -236,7 +721,8 @@ export default {
           return json(
             {
               success: false,
-              error: "Cart is empty"
+              error:
+                "Cart is empty"
             },
             400
           );
@@ -246,65 +732,86 @@ export default {
         // VERIFY PRODUCTS
         // -------------------------
 
-        const verifiedItems = [];
+        const verifiedItems =
+          [];
+
         let subtotal = 0;
 
-        for (const item of items) {
-          const productId = Number(
-            item.id ||
-            item.product_id
-          );
+        for (
+          const item of items
+        ) {
+          const productId =
+            Number(
+              item.id ||
+              item.product_id
+            );
 
-          const quantity = Number(
-            item.qty ||
-            item.quantity ||
-            0
-          );
+          const quantity =
+            Number(
+              item.qty ||
+              item.quantity ||
+              0
+            );
 
           if (
-            !Number.isInteger(productId) ||
+            !Number.isInteger(
+              productId
+            ) ||
             productId <= 0 ||
-            !Number.isInteger(quantity) ||
+            !Number.isInteger(
+              quantity
+            ) ||
             quantity <= 0
           ) {
             return json(
               {
                 success: false,
-                error: "Invalid cart item"
+                error:
+                  "Invalid cart item"
               },
               400
             );
           }
 
-          const product = await env.DB
-            .prepare(
-              `SELECT
-                id,
-                name,
-                price,
-                sale_price,
-                stock,
-                is_active
-               FROM products
-               WHERE id = ?`
-            )
-            .bind(productId)
-            .first();
+          const product =
+            await env.DB
+              .prepare(
+                `SELECT
+                  id,
+                  name,
+                  price,
+                  sale_price,
+                  stock,
+                  is_active
+                 FROM products
+                 WHERE id = ?`
+              )
+              .bind(
+                productId
+              )
+              .first();
 
           if (
             !product ||
-            Number(product.is_active) !== 1
+            Number(
+              product.is_active
+            ) !== 1
           ) {
             return json(
               {
                 success: false,
-                error: "One of the selected products is unavailable"
+                error:
+                  "One of the selected products is unavailable"
               },
               400
             );
           }
 
-          if (Number(product.stock) < quantity) {
+          if (
+            Number(
+              product.stock
+            ) < quantity
+          ) {
             return json(
               {
                 success: false,
@@ -317,13 +824,21 @@ export default {
           }
 
           const regularPrice =
-            Number(product.price || 0);
+            Number(
+              product.price || 0
+            );
 
           const salePrice =
-            product.sale_price !== null &&
-            product.sale_price !== undefined &&
-            Number(product.sale_price) > 0
-              ? Number(product.sale_price)
+            product.sale_price !==
+              null &&
+            product.sale_price !==
+              undefined &&
+            Number(
+              product.sale_price
+            ) > 0
+              ? Number(
+                  product.sale_price
+                )
               : null;
 
           const finalPrice =
@@ -332,47 +847,90 @@ export default {
               : regularPrice;
 
           const itemTotal =
-            finalPrice * quantity;
+            finalPrice *
+            quantity;
 
-          subtotal += itemTotal;
+          subtotal +=
+            itemTotal;
 
           verifiedItems.push({
-            product_id: Number(product.id),
-            product_name: product.name,
+            product_id:
+              Number(product.id),
+
+            product_name:
+              product.name,
+
             quantity,
-            price: finalPrice,
-            total: itemTotal
+
+            price:
+              finalPrice,
+
+            total:
+              itemTotal
           });
+        }
+
+        // -------------------------
+        // COUPON
+        // -------------------------
+
+        let coupon = null;
+        let discountAmount = 0;
+
+        if (couponCode) {
+          const couponResult =
+            await getValidCoupon(
+              couponCode,
+              subtotal
+            );
+
+          coupon =
+            couponResult.coupon;
+
+          discountAmount =
+            couponResult.discount;
         }
 
         // -------------------------
         // TOTALS
         // -------------------------
 
-        const deliveryCharge = 0;
+        const deliveryCharge =
+          0;
+
         const totalAmount =
-          subtotal + deliveryCharge;
+          Math.max(
+            0,
+            subtotal -
+            discountAmount +
+            deliveryCharge
+          );
 
         // -------------------------
         // CUSTOMER
         // -------------------------
 
-        let existingCustomer = await env.DB
-          .prepare(
-            `SELECT id
-             FROM customers
-             WHERE phone = ?
-             ORDER BY id DESC
-             LIMIT 1`
-          )
-          .bind(phone)
-          .first();
+        const existingCustomer =
+          await env.DB
+            .prepare(
+              `SELECT id
+               FROM customers
+               WHERE phone = ?
+               ORDER BY id DESC
+               LIMIT 1`
+            )
+            .bind(phone)
+            .first();
 
         let customerId;
 
-        if (existingCustomer) {
+        if (
+          existingCustomer
+        ) {
           customerId =
-            Number(existingCustomer.id);
+            Number(
+              existingCustomer.id
+            );
 
           await env.DB
             .prepare(
@@ -410,7 +968,8 @@ export default {
                   state,
                   pincode
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                VALUES
+                (?, ?, ?, ?, ?, ?, ?)
                 RETURNING id`
               )
               .bind(
@@ -425,17 +984,22 @@ export default {
               .first();
 
           customerId =
-            Number(createdCustomer.id);
+            Number(
+              createdCustomer.id
+            );
         }
 
         // -------------------------
         // ORDER NUMBER
         // -------------------------
 
-        const now = new Date();
+        const now =
+          new Date();
 
         const datePart =
-          now.getUTCFullYear().toString() +
+          now
+            .getUTCFullYear()
+            .toString() +
           String(
             now.getUTCMonth() + 1
           ).padStart(2, "0") +
@@ -446,7 +1010,8 @@ export default {
         const randomPart =
           Math.floor(
             100000 +
-            Math.random() * 900000
+            Math.random() *
+            900000
           );
 
         const orderNumber =
@@ -471,6 +1036,8 @@ export default {
                 state,
                 pincode,
                 subtotal,
+                discount_amount,
+                coupon_code,
                 delivery_charge,
                 total_amount,
                 payment_method,
@@ -481,7 +1048,7 @@ export default {
               VALUES
               (
                 ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?
               )
               RETURNING id`
             )
@@ -496,6 +1063,9 @@ export default {
               state || null,
               pincode || null,
               subtotal,
+              discountAmount,
+              couponCode ||
+                null,
               deliveryCharge,
               totalAmount,
               "COD",
@@ -506,13 +1076,18 @@ export default {
             .first();
 
         const orderId =
-          Number(createdOrder.id);
+          Number(
+            createdOrder.id
+          );
 
         // -------------------------
         // ORDER ITEMS + STOCK
         // -------------------------
 
-        for (const item of verifiedItems) {
+        for (
+          const item of
+          verifiedItems
+        ) {
           await env.DB
             .prepare(
               `INSERT INTO order_items
@@ -540,7 +1115,8 @@ export default {
             await env.DB
               .prepare(
                 `UPDATE products
-                 SET stock = stock - ?
+                 SET stock =
+                   stock - ?
                  WHERE id = ?
                  AND stock >= ?`
               )
@@ -553,7 +1129,9 @@ export default {
 
           if (
             Number(
-              stockUpdate.meta?.changes || 0
+              stockUpdate
+                .meta?.changes ||
+              0
             ) !== 1
           ) {
             throw new Error(
@@ -562,34 +1140,80 @@ export default {
           }
         }
 
+        // -------------------------
+        // COUPON USAGE
+        // -------------------------
+
+        if (coupon) {
+          await env.DB
+            .prepare(
+              `UPDATE coupons
+               SET used_count =
+                 used_count + 1
+               WHERE id = ?`
+            )
+            .bind(
+              coupon.id
+            )
+            .run();
+        }
+
         return json(
           {
             success: true,
-            message: "Order placed successfully",
+
+            message:
+              "Order placed successfully",
 
             order: {
-              id: orderId,
-              order_number: orderNumber,
-              customer_name: customerName,
+              id:
+                orderId,
+
+              order_number:
+                orderNumber,
+
+              customer_name:
+                customerName,
+
               phone,
+
               subtotal,
+
+              coupon_code:
+                couponCode ||
+                null,
+
+              discount_amount:
+                discountAmount,
+
               delivery_charge:
                 deliveryCharge,
+
               total_amount:
                 totalAmount,
-              payment_method: "COD",
+
+              payment_method:
+                "COD",
+
               payment_status:
                 "pending",
+
               order_status:
                 "pending"
             },
 
-            order_id: orderId,
-            order_number: orderNumber,
-            total: totalAmount
+            order_id:
+              orderId,
+
+            order_number:
+              orderNumber,
+
+            total:
+              totalAmount
           },
           201
         );
+
       } catch (error) {
         console.error(
           "Order API error:",
@@ -610,7 +1234,6 @@ export default {
 
     // =====================================================
     // PUBLIC ORDER LOOKUP / TRACKING
-    // Customer must provide both order number and phone.
     // =====================================================
 
     if (
@@ -630,24 +1253,32 @@ export default {
 
         const phone =
           cleanPhone(
-            url.searchParams.get("phone") || ""
+            url.searchParams.get(
+              "phone"
+            ) || ""
           );
 
         if (!orderNumber) {
           return json(
             {
               success: false,
-              error: "Order number is required"
+              error:
+                "Order number is required"
             },
             400
           );
         }
 
-        if (!/^[0-9]{10}$/.test(phone)) {
+        if (
+          !/^[0-9]{10}$/.test(
+            phone
+          )
+        ) {
           return json(
             {
               success: false,
-              error: "Enter the 10 digit mobile number used for the order"
+              error:
+                "Enter the 10 digit mobile number used for the order"
             },
             400
           );
@@ -660,6 +1291,10 @@ export default {
                 order_number,
                 customer_name,
                 phone,
+                subtotal,
+                coupon_code,
+                discount_amount,
+                delivery_charge,
                 total_amount,
                 payment_method,
                 payment_status,
@@ -694,11 +1329,13 @@ export default {
           success: true,
           order
         });
+
       } catch (error) {
         return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
           500
         );
@@ -718,7 +1355,8 @@ export default {
       ) &&
       request.method === "GET"
     ) {
-      const denied = requireAdmin();
+      const denied =
+        requireAdmin();
 
       if (denied) {
         return denied;
@@ -740,7 +1378,8 @@ export default {
         "/api/admin/orders" &&
       request.method === "GET"
     ) {
-      const denied = requireAdmin();
+      const denied =
+        requireAdmin();
 
       if (denied) {
         return denied;
@@ -761,12 +1400,18 @@ export default {
                 state,
                 pincode,
                 subtotal,
+                coupon_code,
+                discount_amount,
                 delivery_charge,
                 total_amount,
                 payment_method,
                 payment_status,
                 payment_id,
                 order_status,
+                courier_name,
+                tracking_id,
+                tracking_url,
+                shipped_at,
                 created_at
                FROM orders
                ORDER BY id DESC
@@ -783,7 +1428,8 @@ export default {
         return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
           500
         );
@@ -803,7 +1449,8 @@ export default {
       adminOrderMatch &&
       request.method === "GET"
     ) {
-      const denied = requireAdmin();
+      const denied =
+        requireAdmin();
 
       if (denied) {
         return denied;
@@ -822,14 +1469,17 @@ export default {
                FROM orders
                WHERE id = ?`
             )
-            .bind(orderId)
+            .bind(
+              orderId
+            )
             .first();
 
         if (!order) {
           return json(
             {
               success: false,
-              error: "Order not found"
+              error:
+                "Order not found"
             },
             404
           );
@@ -843,7 +1493,9 @@ export default {
                WHERE order_id = ?
                ORDER BY id ASC`
             )
-            .bind(orderId)
+            .bind(
+              orderId
+            )
             .all();
 
         return json({
@@ -852,11 +1504,13 @@ export default {
           items:
             items.results
         });
+
       } catch (error) {
         return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
           500
         );
@@ -865,7 +1519,6 @@ export default {
 
     // =====================================================
     // ADMIN UPDATE ORDER STATUS
-    // Supports PUT used by current admin.html
     // =====================================================
 
     const statusMatch =
@@ -876,11 +1529,14 @@ export default {
     if (
       statusMatch &&
       (
-        request.method === "PUT" ||
-        request.method === "PATCH"
+        request.method ===
+          "PUT" ||
+        request.method ===
+          "PATCH"
       )
     ) {
-      const denied = requireAdmin();
+      const denied =
+        requireAdmin();
 
       if (denied) {
         return denied;
@@ -888,7 +1544,9 @@ export default {
 
       try {
         const orderId =
-          Number(statusMatch[1]);
+          Number(
+            statusMatch[1]
+          );
 
         const body =
           await request.json();
@@ -936,14 +1594,17 @@ export default {
                FROM orders
                WHERE id = ?`
             )
-            .bind(orderId)
+            .bind(
+              orderId
+            )
             .first();
 
         if (!order) {
           return json(
             {
               success: false,
-              error: "Order not found"
+              error:
+                "Order not found"
             },
             404
           );
@@ -956,8 +1617,10 @@ export default {
           ).toLowerCase();
 
         if (
-          oldStatus === "cancelled" &&
-          newStatus !== "cancelled"
+          oldStatus ===
+            "cancelled" &&
+          newStatus !==
+            "cancelled"
         ) {
           return json(
             {
@@ -969,10 +1632,12 @@ export default {
           );
         }
 
-        // Restore stock when cancelled
+        // Restore product stock
         if (
-          oldStatus !== "cancelled" &&
-          newStatus === "cancelled"
+          oldStatus !==
+            "cancelled" &&
+          newStatus ===
+            "cancelled"
         ) {
           const items =
             await env.DB
@@ -983,13 +1648,18 @@ export default {
                  FROM order_items
                  WHERE order_id = ?`
               )
-              .bind(orderId)
+              .bind(
+                orderId
+              )
               .all();
 
           for (
-            const item of items.results
+            const item of
+            items.results
           ) {
-            if (item.product_id) {
+            if (
+              item.product_id
+            ) {
               await env.DB
                 .prepare(
                   `UPDATE products
@@ -999,7 +1669,8 @@ export default {
                 )
                 .bind(
                   Number(
-                    item.quantity || 0
+                    item.quantity ||
+                    0
                   ),
                   Number(
                     item.product_id
@@ -1010,16 +1681,20 @@ export default {
           }
         }
 
-        if (newStatus === "shipped") {
+        if (
+          newStatus ===
+            "shipped"
+        ) {
           await env.DB
             .prepare(
               `UPDATE orders
                SET
                  order_status = ?,
-                 shipped_at = COALESCE(
-                   shipped_at,
-                   CURRENT_TIMESTAMP
-                 )
+                 shipped_at =
+                   COALESCE(
+                     shipped_at,
+                     CURRENT_TIMESTAMP
+                   )
                WHERE id = ?`
             )
             .bind(
@@ -1045,15 +1720,18 @@ export default {
           success: true,
           message:
             "Order status updated",
-          order_id: orderId,
+          order_id:
+            orderId,
           order_status:
             newStatus
         });
+
       } catch (error) {
         return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
           500
         );
@@ -1072,11 +1750,14 @@ export default {
     if (
       shippingMatch &&
       (
-        request.method === "PUT" ||
-        request.method === "PATCH"
+        request.method ===
+          "PUT" ||
+        request.method ===
+          "PATCH"
       )
     ) {
-      const denied = requireAdmin();
+      const denied =
+        requireAdmin();
 
       if (denied) {
         return denied;
@@ -1084,7 +1765,9 @@ export default {
 
       try {
         const orderId =
-          Number(shippingMatch[1]);
+          Number(
+            shippingMatch[1]
+          );
 
         const body =
           await request.json();
@@ -1127,14 +1810,17 @@ export default {
                FROM orders
                WHERE id = ?`
             )
-            .bind(orderId)
+            .bind(
+              orderId
+            )
             .first();
 
         if (!existing) {
           return json(
             {
               success: false,
-              error: "Order not found"
+              error:
+                "Order not found"
             },
             404
           );
@@ -1165,11 +1851,13 @@ export default {
             "Shipping details updated",
           order
         });
+
       } catch (error) {
         return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
           500
         );
@@ -1177,8 +1865,7 @@ export default {
     }
 
     // =====================================================
-    // ADMIN PRODUCTS - LIST ALL
-    // Includes inactive products
+    // ADMIN PRODUCTS - LIST
     // =====================================================
 
     if (
@@ -1186,7 +1873,8 @@ export default {
         "/api/admin/products" &&
       request.method === "GET"
     ) {
-      const denied = requireAdmin();
+      const denied =
+        requireAdmin();
 
       if (denied) {
         return denied;
@@ -1207,11 +1895,13 @@ export default {
           products:
             products.results
         });
+
       } catch (error) {
         return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
           500
         );
@@ -1227,7 +1917,8 @@ export default {
         "/api/admin/products" &&
       request.method === "POST"
     ) {
-      const denied = requireAdmin();
+      const denied =
+        requireAdmin();
 
       if (denied) {
         return denied;
@@ -1253,12 +1944,17 @@ export default {
           );
 
         const price =
-          Number(body.price);
+          Number(
+            body.price
+          );
 
         const salePrice =
-          body.sale_price === "" ||
-          body.sale_price === null ||
-          body.sale_price === undefined
+          body.sale_price ===
+            "" ||
+          body.sale_price ===
+            null ||
+          body.sale_price ===
+            undefined
             ? null
             : Number(
                 body.sale_price
@@ -1270,11 +1966,16 @@ export default {
           );
 
         const stock =
-          Number(body.stock ?? 0);
+          Number(
+            body.stock ?? 0
+          );
 
         const isActive =
-          body.is_active === false ||
-          Number(body.is_active) === 0
+          body.is_active ===
+            false ||
+          Number(
+            body.is_active
+          ) === 0
             ? 0
             : 1;
 
@@ -1301,7 +2002,9 @@ export default {
         }
 
         if (
-          !Number.isFinite(price) ||
+          !Number.isFinite(
+            price
+          ) ||
           price < 0
         ) {
           return json(
@@ -1334,7 +2037,9 @@ export default {
         }
 
         if (
-          !Number.isInteger(stock) ||
+          !Number.isInteger(
+            stock
+          ) ||
           stock < 0
         ) {
           return json(
@@ -1386,11 +2091,13 @@ export default {
           },
           201
         );
+
       } catch (error) {
         return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
           500
         );
@@ -1398,7 +2105,7 @@ export default {
     }
 
     // =====================================================
-    // ADMIN PRODUCT - UPDATE
+    // ADMIN PRODUCT UPDATE
     // =====================================================
 
     const adminProductMatch =
@@ -1410,7 +2117,8 @@ export default {
       adminProductMatch &&
       request.method === "PUT"
     ) {
-      const denied = requireAdmin();
+      const denied =
+        requireAdmin();
 
       if (denied) {
         return denied;
@@ -1429,7 +2137,9 @@ export default {
                FROM products
                WHERE id = ?`
             )
-            .bind(productId)
+            .bind(
+              productId
+            )
             .first();
 
         if (!existing) {
@@ -1459,29 +2169,36 @@ export default {
           ).trim();
 
         const description =
-          body.description === undefined
+          body.description ===
+            undefined
             ? existing.description
             : nullableText(
                 body.description
               );
 
         const price =
-          body.price === undefined
+          body.price ===
+            undefined
             ? Number(
                 existing.price
               )
-            : Number(body.price);
+            : Number(
+                body.price
+              );
 
         let salePrice;
 
         if (
-          body.sale_price === undefined
+          body.sale_price ===
+            undefined
         ) {
           salePrice =
             existing.sale_price;
         } else if (
-          body.sale_price === "" ||
-          body.sale_price === null
+          body.sale_price ===
+            "" ||
+          body.sale_price ===
+            null
         ) {
           salePrice = null;
         } else {
@@ -1492,26 +2209,32 @@ export default {
         }
 
         const imageUrl =
-          body.image_url === undefined
+          body.image_url ===
+            undefined
             ? existing.image_url
             : nullableText(
                 body.image_url
               );
 
         const stock =
-          body.stock === undefined
+          body.stock ===
+            undefined
             ? Number(
                 existing.stock
               )
-            : Number(body.stock);
+            : Number(
+                body.stock
+              );
 
         const isActive =
-          body.is_active === undefined
+          body.is_active ===
+            undefined
             ? Number(
                 existing.is_active
               )
             : (
-                body.is_active === false ||
+                body.is_active ===
+                  false ||
                 Number(
                   body.is_active
                 ) === 0
@@ -1534,7 +2257,9 @@ export default {
         }
 
         if (
-          !Number.isFinite(price) ||
+          !Number.isFinite(
+            price
+          ) ||
           price < 0
         ) {
           return json(
@@ -1551,9 +2276,13 @@ export default {
           salePrice !== null &&
           (
             !Number.isFinite(
-              Number(salePrice)
+              Number(
+                salePrice
+              )
             ) ||
-            Number(salePrice) < 0
+            Number(
+              salePrice
+            ) < 0
           )
         ) {
           return json(
@@ -1567,7 +2296,9 @@ export default {
         }
 
         if (
-          !Number.isInteger(stock) ||
+          !Number.isInteger(
+            stock
+          ) ||
           stock < 0
         ) {
           return json(
@@ -1615,11 +2346,13 @@ export default {
             "Product updated",
           product
         });
+
       } catch (error) {
         return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
           500
         );
@@ -1627,7 +2360,7 @@ export default {
     }
 
     // =====================================================
-    // ADMIN PRODUCT - ACTIVE / INACTIVE
+    // ADMIN PRODUCT STATUS
     // =====================================================
 
     const productStatusMatch =
@@ -1638,11 +2371,14 @@ export default {
     if (
       productStatusMatch &&
       (
-        request.method === "PUT" ||
-        request.method === "PATCH"
+        request.method ===
+          "PUT" ||
+        request.method ===
+          "PATCH"
       )
     ) {
-      const denied = requireAdmin();
+      const denied =
+        requireAdmin();
 
       if (denied) {
         return denied;
@@ -1658,7 +2394,8 @@ export default {
           await request.json();
 
         const isActive =
-          body.is_active === true ||
+          body.is_active ===
+            true ||
           Number(
             body.is_active
           ) === 1
@@ -1698,11 +2435,13 @@ export default {
               : "Product hidden",
           product
         });
+
       } catch (error) {
         return json(
           {
             success: false,
-            error: error.message
+            error:
+              error.message
           },
           500
         );
@@ -1710,42 +2449,1033 @@ export default {
     }
 
     // =====================================================
-    // STATIC WEBSITE / ADMIN PAGE / ASSETS
-    // =====================================================
-
-    // =====================================================
-    // ADMIN PRODUCT IMAGE UPLOAD TO GITHUB
+    // ADMIN OFFERS - LIST
     // =====================================================
 
     if (
-      url.pathname === "/api/admin/upload-image" &&
-      request.method === "POST"
+      url.pathname ===
+        "/api/admin/offers" &&
+      request.method === "GET"
     ) {
-      const denied = requireAdmin();
+      const denied =
+        requireAdmin();
 
       if (denied) {
         return denied;
       }
 
       try {
-        if (!env.GITHUB_TOKEN) {
+        const offers =
+          await env.DB
+            .prepare(
+              `SELECT *
+               FROM offers
+               ORDER BY id DESC`
+            )
+            .all();
+
+        return json({
+          success: true,
+          offers:
+            offers.results
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN OFFER CREATE
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/admin/offers" &&
+      request.method === "POST"
+    ) {
+      const denied =
+        requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const body =
+          await request.json();
+
+        const title =
+          String(
+            body.title || ""
+          ).trim();
+
+        if (!title) {
           return json(
             {
               success: false,
-              error: "GITHUB_TOKEN is not configured"
+              error:
+                "Offer title is required"
+            },
+            400
+          );
+        }
+
+        const offer =
+          await env.DB
+            .prepare(
+              `INSERT INTO offers
+              (
+                title,
+                subtitle,
+                image_url,
+                button_text,
+                button_url,
+                start_at,
+                end_at,
+                is_active
+              )
+              VALUES
+              (?, ?, ?, ?, ?, ?, ?, ?)
+              RETURNING *`
+            )
+            .bind(
+              title,
+              nullableText(
+                body.subtitle
+              ),
+              nullableText(
+                body.image_url
+              ),
+              nullableText(
+                body.button_text
+              ),
+              nullableText(
+                body.button_url
+              ),
+              nullableText(
+                body.start_at
+              ),
+              nullableText(
+                body.end_at
+              ),
+              Number(
+                body.is_active
+              ) === 0
+                ? 0
+                : 1
+            )
+            .first();
+
+        return json(
+          {
+            success: true,
+            message:
+              "Offer created",
+            offer
+          },
+          201
+        );
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN OFFER UPDATE
+    // =====================================================
+
+    const offerMatch =
+      url.pathname.match(
+        /^\/api\/admin\/offers\/(\d+)$/
+      );
+
+    if (
+      offerMatch &&
+      request.method === "PUT"
+    ) {
+      const denied =
+        requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const id =
+          Number(
+            offerMatch[1]
+          );
+
+        const existing =
+          await env.DB
+            .prepare(
+              `SELECT *
+               FROM offers
+               WHERE id = ?`
+            )
+            .bind(id)
+            .first();
+
+        if (!existing) {
+          return json(
+            {
+              success: false,
+              error:
+                "Offer not found"
+            },
+            404
+          );
+        }
+
+        const body =
+          await request.json();
+
+        const title =
+          String(
+            body.title ??
+            existing.title
+          ).trim();
+
+        if (!title) {
+          return json(
+            {
+              success: false,
+              error:
+                "Offer title is required"
+            },
+            400
+          );
+        }
+
+        const offer =
+          await env.DB
+            .prepare(
+              `UPDATE offers
+               SET
+                 title = ?,
+                 subtitle = ?,
+                 image_url = ?,
+                 button_text = ?,
+                 button_url = ?,
+                 start_at = ?,
+                 end_at = ?,
+                 is_active = ?
+               WHERE id = ?
+               RETURNING *`
+            )
+            .bind(
+              title,
+
+              body.subtitle ===
+                undefined
+                ? existing.subtitle
+                : nullableText(
+                    body.subtitle
+                  ),
+
+              body.image_url ===
+                undefined
+                ? existing.image_url
+                : nullableText(
+                    body.image_url
+                  ),
+
+              body.button_text ===
+                undefined
+                ? existing.button_text
+                : nullableText(
+                    body.button_text
+                  ),
+
+              body.button_url ===
+                undefined
+                ? existing.button_url
+                : nullableText(
+                    body.button_url
+                  ),
+
+              body.start_at ===
+                undefined
+                ? existing.start_at
+                : nullableText(
+                    body.start_at
+                  ),
+
+              body.end_at ===
+                undefined
+                ? existing.end_at
+                : nullableText(
+                    body.end_at
+                  ),
+
+              body.is_active ===
+                undefined
+                ? Number(
+                    existing.is_active
+                  )
+                : (
+                    Number(
+                      body.is_active
+                    ) === 0
+                      ? 0
+                      : 1
+                  ),
+
+              id
+            )
+            .first();
+
+        return json({
+          success: true,
+          message:
+            "Offer updated",
+          offer
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN OFFER STATUS
+    // =====================================================
+
+    const offerStatusMatch =
+      url.pathname.match(
+        /^\/api\/admin\/offers\/(\d+)\/status$/
+      );
+
+    if (
+      offerStatusMatch &&
+      (
+        request.method ===
+          "PUT" ||
+        request.method ===
+          "PATCH"
+      )
+    ) {
+      const denied =
+        requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const id =
+          Number(
+            offerStatusMatch[1]
+          );
+
+        const body =
+          await request.json();
+
+        const isActive =
+          Number(
+            body.is_active
+          ) === 1
+            ? 1
+            : 0;
+
+        const offer =
+          await env.DB
+            .prepare(
+              `UPDATE offers
+               SET is_active = ?
+               WHERE id = ?
+               RETURNING *`
+            )
+            .bind(
+              isActive,
+              id
+            )
+            .first();
+
+        if (!offer) {
+          return json(
+            {
+              success: false,
+              error:
+                "Offer not found"
+            },
+            404
+          );
+        }
+
+        return json({
+          success: true,
+          offer
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN COUPONS - LIST
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/admin/coupons" &&
+      request.method === "GET"
+    ) {
+      const denied =
+        requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const coupons =
+          await env.DB
+            .prepare(
+              `SELECT *
+               FROM coupons
+               ORDER BY id DESC`
+            )
+            .all();
+
+        return json({
+          success: true,
+          coupons:
+            coupons.results
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN COUPON CREATE
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/admin/coupons" &&
+      request.method === "POST"
+    ) {
+      const denied =
+        requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const body =
+          await request.json();
+
+        const code =
+          normalizeCouponCode(
+            body.code
+          );
+
+        const discountType =
+          String(
+            body.discount_type ||
+            ""
+          )
+            .trim()
+            .toLowerCase();
+
+        const discountValue =
+          Number(
+            body.discount_value
+          );
+
+        if (!code) {
+          return json(
+            {
+              success: false,
+              error:
+                "Coupon code is required"
+            },
+            400
+          );
+        }
+
+        if (
+          ![
+            "percent",
+            "percentage",
+            "flat",
+            "fixed"
+          ].includes(
+            discountType
+          )
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Discount type must be percent or flat"
+            },
+            400
+          );
+        }
+
+        if (
+          !Number.isFinite(
+            discountValue
+          ) ||
+          discountValue <= 0
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Discount value must be greater than 0"
+            },
+            400
+          );
+        }
+
+        if (
+          (
+            discountType ===
+              "percent" ||
+            discountType ===
+              "percentage"
+          ) &&
+          discountValue > 100
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Percentage discount cannot exceed 100%"
+            },
+            400
+          );
+        }
+
+        const coupon =
+          await env.DB
+            .prepare(
+              `INSERT INTO coupons
+              (
+                code,
+                discount_type,
+                discount_value,
+                min_order_amount,
+                max_discount,
+                usage_limit,
+                used_count,
+                start_at,
+                end_at,
+                is_active
+              )
+              VALUES
+              (?, ?, ?, ?, ?, ?, 0, ?, ?, ?)
+              RETURNING *`
+            )
+            .bind(
+              code,
+              discountType,
+              discountValue,
+              Number(
+                body.min_order_amount ||
+                0
+              ),
+              body.max_discount ===
+                "" ||
+              body.max_discount ===
+                null ||
+              body.max_discount ===
+                undefined
+                ? null
+                : Number(
+                    body.max_discount
+                  ),
+              body.usage_limit ===
+                "" ||
+              body.usage_limit ===
+                null ||
+              body.usage_limit ===
+                undefined
+                ? null
+                : Number(
+                    body.usage_limit
+                  ),
+              nullableText(
+                body.start_at
+              ),
+              nullableText(
+                body.end_at
+              ),
+              Number(
+                body.is_active
+              ) === 0
+                ? 0
+                : 1
+            )
+            .first();
+
+        return json(
+          {
+            success: true,
+            message:
+              "Coupon created",
+            coupon
+          },
+          201
+        );
+
+      } catch (error) {
+
+        const message =
+          String(
+            error.message ||
+            ""
+          );
+
+        if (
+          message.includes(
+            "UNIQUE"
+          )
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Coupon code already exists"
+            },
+            400
+          );
+        }
+
+        return json(
+          {
+            success: false,
+            error:
+              message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN COUPON UPDATE
+    // =====================================================
+
+    const couponMatch =
+      url.pathname.match(
+        /^\/api\/admin\/coupons\/(\d+)$/
+      );
+
+    if (
+      couponMatch &&
+      request.method === "PUT"
+    ) {
+      const denied =
+        requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const id =
+          Number(
+            couponMatch[1]
+          );
+
+        const existing =
+          await env.DB
+            .prepare(
+              `SELECT *
+               FROM coupons
+               WHERE id = ?`
+            )
+            .bind(id)
+            .first();
+
+        if (!existing) {
+          return json(
+            {
+              success: false,
+              error:
+                "Coupon not found"
+            },
+            404
+          );
+        }
+
+        const body =
+          await request.json();
+
+        const code =
+          normalizeCouponCode(
+            body.code ??
+            existing.code
+          );
+
+        const discountType =
+          String(
+            body.discount_type ??
+            existing.discount_type
+          )
+            .trim()
+            .toLowerCase();
+
+        const discountValue =
+          Number(
+            body.discount_value ??
+            existing.discount_value
+          );
+
+        if (
+          !code ||
+          ![
+            "percent",
+            "percentage",
+            "flat",
+            "fixed"
+          ].includes(
+            discountType
+          ) ||
+          !Number.isFinite(
+            discountValue
+          ) ||
+          discountValue <= 0
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Invalid coupon details"
+            },
+            400
+          );
+        }
+
+        if (
+          (
+            discountType ===
+              "percent" ||
+            discountType ===
+              "percentage"
+          ) &&
+          discountValue > 100
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Percentage discount cannot exceed 100%"
+            },
+            400
+          );
+        }
+
+        const coupon =
+          await env.DB
+            .prepare(
+              `UPDATE coupons
+               SET
+                 code = ?,
+                 discount_type = ?,
+                 discount_value = ?,
+                 min_order_amount = ?,
+                 max_discount = ?,
+                 usage_limit = ?,
+                 start_at = ?,
+                 end_at = ?,
+                 is_active = ?
+               WHERE id = ?
+               RETURNING *`
+            )
+            .bind(
+              code,
+              discountType,
+              discountValue,
+
+              body.min_order_amount ===
+                undefined
+                ? Number(
+                    existing.min_order_amount ||
+                    0
+                  )
+                : Number(
+                    body.min_order_amount ||
+                    0
+                  ),
+
+              body.max_discount ===
+                undefined
+                ? existing.max_discount
+                : (
+                    body.max_discount ===
+                      "" ||
+                    body.max_discount ===
+                      null
+                      ? null
+                      : Number(
+                          body.max_discount
+                        )
+                  ),
+
+              body.usage_limit ===
+                undefined
+                ? existing.usage_limit
+                : (
+                    body.usage_limit ===
+                      "" ||
+                    body.usage_limit ===
+                      null
+                      ? null
+                      : Number(
+                          body.usage_limit
+                        )
+                  ),
+
+              body.start_at ===
+                undefined
+                ? existing.start_at
+                : nullableText(
+                    body.start_at
+                  ),
+
+              body.end_at ===
+                undefined
+                ? existing.end_at
+                : nullableText(
+                    body.end_at
+                  ),
+
+              body.is_active ===
+                undefined
+                ? Number(
+                    existing.is_active
+                  )
+                : (
+                    Number(
+                      body.is_active
+                    ) === 0
+                      ? 0
+                      : 1
+                  ),
+
+              id
+            )
+            .first();
+
+        return json({
+          success: true,
+          message:
+            "Coupon updated",
+          coupon
+        });
+
+      } catch (error) {
+
+        const message =
+          String(
+            error.message ||
+            ""
+          );
+
+        if (
+          message.includes(
+            "UNIQUE"
+          )
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Coupon code already exists"
+            },
+            400
+          );
+        }
+
+        return json(
+          {
+            success: false,
+            error:
+              message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN COUPON STATUS
+    // =====================================================
+
+    const couponStatusMatch =
+      url.pathname.match(
+        /^\/api\/admin\/coupons\/(\d+)\/status$/
+      );
+
+    if (
+      couponStatusMatch &&
+      (
+        request.method ===
+          "PUT" ||
+        request.method ===
+          "PATCH"
+      )
+    ) {
+      const denied =
+        requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        const id =
+          Number(
+            couponStatusMatch[1]
+          );
+
+        const body =
+          await request.json();
+
+        const isActive =
+          Number(
+            body.is_active
+          ) === 1
+            ? 1
+            : 0;
+
+        const coupon =
+          await env.DB
+            .prepare(
+              `UPDATE coupons
+               SET is_active = ?
+               WHERE id = ?
+               RETURNING *`
+            )
+            .bind(
+              isActive,
+              id
+            )
+            .first();
+
+        if (!coupon) {
+          return json(
+            {
+              success: false,
+              error:
+                "Coupon not found"
+            },
+            404
+          );
+        }
+
+        return json({
+          success: true,
+          coupon
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // ADMIN PRODUCT IMAGE UPLOAD
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/admin/upload-image" &&
+      request.method === "POST"
+    ) {
+      const denied =
+        requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        if (
+          !env.GITHUB_TOKEN
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "GITHUB_TOKEN is not configured"
             },
             503
           );
         }
 
-        const formData = await request.formData();
-        const file = formData.get("file");
+        const formData =
+          await request
+            .formData();
 
-        if (!file || typeof file.arrayBuffer !== "function") {
+        const file =
+          formData.get(
+            "file"
+          );
+
+        if (
+          !file ||
+          typeof file.arrayBuffer !==
+            "function"
+        ) {
           return json(
             {
               success: false,
-              error: "Image file is required"
+              error:
+                "Image file is required"
             },
             400
           );
@@ -1757,98 +3487,133 @@ export default {
           "image/webp"
         ];
 
-        if (!allowedTypes.includes(file.type)) {
+        if (
+          !allowedTypes.includes(
+            file.type
+          )
+        ) {
           return json(
             {
               success: false,
-              error: "Only JPG, PNG or WEBP images are allowed"
+              error:
+                "Only JPG, PNG or WEBP images are allowed"
             },
             400
           );
         }
 
-        const maxSize = 5 * 1024 * 1024;
-
-        if (file.size > maxSize) {
+        if (
+          file.size >
+          5 * 1024 * 1024
+        ) {
           return json(
             {
               success: false,
-              error: "Image must be smaller than 5 MB"
+              error:
+                "Image must be smaller than 5 MB"
             },
             400
           );
         }
 
         const extension =
-          file.type === "image/png"
+          file.type ===
+            "image/png"
             ? "png"
-            : file.type === "image/webp"
+            : file.type ===
+                "image/webp"
               ? "webp"
               : "jpg";
 
         const safeName =
           `product-${Date.now()}-${Math.floor(
-            Math.random() * 100000
+            Math.random() *
+            100000
           )}.${extension}`;
 
-        const repoOwner = "srilathacreations";
-        const repoName = "srilathacreations";
+        const repoOwner =
+          "srilathacreations";
+
+        const repoName =
+          "srilathacreations";
 
         const repoPath =
           `assets/images/products/${safeName}`;
 
-        const buffer = await file.arrayBuffer();
+        const buffer =
+          await file
+            .arrayBuffer();
 
         let binary = "";
-        const bytes = new Uint8Array(buffer);
 
-        const chunkSize = 0x8000;
+        const bytes =
+          new Uint8Array(
+            buffer
+          );
+
+        const chunkSize =
+          0x8000;
 
         for (
           let i = 0;
           i < bytes.length;
           i += chunkSize
         ) {
-          binary += String.fromCharCode(
-            ...bytes.subarray(
-              i,
-              i + chunkSize
-            )
-          );
+          binary +=
+            String.fromCharCode(
+              ...bytes.subarray(
+                i,
+                i + chunkSize
+              )
+            );
         }
 
-        const base64 = btoa(binary);
+        const base64 =
+          btoa(binary);
 
-        const githubResponse = await fetch(
-          `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${repoPath}`,
-          {
-            method: "PUT",
+        const githubResponse =
+          await fetch(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${repoPath}`,
+            {
+              method:
+                "PUT",
 
-            headers: {
-              Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-              Accept: "application/vnd.github+json",
-              "X-GitHub-Api-Version": "2022-11-28",
-              "User-Agent": "Srilatha-Creations-Worker",
-              "Content-Type": "application/json"
-            },
+              headers: {
+                Authorization:
+                  `Bearer ${env.GITHUB_TOKEN}`,
 
-            body: JSON.stringify({
-              message: `Upload product image ${safeName}`,
-              content: base64,
-              branch: "main"
-            })
-          }
-        );
+                Accept:
+                  "application/vnd.github+json",
 
-        const githubData =
-          await githubResponse.json();
+                "X-GitHub-Api-Version":
+                  "2022-11-28",
 
-        if (!githubResponse.ok) {
-          console.error(
-            "GitHub upload error:",
-            githubData
+                "User-Agent":
+                  "Srilatha-Creations-Worker",
+
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  message:
+                    `Upload product image ${safeName}`,
+                  content:
+                    base64,
+                  branch:
+                    "main"
+                })
+            }
           );
 
+        const githubData =
+          await githubResponse
+            .json();
+
+        if (
+          !githubResponse.ok
+        ) {
           return json(
             {
               success: false,
@@ -1863,23 +3628,23 @@ export default {
         return json(
           {
             success: true,
-            message: "Image uploaded successfully",
 
-            filename: safeName,
+            message:
+              "Image uploaded successfully",
+
+            filename:
+              safeName,
 
             image_url:
               `/assets/images/products/${safeName}`,
 
-            github_path: repoPath
+            github_path:
+              repoPath
           },
           201
         );
-      } catch (error) {
-        console.error(
-          "Image upload error:",
-          error
-        );
 
+      } catch (error) {
         return json(
           {
             success: false,
@@ -1892,6 +3657,242 @@ export default {
       }
     }
 
-    return env.ASSETS.fetch(request);
+    // =====================================================
+    // ADMIN OFFER BANNER IMAGE UPLOAD
+    // =====================================================
+
+    if (
+      url.pathname ===
+        "/api/admin/upload-offer-image" &&
+      request.method === "POST"
+    ) {
+      const denied =
+        requireAdmin();
+
+      if (denied) {
+        return denied;
+      }
+
+      try {
+        if (
+          !env.GITHUB_TOKEN
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "GITHUB_TOKEN is not configured"
+            },
+            503
+          );
+        }
+
+        const formData =
+          await request
+            .formData();
+
+        const file =
+          formData.get(
+            "file"
+          );
+
+        if (
+          !file ||
+          typeof file.arrayBuffer !==
+            "function"
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Offer banner image is required"
+            },
+            400
+          );
+        }
+
+        const allowedTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/webp"
+        ];
+
+        if (
+          !allowedTypes.includes(
+            file.type
+          )
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Only JPG, PNG or WEBP images are allowed"
+            },
+            400
+          );
+        }
+
+        if (
+          file.size >
+          5 * 1024 * 1024
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                "Offer banner must be smaller than 5 MB"
+            },
+            400
+          );
+        }
+
+        const extension =
+          file.type ===
+            "image/png"
+            ? "png"
+            : file.type ===
+                "image/webp"
+              ? "webp"
+              : "jpg";
+
+        const safeName =
+          `offer-${Date.now()}-${Math.floor(
+            Math.random() *
+            100000
+          )}.${extension}`;
+
+        const repoOwner =
+          "srilathacreations";
+
+        const repoName =
+          "srilathacreations";
+
+        const repoPath =
+          `assets/images/offers/${safeName}`;
+
+        const buffer =
+          await file
+            .arrayBuffer();
+
+        let binary = "";
+
+        const bytes =
+          new Uint8Array(
+            buffer
+          );
+
+        const chunkSize =
+          0x8000;
+
+        for (
+          let i = 0;
+          i < bytes.length;
+          i += chunkSize
+        ) {
+          binary +=
+            String.fromCharCode(
+              ...bytes.subarray(
+                i,
+                i + chunkSize
+              )
+            );
+        }
+
+        const base64 =
+          btoa(binary);
+
+        const githubResponse =
+          await fetch(
+            `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${repoPath}`,
+            {
+              method:
+                "PUT",
+
+              headers: {
+                Authorization:
+                  `Bearer ${env.GITHUB_TOKEN}`,
+
+                Accept:
+                  "application/vnd.github+json",
+
+                "X-GitHub-Api-Version":
+                  "2022-11-28",
+
+                "User-Agent":
+                  "Srilatha-Creations-Worker",
+
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  message:
+                    `Upload offer banner ${safeName}`,
+                  content:
+                    base64,
+                  branch:
+                    "main"
+                })
+            }
+          );
+
+        const githubData =
+          await githubResponse
+            .json();
+
+        if (
+          !githubResponse.ok
+        ) {
+          return json(
+            {
+              success: false,
+              error:
+                githubData.message ||
+                "Unable to upload offer banner"
+            },
+            githubResponse.status
+          );
+        }
+
+        return json(
+          {
+            success: true,
+
+            message:
+              "Offer banner uploaded successfully",
+
+            filename:
+              safeName,
+
+            image_url:
+              `/assets/images/offers/${safeName}`,
+
+            github_path:
+              repoPath
+          },
+          201
+        );
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message ||
+              "Unable to upload offer banner"
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // STATIC WEBSITE / ADMIN / ASSETS
+    // =====================================================
+
+    return env.ASSETS.fetch(
+      request
+    );
   }
 };
