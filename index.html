@@ -1452,7 +1452,7 @@ function renderOffers(){
  wrap.classList.add("show");
 
  container.innerHTML=
-  offers.map(o=>`
+  offers.slice(0,3).map(o=>`
 
    <div class="offer-banner">
 
