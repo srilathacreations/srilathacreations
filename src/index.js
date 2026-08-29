@@ -155,7 +155,7 @@ export default {
             .prepare(
               `SELECT *
                FROM coupons
-               WHERE UPPER(code) = ?
+               WHERE UPPER(TRIM(code)) = UPPER(TRIM(?))
                AND is_active = 1
                LIMIT 1`
             )
