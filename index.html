@@ -197,38 +197,29 @@ img{max-width:100%;display:block}
 }
 
 .offer-content{
- padding:14px 15px 16px;
-}
-
-.offer-content small{
- display:inline-block;
- font-size:10px;
- font-weight:900;
- color:var(--pink);
- text-transform:uppercase;
- letter-spacing:.8px;
- margin-bottom:5px;
+ padding:8px 10px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+ background:#fff;
 }
 
 .offer-content h2{
- margin:0 0 5px;
- font:700 20px Georgia,serif;
+ margin:0;
+ font:700 16px Georgia,serif;
  color:var(--wine);
-}
-
-.offer-content p{
- margin:0 0 12px;
- font-size:12px;
- line-height:1.5;
- color:var(--muted);
+ white-space:nowrap;
+ overflow:hidden;
+ text-overflow:ellipsis;
 }
 
 .offer-content .btn{
- display:inline-block;
- padding:9px 14px;
- font-size:11px;
+ padding:8px 12px;
+ font-size:10px;
+ white-space:nowrap;
+ flex-shrink:0;
 }
-
 @media(max-width:900px){
  #offersContainer{
   grid-template-columns:repeat(2,1fr);
@@ -1464,17 +1455,9 @@ function renderOffers(){
 
     <div class="offer-content">
 
-     <small>Special Offer</small>
 
      <h2>${esc(o.title)}</h2>
 
-     ${
-      o.subtitle
-       ? `<p>${esc(o.subtitle)}</p>`
-       : ""
-     }
-
-     ${
       o.button_text
        ? `
         <a
