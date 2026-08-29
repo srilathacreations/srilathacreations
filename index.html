@@ -1073,34 +1073,618 @@ footer{
 
 </main>
 
+</main>
+
+<style>
+/* ===== RESTORED PREMIUM SECTIONS ===== */
+
+.premium-story-section{
+  padding:34px 0;
+}
+
+.wedding{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:26px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+
+.wedding-media{
+  min-height:430px;
+  overflow:hidden;
+}
+
+.wedding-media img{
+  width:100%;
+  height:100%;
+  min-height:430px;
+  object-fit:cover;
+}
+
+.weddingcopy{
+  padding:44px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 90% 20%,#ffe5ee,transparent 35%),
+    var(--cream2);
+}
+
+.weddingcopy h2{
+  font-family:Georgia,serif;
+  font-size:42px;
+  line-height:1.06;
+  margin:10px 0 14px;
+  color:#561a3e;
+}
+
+.weddingcopy p{
+  color:var(--muted);
+  line-height:1.8;
+  margin:0;
+}
+
+.pills{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin:18px 0 24px;
+}
+
+.pills span{
+  padding:8px 11px;
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+}
+
+/* OWNER STORY */
+
+.owner-story{
+  display:grid;
+  grid-template-columns:.9fr 1.35fr;
+  gap:22px;
+  align-items:stretch;
+}
+
+.owner-photo{
+  border-radius:24px;
+  overflow:hidden;
+  min-height:440px;
+  background:#f7dfe7;
+  border:1px solid var(--line);
+}
+
+.owner-photo img{
+  width:100%;
+  height:100%;
+  min-height:440px;
+  object-fit:cover;
+}
+
+.owner-box{
+  padding:38px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:24px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.owner-box h2{
+  font:700 42px Georgia,serif;
+  margin:8px 0 14px;
+  color:#511a3c;
+}
+
+.owner-box p{
+  color:var(--muted);
+  line-height:1.85;
+  margin:0 0 13px;
+}
+
+.owner-info{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-top:18px;
+}
+
+.owner-info div{
+  padding:15px;
+  border-radius:15px;
+  background:#fff7fa;
+  border:1px solid #f2d5e1;
+}
+
+.owner-info b{
+  display:block;
+  font-size:13px;
+  margin-bottom:3px;
+}
+
+.owner-info span{
+  font-size:11px;
+  color:var(--muted);
+}
+
+/* INSTAGRAM */
+
+.insta-premium{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  background:linear-gradient(135deg,#6b1247,#d42072);
+  color:#fff;
+  border-radius:24px;
+  padding:30px 34px;
+}
+
+.insta-premium h2{
+  font:700 32px Georgia,serif;
+  margin:0 0 6px;
+}
+
+.insta-premium p{
+  margin:0;
+  color:#ffe7f1;
+  line-height:1.6;
+}
+
+.insta-premium .btn{
+  background:#fff;
+  color:#7c154d;
+  white-space:nowrap;
+}
+
+/* HELP CTA */
+
+.help-cta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:25px;
+  padding:32px 36px;
+  border-radius:24px;
+  border:1px solid var(--line);
+  background:
+    linear-gradient(120deg,#fffaf4,#fde5ef);
+}
+
+.help-cta h2{
+  font:700 36px Georgia,serif;
+  color:var(--wine);
+  margin:0 0 8px;
+}
+
+.help-cta p{
+  margin:0;
+  color:var(--muted);
+}
+
+.help-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  flex-shrink:0;
+}
+
+/* FINAL FOOTER */
+
+footer{
+  margin-top:38px;
+  background:#351024;
+  color:#fff;
+}
+
+.final-footer{
+  display:grid;
+  grid-template-columns:1.5fr 1fr 1fr 1fr;
+  gap:32px;
+  padding:40px 18px 32px;
+}
+
+.footer-brand-logo{
+  width:245px;
+  height:auto;
+  max-height:82px;
+  object-fit:contain;
+  object-position:left center;
+  margin-bottom:14px;
+  border-radius:6px;
+}
+
+.final-footer h4{
+  color:#ffd78c;
+  margin:0 0 12px;
+}
+
+.final-footer p,
+.final-footer a{
+  font-size:12px;
+  color:#e7ced9;
+  line-height:1.9;
+  display:block;
+  margin:0;
+}
+
+.final-footer a:hover{
+  color:#fff;
+}
+
+.footer-copy{
+  border-top:1px solid #ffffff18;
+  padding:16px 18px;
+  color:#d9bdca;
+  font-size:11px;
+  text-align:center;
+}
+
+/* MOBILE */
+
+@media(max-width:960px){
+  .wedding,
+  .owner-story{
+    grid-template-columns:1fr;
+  }
+
+  .final-footer{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:600px){
+  .premium-story-section{
+    padding:22px 0;
+  }
+
+  .weddingcopy{
+    padding:26px 22px;
+  }
+
+  .weddingcopy h2{
+    font-size:34px;
+  }
+
+  .owner-box{
+    padding:25px 21px;
+  }
+
+  .owner-box h2{
+    font-size:34px;
+  }
+
+  .owner-info{
+    grid-template-columns:1fr;
+  }
+
+  .insta-premium,
+  .help-cta{
+    flex-direction:column;
+    align-items:flex-start;
+    padding:25px 22px;
+  }
+
+  .help-cta h2{
+    font-size:30px;
+  }
+
+  .final-footer{
+    grid-template-columns:1fr;
+  }
+
+  .footer-brand-logo{
+    width:220px;
+  }
+}
+</style>
+
+
+<!-- ONE STOP EVENT SHOPPING -->
+
+<section class="premium-story-section">
+  <div class="shell">
+
+    <div class="wedding">
+
+      <div class="wedding-media">
+        <img
+          src="assets/images/wedding.jpg"
+          alt="Srilatha Creations Wedding Shopping"
+        >
+      </div>
+
+      <div class="weddingcopy">
+
+        <span class="eyebrow">
+          ONE STOP EVENT SHOPPING
+        </span>
+
+        <h2>
+          Your special occasion,<br>
+          beautifully put together.
+        </h2>
+
+        <p>
+          From blouse designing and maggam work to sarees,
+          stitching and jewellery, Srilatha Creations brings
+          multiple event-shopping needs together in one place.
+        </p>
+
+        <div class="pills">
+          <span>Blouse Design</span>
+          <span>Maggam Work</span>
+          <span>Stitching</span>
+          <span>Sarees</span>
+          <span>1 Gram Jewellery</span>
+          <span>Computer Embroidery</span>
+        </div>
+
+        <div>
+          <a
+            class="btn primary"
+            href="https://wa.me/917981686569"
+            target="_blank"
+          >
+            Plan on WhatsApp
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- FOUNDER / OWNER STORY -->
+
+<section
+  class="premium-story-section"
+  id="about"
+>
+  <div class="shell">
+
+    <div class="owner-story">
+
+      <div class="owner-photo">
+        <img
+          src="assets/images/about-srilatha.jpg"
+          alt="Srilatha Konduri - Founder and Owner"
+        >
+      </div>
+
+      <div class="owner-box">
+
+        <span class="eyebrow">
+          FOUNDER &amp; OWNER
+        </span>
+
+        <h2>Srilatha Konduri</h2>
+
+        <p>
+          Founded in 2008, Srilatha Creations serves customers
+          in Jagtial with designer blouse works, maggam work,
+          stitching, sarees, 1 gram gold jewellery, computer
+          embroidery work and event-shopping support.
+        </p>
+
+        <p>
+          Our aim is to make special-occasion shopping easier
+          through customised work, thoughtful design and
+          personal attention.
+        </p>
+
+        <div class="owner-info">
+
+          <div>
+            <b>Since</b>
+            <span>2008</span>
+          </div>
+
+          <div>
+            <b>Location</b>
+            <span>Bukawada, Jagtial</span>
+          </div>
+
+          <div>
+            <b>Hours</b>
+            <span>10 AM – 9 PM</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- INSTAGRAM -->
+
+<section class="premium-story-section">
+  <div class="shell">
+
+    <div class="insta-premium">
+
+      <div>
+        <h2>Follow Srilatha Creations</h2>
+        <p>
+          See new designs, reels, collections and boutique
+          updates on Instagram.
+        </p>
+      </div>
+
+      <a
+        class="btn"
+        href="https://www.instagram.com/srilatha_creations_9"
+        target="_blank"
+      >
+        Open Instagram ↗
+      </a>
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- HELP CTA -->
+
+<section
+  class="premium-story-section"
+  id="contact"
+>
+  <div class="shell">
+
+    <div class="help-cta">
+
+      <div>
+        <h2>
+          Need help choosing or customising?
+        </h2>
+
+        <p>
+          Call, WhatsApp or visit Srilatha Creations
+          for personalised assistance.
+        </p>
+      </div>
+
+      <div class="help-actions">
+
+        <a
+          class="btn primary"
+          href="https://wa.me/917981686569"
+          target="_blank"
+        >
+          WhatsApp
+        </a>
+
+        <a
+          class="btn secondary"
+          href="tel:+917981686569"
+        >
+          Call Now
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- FINAL FOOTER -->
+
 <footer>
 
- <div class="shell footer">
+  <div class="shell final-footer">
 
-  <div>
-   <h4>Srilatha Creations</h4>
-   <p>
-    Boutique • Fashion • Jewellery • Embroidery<br>
-    Where fashion meets passion.
-   </p>
+    <div>
+
+      <img
+        class="footer-brand-logo"
+        src="assets/images/srilatha-logo-new.png"
+        alt="Srilatha Creations"
+      >
+
+      <p>
+        Boutique • Fashion • Jewellery • Embroidery
+        <br>
+        Where fashion meets passion.
+      </p>
+
+    </div>
+
+
+    <div>
+
+      <h4>Shop</h4>
+
+      <a href="#shop">
+        Featured Collection
+      </a>
+
+      <a href="#shop">
+        Blouse Works
+      </a>
+
+      <a href="#shop">
+        Jewellery
+      </a>
+
+      <a href="#shop">
+        Sarees
+      </a>
+
+    </div>
+
+
+    <div>
+
+      <h4>Visit</h4>
+
+      <p>
+        Bukawada, Jagtial
+        <br>
+        Open 10 AM – 9 PM
+        <br>
+        Since 2008
+      </p>
+
+    </div>
+
+
+    <div>
+
+      <h4>Support</h4>
+
+      <a
+        href="#"
+        onclick="openTrackOrder();return false;"
+      >
+        Track Order
+      </a>
+
+      <a
+        href="https://www.instagram.com/srilatha_creations_9"
+        target="_blank"
+      >
+        Instagram
+      </a>
+
+      <a
+        href="https://wa.me/917981686569"
+        target="_blank"
+      >
+        WhatsApp
+      </a>
+
+      <a href="tel:+917981686569">
+        7981686569
+      </a>
+
+    </div>
+
   </div>
 
-  <div>
-   <h4>Contact</h4>
-   <p>
-    7981686569<br>
-    Srilathascreations@gmail.com<br>
-    Bukawada, Jagtial
-   </p>
+  <div class="footer-copy">
+    © 2026 Srilatha Creations. All rights reserved.
+    • Where fashion meets passion.
   </div>
 
-  <div>
-   <h4>Support</h4>
-   <a href="#" onclick="openTrackOrder()">Track Order</a>
-   <a href="https://www.instagram.com/srilatha_creations_9" target="_blank">Instagram</a>
-  </div>
-
- </div>
 
 </footer>
 
