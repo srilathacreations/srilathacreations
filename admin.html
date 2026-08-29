@@ -3,380 +3,261 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>Srilatha Creations | Admin Dashboard</title>
 
 <style>
 :root{
-  --cream:#fff8ec;
-  --pink:#df1f73;
-  --wine:#6c1247;
-  --line:#efd8df;
-  --ink:#23181e;
-  --muted:#745e69;
-  --green:#18864b;
+ --cream:#fff8ec;
+ --pink:#df1f73;
+ --wine:#6c1247;
+ --line:#efd8df;
+ --ink:#23181e;
+ --muted:#745e69;
+ --green:#18864b;
 }
-
 *{box-sizing:border-box}
-
 body{
-  margin:0;
-  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:var(--cream);
-  color:var(--ink);
+ margin:0;
+ font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ background:var(--cream);
+ color:var(--ink)
 }
-
 button,input,select,textarea{font:inherit}
 .hidden{display:none!important}
-
-.shell{
-  max-width:1280px;
-  margin:auto;
-  padding:22px;
-}
-
+.shell{max-width:1300px;margin:auto;padding:22px}
 .card{
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:20px;
-  box-shadow:0 12px 35px rgba(80,20,50,.07);
+ background:#fff;
+ border:1px solid var(--line);
+ border-radius:20px;
+ box-shadow:0 12px 35px rgba(80,20,50,.07)
 }
-
 .btn{
-  border:0;
-  border-radius:11px;
-  padding:11px 15px;
-  font-weight:900;
-  cursor:pointer;
+ border:0;
+ border-radius:11px;
+ padding:11px 15px;
+ font-weight:900;
+ cursor:pointer
 }
-
 .primary{
-  background:linear-gradient(135deg,var(--wine),var(--pink));
-  color:#fff;
+ background:linear-gradient(135deg,var(--wine),var(--pink));
+ color:#fff
 }
-
 .secondary{
-  background:#fff;
-  color:var(--wine);
-  border:1px solid var(--line);
+ background:#fff;
+ color:var(--wine);
+ border:1px solid var(--line)
 }
-
 .danger{
-  background:#fff0f3;
-  color:#b21849;
-  border:1px solid #f1c8d5;
+ background:#fff0f3;
+ color:#b21849;
+ border:1px solid #f1c8d5
 }
-
-.login{
-  max-width:500px;
-  margin:70px auto;
-  padding:30px;
+.login{max-width:500px;margin:70px auto;padding:30px}
+.login h1,.top h1{
+ font-family:Georgia,serif;
+ color:var(--wine)
 }
-
-.login h1{
-  font:700 34px Georgia,serif;
-  color:var(--wine);
-  margin:0 0 8px;
+.login h1{font-size:34px;margin:0 0 8px}
+.login p,.top p{color:var(--muted);font-size:13px}
+.field{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.field label{font-size:11px;font-weight:900}
+.field input,.field textarea,.field select{
+ border:1px solid var(--line);
+ border-radius:11px;
+ padding:11px 12px;
+ outline:none;
+ background:#fff
 }
-
-.login p{
-  color:var(--muted);
-  line-height:1.6;
-  font-size:13px;
-}
-
-.field{
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-  margin-top:14px;
-}
-
-.field label{
-  font-size:11px;
-  font-weight:900;
-}
-
-.field input,
-.field textarea,
-.field select{
-  border:1px solid var(--line);
-  border-radius:11px;
-  padding:11px 12px;
-  outline:none;
-  background:#fff;
-}
-
-.field textarea{
-  resize:vertical;
-  min-height:90px;
-}
-
-.top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:16px;
-}
-
-.top h1{
-  font:700 34px Georgia,serif;
-  color:var(--wine);
-  margin:0;
-}
-
-.top p{
-  margin:5px 0 0;
-  color:var(--muted);
-  font-size:13px;
-}
-
-.tabs{
-  display:flex;
-  gap:8px;
-  margin:22px 0 16px;
-}
-
+.field textarea{resize:vertical;min-height:90px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.top h1{font-size:34px;margin:0}
+.top p{margin:5px 0 0}
+.tabs{display:flex;gap:8px;margin:22px 0 16px;overflow:auto}
 .tab{
-  border:1px solid var(--line);
-  background:#fff;
-  color:var(--wine);
-  border-radius:999px;
-  padding:10px 18px;
-  font-weight:900;
-  cursor:pointer;
+ border:1px solid var(--line);
+ background:#fff;
+ color:var(--wine);
+ border-radius:999px;
+ padding:10px 18px;
+ font-weight:900;
+ cursor:pointer;
+ white-space:nowrap
 }
-
 .tab.active{
-  background:linear-gradient(135deg,var(--wine),var(--pink));
-  color:#fff;
-  border-color:transparent;
+ background:linear-gradient(135deg,var(--wine),var(--pink));
+ color:#fff;
+ border-color:transparent
 }
-
-.toolbar{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:15px;
-}
-
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
 .toolbar input{
-  flex:1;
-  min-width:220px;
-  border:1px solid var(--line);
-  border-radius:11px;
-  padding:11px 13px;
+ flex:1;
+ min-width:220px;
+ border:1px solid var(--line);
+ border-radius:11px;
+ padding:11px 13px
 }
-
 .tablewrap{overflow:auto}
-
 table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:1050px;
+ width:100%;
+ border-collapse:collapse;
+ min-width:1050px
 }
-
 th,td{
-  padding:12px 10px;
-  border-bottom:1px solid var(--line);
-  text-align:left;
-  vertical-align:top;
-  font-size:12px;
+ padding:12px 10px;
+ border-bottom:1px solid var(--line);
+ text-align:left;
+ vertical-align:top;
+ font-size:12px
 }
-
 th{
-  background:#fff8fb;
-  color:var(--muted);
-  text-transform:uppercase;
-  font-size:10px;
+ background:#fff8fb;
+ color:var(--muted);
+ text-transform:uppercase;
+ font-size:10px
 }
-
-.order-number{
-  color:var(--wine);
-  font-weight:900;
-}
-
-.amount{
-  font-weight:900;
-}
-
+.order-number{color:var(--wine);font-weight:900}
+.amount{font-weight:900}
 .badge{
-  display:inline-block;
-  padding:6px 9px;
-  border-radius:999px;
-  background:#fff0f6;
-  border:1px solid #efcddd;
-  font-size:10px;
-  font-weight:900;
-  text-transform:capitalize;
+ display:inline-block;
+ padding:6px 9px;
+ border-radius:999px;
+ background:#fff0f6;
+ border:1px solid #efcddd;
+ font-size:10px;
+ font-weight:900;
+ text-transform:capitalize
 }
-
 .badge.active{
-  background:#ebf8f0;
-  border-color:#ccebd8;
-  color:var(--green);
+ background:#ebf8f0;
+ border-color:#ccebd8;
+ color:var(--green)
 }
-
 .badge.inactive{
-  background:#fff0f3;
-  color:#b21849;
+ background:#fff0f3;
+ color:#b21849
 }
-
 .status{
-  border:1px solid var(--line);
-  background:#fff;
-  border-radius:9px;
-  padding:8px;
-  font-size:11px;
+ border:1px solid var(--line);
+ background:#fff;
+ border-radius:9px;
+ padding:8px;
+ font-size:11px
 }
-
-.actions{
-  display:flex;
-  align-items:center;
-  gap:7px;
-}
-
-.small{
-  padding:8px 10px;
-  font-size:10px;
-}
-
-.empty{
-  text-align:center;
-  padding:40px;
-  color:var(--muted);
-}
-
+.actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.small{padding:8px 10px;font-size:10px}
+.empty{text-align:center;padding:40px;color:var(--muted)}
 .modal{
-  position:fixed;
-  inset:0;
-  background:#0007;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:100;
-  padding:18px;
+ position:fixed;
+ inset:0;
+ background:#0007;
+ display:none;
+ align-items:center;
+ justify-content:center;
+ z-index:100;
+ padding:18px
 }
-
-.modal.show{
-  display:flex;
-}
-
+.modal.show{display:flex}
 .modal-card{
-  width:min(780px,96vw);
-  max-height:92vh;
-  overflow:auto;
-  background:#fff;
-  border-radius:22px;
-  padding:24px;
+ width:min(820px,96vw);
+ max-height:92vh;
+ overflow:auto;
+ background:#fff;
+ border-radius:22px;
+ padding:24px
 }
-
 .modal-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:14px
 }
-
 .modal-head h2{
-  margin:0;
-  font:700 28px Georgia,serif;
-  color:var(--wine);
+ margin:0;
+ font:700 28px Georgia,serif;
+ color:var(--wine)
 }
-
 .close{
-  width:38px;
-  height:38px;
-  border-radius:50%;
-  border:0;
-  background:#fdeaf2;
-  color:var(--wine);
-  font-size:22px;
-  cursor:pointer;
+ width:38px;
+ height:38px;
+ border-radius:50%;
+ border:0;
+ background:#fdeaf2;
+ color:var(--wine);
+ font-size:22px;
+ cursor:pointer
 }
-
 .details{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:18px;
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:10px;
+ margin-top:18px
 }
-
 .detail{
-  padding:12px;
-  border:1px solid var(--line);
-  background:#fffafb;
-  border-radius:12px;
+ padding:12px;
+ border:1px solid var(--line);
+ background:#fffafb;
+ border-radius:12px
 }
-
-.detail.full{
-  grid-column:1/-1;
-}
-
+.detail.full{grid-column:1/-1}
 .detail b{
-  display:block;
-  font-size:10px;
-  color:var(--muted);
-  text-transform:uppercase;
-  margin-bottom:5px;
+ display:block;
+ font-size:10px;
+ color:var(--muted);
+ text-transform:uppercase;
+ margin-bottom:5px
 }
-
 .item{
-  display:grid;
-  grid-template-columns:1fr auto auto;
-  gap:15px;
-  padding:12px 0;
-  border-bottom:1px solid var(--line);
-  font-size:12px;
+ display:grid;
+ grid-template-columns:1fr auto auto;
+ gap:15px;
+ padding:12px 0;
+ border-bottom:1px solid var(--line);
+ font-size:12px
 }
-
-.product-form{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  margin-top:15px;
+.formgrid{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:12px;
+ margin-top:15px
 }
-
-.product-form .full{
-  grid-column:1/-1;
-}
-
+.formgrid .full{grid-column:1/-1}
 .preview{
-  margin-top:10px;
-  width:120px;
-  height:140px;
-  object-fit:cover;
-  border-radius:12px;
-  border:1px solid var(--line);
-  display:none;
+ margin-top:10px;
+ width:180px;
+ height:130px;
+ object-fit:cover;
+ border-radius:12px;
+ border:1px solid var(--line);
+ display:none
 }
-
+.product-preview{
+ width:120px;
+ height:140px
+}
 .toast{
-  position:fixed;
-  left:50%;
-  bottom:25px;
-  transform:translate(-50%,20px);
-  opacity:0;
-  background:#351024;
-  color:#fff;
-  padding:11px 17px;
-  border-radius:999px;
-  transition:.2s;
-  z-index:150;
-  max-width:90vw;
-  text-align:center;
+ position:fixed;
+ left:50%;
+ bottom:25px;
+ transform:translate(-50%,20px);
+ opacity:0;
+ background:#351024;
+ color:#fff;
+ padding:11px 17px;
+ border-radius:999px;
+ transition:.2s;
+ z-index:150;
+ max-width:90vw;
+ text-align:center
 }
-
 .toast.show{
-  opacity:1;
-  transform:translate(-50%,0);
+ opacity:1;
+ transform:translate(-50%,0)
 }
-
 @media(max-width:700px){
-  .shell{padding:13px}
-  .top{align-items:flex-start;flex-direction:column}
-  .product-form,.details{grid-template-columns:1fr}
-  .product-form .full,.detail.full{grid-column:auto}
+ .shell{padding:13px}
+ .top{align-items:flex-start;flex-direction:column}
+ .formgrid,.details{grid-template-columns:1fr}
+ .formgrid .full,.detail.full{grid-column:auto}
 }
 </style>
 </head>
@@ -384,1892 +265,1455 @@ th{
 <body>
 
 <div id="loginView" class="shell">
-  <div class="card login">
+ <div class="card login">
+  <h1>Srilatha Admin</h1>
+  <p>Enter your private admin token.</p>
 
-    <h1>Srilatha Admin</h1>
-
-    <p>
-      Enter your private admin token to manage orders and products.
-    </p>
-
-    <div class="field">
-      <label>ADMIN TOKEN</label>
-
-      <input
-        id="token"
-        type="password"
-        placeholder="Enter private admin token"
-        autocomplete="off"
-      >
-    </div>
-
-    <button
-      class="btn primary"
-      style="width:100%;margin-top:16px"
-      onclick="login()"
-    >
-      Login
-    </button>
-
+  <div class="field">
+   <label>ADMIN TOKEN</label>
+   <input id="token" type="password" autocomplete="off">
   </div>
-</div>
 
+  <button class="btn primary" style="width:100%;margin-top:16px" onclick="login()">
+   Login
+  </button>
+ </div>
+</div>
 
 <div id="adminView" class="shell hidden">
 
-  <div class="top">
+ <div class="top">
+  <div>
+   <h1>Srilatha Creations Admin</h1>
+   <p>Products • Orders • Offers • Coupons</p>
+  </div>
+  <button class="btn secondary" onclick="logout()">Logout</button>
+ </div>
 
-    <div>
-      <h1>Srilatha Creations Admin</h1>
-      <p>Orders & Product Management</p>
-    </div>
+ <div class="tabs">
+  <button id="ordersTab" class="tab active" onclick="showTab('orders')">Orders</button>
+  <button id="productsTab" class="tab" onclick="showTab('products')">Products</button>
+  <button id="offersTab" class="tab" onclick="showTab('offers')">Offers</button>
+  <button id="couponsTab" class="tab" onclick="showTab('coupons')">Coupons</button>
+ </div>
 
-    <button
-      class="btn secondary"
-      onclick="logout()"
-    >
-      Logout
-    </button>
-
+ <section id="ordersSection">
+  <div class="toolbar">
+   <input id="orderSearch" placeholder="Search order, customer or mobile..." oninput="renderOrders()">
+   <button class="btn secondary" onclick="loadOrders()">Refresh Orders</button>
   </div>
 
+  <div class="card tablewrap">
+   <table>
+    <thead>
+     <tr>
+      <th>Order</th>
+      <th>Customer</th>
+      <th>Phone</th>
+      <th>Total</th>
+      <th>Coupon</th>
+      <th>Status</th>
+      <th>Date</th>
+      <th>Manage</th>
+     </tr>
+    </thead>
+    <tbody id="ordersBody"></tbody>
+   </table>
+   <div id="ordersEmpty" class="empty hidden">No orders found.</div>
+  </div>
+ </section>
 
-  <div class="tabs">
-
-    <button
-      id="ordersTab"
-      class="tab active"
-      onclick="showTab('orders')"
-    >
-      Orders
-    </button>
-
-    <button
-      id="productsTab"
-      class="tab"
-      onclick="showTab('products')"
-    >
-      Products
-    </button>
-
+ <section id="productsSection" class="hidden">
+  <div class="toolbar">
+   <input id="productSearch" placeholder="Search product or category..." oninput="renderProducts()">
+   <button class="btn primary" onclick="openProductModal()">+ Add Product</button>
+   <button class="btn secondary" onclick="loadProducts()">Refresh Products</button>
   </div>
 
+  <div class="card tablewrap">
+   <table>
+    <thead>
+     <tr>
+      <th>ID</th>
+      <th>Product</th>
+      <th>Category</th>
+      <th>Regular</th>
+      <th>Sale</th>
+      <th>Stock</th>
+      <th>Status</th>
+      <th>Manage</th>
+     </tr>
+    </thead>
+    <tbody id="productsBody"></tbody>
+   </table>
+   <div id="productsEmpty" class="empty hidden">No products found.</div>
+  </div>
+ </section>
 
-  <section id="ordersSection">
+ <section id="offersSection" class="hidden">
+  <div class="toolbar">
+   <input id="offerSearch" placeholder="Search offer..." oninput="renderOffers()">
+   <button class="btn primary" onclick="openOfferModal()">+ Add Offer</button>
+   <button class="btn secondary" onclick="loadOffers()">Refresh Offers</button>
+  </div>
 
-    <div class="toolbar">
+  <div class="card tablewrap">
+   <table>
+    <thead>
+     <tr>
+      <th>ID</th>
+      <th>Offer</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>Status</th>
+      <th>Manage</th>
+     </tr>
+    </thead>
+    <tbody id="offersBody"></tbody>
+   </table>
+   <div id="offersEmpty" class="empty hidden">No offers found.</div>
+  </div>
+ </section>
 
-      <input
-        id="orderSearch"
-        placeholder="Search order, customer or mobile..."
-        oninput="renderOrders()"
-      >
+ <section id="couponsSection" class="hidden">
+  <div class="toolbar">
+   <input id="couponSearch" placeholder="Search coupon..." oninput="renderCoupons()">
+   <button class="btn primary" onclick="openCouponModal()">+ Add Coupon</button>
+   <button class="btn secondary" onclick="loadCoupons()">Refresh Coupons</button>
+  </div>
 
-      <button
-        class="btn secondary"
-        onclick="loadOrders()"
-      >
-        Refresh Orders
-      </button>
-
-    </div>
-
-
-    <div class="card tablewrap">
-
-      <table>
-
-        <thead>
-          <tr>
-            <th>Order</th>
-            <th>Customer</th>
-            <th>Phone</th>
-            <th>Total</th>
-            <th>Payment</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Manage</th>
-          </tr>
-        </thead>
-
-        <tbody id="ordersBody"></tbody>
-
-      </table>
-
-      <div
-        id="ordersEmpty"
-        class="empty hidden"
-      >
-        No orders found.
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <section
-    id="productsSection"
-    class="hidden"
-  >
-
-    <div class="toolbar">
-
-      <input
-        id="productSearch"
-        placeholder="Search product or category..."
-        oninput="renderProducts()"
-      >
-
-      <button
-        class="btn primary"
-        onclick="openProductModal()"
-      >
-        + Add Product
-      </button>
-
-      <button
-        class="btn secondary"
-        onclick="loadProducts()"
-      >
-        Refresh Products
-      </button>
-
-    </div>
-
-
-    <div class="card tablewrap">
-
-      <table>
-
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Product</th>
-            <th>Category</th>
-            <th>Regular</th>
-            <th>Sale</th>
-            <th>Stock</th>
-            <th>Status</th>
-            <th>Manage</th>
-          </tr>
-        </thead>
-
-        <tbody id="productsBody"></tbody>
-
-      </table>
-
-      <div
-        id="productsEmpty"
-        class="empty hidden"
-      >
-        No products found.
-      </div>
-
-    </div>
-
-  </section>
+  <div class="card tablewrap">
+   <table>
+    <thead>
+     <tr>
+      <th>Code</th>
+      <th>Discount</th>
+      <th>Minimum</th>
+      <th>Maximum</th>
+      <th>Usage</th>
+      <th>Expiry</th>
+      <th>Status</th>
+      <th>Manage</th>
+     </tr>
+    </thead>
+    <tbody id="couponsBody"></tbody>
+   </table>
+   <div id="couponsEmpty" class="empty hidden">No coupons found.</div>
+  </div>
+ </section>
 
 </div>
 
+<!-- ORDER MODAL -->
 
-<div
-  id="orderModal"
-  class="modal"
-  onclick="if(event.target===this)closeOrderModal()"
->
+<div id="orderModal" class="modal" onclick="if(event.target===this)closeOrderModal()">
+ <div class="modal-card">
+  <div class="modal-head">
+   <h2 id="orderModalTitle">Order Details</h2>
+   <button class="close" onclick="closeOrderModal()">×</button>
+  </div>
+  <div id="orderModalContent"></div>
+ </div>
+</div>
 
-  <div class="modal-card">
+<!-- PRODUCT MODAL -->
 
-    <div class="modal-head">
+<div id="productModal" class="modal" onclick="if(event.target===this)closeProductModal()">
+ <div class="modal-card">
+  <div class="modal-head">
+   <h2 id="productModalTitle">Add Product</h2>
+   <button class="close" onclick="closeProductModal()">×</button>
+  </div>
 
-      <h2 id="orderModalTitle">
-        Order Details
-      </h2>
+  <div class="formgrid">
+   <div class="field">
+    <label>Product Name *</label>
+    <input id="pName">
+   </div>
 
-      <button
-        class="close"
-        onclick="closeOrderModal()"
-      >
-        ×
-      </button>
+   <div class="field">
+    <label>Category *</label>
+    <select id="pCategory">
+     <option>Blouse</option>
+     <option>Maggam</option>
+     <option>Jewellery</option>
+     <option>Stitching</option>
+     <option>Sarees</option>
+     <option>Dress Material</option>
+     <option>Computer Work</option>
+     <option>Wedding</option>
+    </select>
+   </div>
 
-    </div>
+   <div class="field full">
+    <label>Description</label>
+    <textarea id="pDescription"></textarea>
+   </div>
 
-    <div id="orderModalContent"></div>
+   <div class="field">
+    <label>Regular Price *</label>
+    <input id="pPrice" type="number" min="0">
+   </div>
+
+   <div class="field">
+    <label>Sale Price</label>
+    <input id="pSalePrice" type="number" min="0">
+   </div>
+
+   <div class="field">
+    <label>Stock *</label>
+    <input id="pStock" type="number" min="0" value="0">
+   </div>
+
+   <div class="field">
+    <label>Status</label>
+    <select id="pActive">
+     <option value="1">Active</option>
+     <option value="0">Hidden</option>
+    </select>
+   </div>
+
+   <div class="field full">
+    <label>Product Image</label>
+    <input type="file" id="pImageFile" accept="image/jpeg,image/png,image/webp" onchange="previewProductImage()">
+    <input type="hidden" id="pImage">
+    <img id="productPreview" class="preview product-preview">
+   </div>
+  </div>
+
+  <button id="saveProductBtn" class="btn primary" style="width:100%;margin-top:18px" onclick="saveProduct()">
+   Save Product
+  </button>
+ </div>
+</div>
+
+<!-- OFFER MODAL -->
+
+<div id="offerModal" class="modal" onclick="if(event.target===this)closeOfferModal()">
+ <div class="modal-card">
+  <div class="modal-head">
+   <h2 id="offerModalTitle">Add Offer</h2>
+   <button class="close" onclick="closeOfferModal()">×</button>
+  </div>
+
+  <div class="formgrid">
+
+   <div class="field full">
+    <label>Offer Title *</label>
+    <input id="oTitle" placeholder="Wedding Special Offer">
+   </div>
+
+   <div class="field full">
+    <label>Subtitle</label>
+    <textarea id="oSubtitle" placeholder="Special discount for a limited time"></textarea>
+   </div>
+
+   <div class="field full">
+    <label>Offer Banner Image</label>
+    <input type="file" id="oImageFile" accept="image/jpeg,image/png,image/webp" onchange="previewOfferImage()">
+    <input type="hidden" id="oImage">
+    <img id="offerPreview" class="preview">
+   </div>
+
+   <div class="field">
+    <label>Button Text</label>
+    <input id="oButtonText" placeholder="Shop Now">
+   </div>
+
+   <div class="field">
+    <label>Button Link</label>
+    <input id="oButtonUrl" placeholder="#shop">
+   </div>
+
+   <div class="field">
+    <label>Start Date / Time</label>
+    <input id="oStart" type="datetime-local">
+   </div>
+
+   <div class="field">
+    <label>End Date / Time</label>
+    <input id="oEnd" type="datetime-local">
+   </div>
+
+   <div class="field">
+    <label>Status</label>
+    <select id="oActive">
+     <option value="1">Active</option>
+     <option value="0">Hidden</option>
+    </select>
+   </div>
 
   </div>
 
+  <button id="saveOfferBtn" class="btn primary" style="width:100%;margin-top:18px" onclick="saveOffer()">
+   Save Offer
+  </button>
+ </div>
 </div>
 
+<!-- COUPON MODAL -->
 
-<div
-  id="productModal"
-  class="modal"
-  onclick="if(event.target===this)closeProductModal()"
->
+<div id="couponModal" class="modal" onclick="if(event.target===this)closeCouponModal()">
+ <div class="modal-card">
+  <div class="modal-head">
+   <h2 id="couponModalTitle">Add Coupon</h2>
+   <button class="close" onclick="closeCouponModal()">×</button>
+  </div>
 
-  <div class="modal-card">
+  <div class="formgrid">
 
-    <div class="modal-head">
+   <div class="field">
+    <label>Coupon Code *</label>
+    <input id="cCode" placeholder="WELCOME10">
+   </div>
 
-      <h2 id="productModalTitle">
-        Add Product
-      </h2>
+   <div class="field">
+    <label>Discount Type *</label>
+    <select id="cType">
+     <option value="percent">Percentage (%)</option>
+     <option value="flat">Flat Amount (₹)</option>
+    </select>
+   </div>
 
-      <button
-        class="close"
-        onclick="closeProductModal()"
-      >
-        ×
-      </button>
+   <div class="field">
+    <label>Discount Value *</label>
+    <input id="cValue" type="number" min="0" placeholder="10">
+   </div>
 
-    </div>
+   <div class="field">
+    <label>Minimum Order ₹</label>
+    <input id="cMinimum" type="number" min="0" value="0">
+   </div>
 
+   <div class="field">
+    <label>Maximum Discount ₹</label>
+    <input id="cMaximum" type="number" min="0" placeholder="Optional">
+   </div>
 
-    <div class="product-form">
+   <div class="field">
+    <label>Usage Limit</label>
+    <input id="cLimit" type="number" min="1" placeholder="Optional">
+   </div>
 
-      <div class="field">
-        <label>Product Name *</label>
-        <input id="pName">
-      </div>
+   <div class="field">
+    <label>Start Date / Time</label>
+    <input id="cStart" type="datetime-local">
+   </div>
 
-      <div class="field">
-        <label>Category *</label>
+   <div class="field">
+    <label>End Date / Time</label>
+    <input id="cEnd" type="datetime-local">
+   </div>
 
-        <select id="pCategory">
-          <option value="Blouse">Blouse</option>
-          <option value="Maggam">Maggam</option>
-          <option value="Jewellery">Jewellery</option>
-          <option value="Stitching">Stitching</option>
-          <option value="Sarees">Sarees</option>
-          <option value="Dress Material">Dress Material</option>
-          <option value="Computer Work">Computer Work</option>
-          <option value="Wedding">Wedding</option>
-        </select>
-
-      </div>
-
-
-      <div class="field full">
-        <label>Description</label>
-        <textarea id="pDescription"></textarea>
-      </div>
-
-
-      <div class="field">
-        <label>Regular Price *</label>
-
-        <input
-          id="pPrice"
-          type="number"
-          min="0"
-          step="1"
-        >
-      </div>
-
-
-      <div class="field">
-        <label>Sale Price</label>
-
-        <input
-          id="pSalePrice"
-          type="number"
-          min="0"
-          step="1"
-        >
-      </div>
-
-
-      <div class="field">
-        <label>Stock *</label>
-
-        <input
-          id="pStock"
-          type="number"
-          min="0"
-          step="1"
-          value="0"
-        >
-      </div>
-
-
-      <div class="field">
-        <label>Status</label>
-
-        <select id="pActive">
-          <option value="1">Active</option>
-          <option value="0">Hidden</option>
-        </select>
-      </div>
-
-
-      <div class="field full">
-
-        <label>Product Image</label>
-
-        <input
-          type="file"
-          id="pImageFile"
-          accept="image/jpeg,image/png,image/webp"
-          onchange="previewSelectedImage()"
-        >
-
-        <input
-          type="hidden"
-          id="pImage"
-        >
-
-        <img
-          id="imagePreview"
-          class="preview"
-          alt="Product Image Preview"
-        >
-
-      </div>
-
-    </div>
-
-
-    <button
-      id="saveProductBtn"
-      class="btn primary"
-      style="width:100%;margin-top:18px"
-      onclick="saveProduct()"
-    >
-      Save Product
-    </button>
+   <div class="field">
+    <label>Status</label>
+    <select id="cActive">
+     <option value="1">Active</option>
+     <option value="0">Hidden</option>
+    </select>
+   </div>
 
   </div>
 
+  <button id="saveCouponBtn" class="btn primary" style="width:100%;margin-top:18px" onclick="saveCoupon()">
+   Save Coupon
+  </button>
+ </div>
 </div>
-
 
 <div id="toast" class="toast"></div>
 
-
 <script>
 
-let adminToken =
-  sessionStorage.getItem(
-    "srilatha_admin_token"
-  ) || "";
+let adminToken=sessionStorage.getItem("srilatha_admin_token")||"";
 
-let allOrders = [];
-let allProducts = [];
-let editingProductId = null;
+let allOrders=[];
+let allProducts=[];
+let allOffers=[];
+let allCoupons=[];
 
+let editingProductId=null;
+let editingOfferId=null;
+let editingCouponId=null;
 
-function money(value){
-  return "₹" +
-    Number(value || 0)
-      .toLocaleString("en-IN");
+function money(v){
+ return "₹"+Number(v||0).toLocaleString("en-IN");
 }
 
-
-function esc(value){
-  return String(value ?? "")
-    .replace(
-      /[&<>"']/g,
-      c => ({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#039;"
-      }[c])
-    );
+function esc(v){
+ return String(v??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#039;"
+ }[c]));
 }
 
-
-function headers(extra = {}){
-  return {
-    ...extra,
-    Authorization:
-      `Bearer ${adminToken}`
-  };
+function headers(extra={}){
+ return {
+  ...extra,
+  Authorization:`Bearer ${adminToken}`
+ };
 }
-
 
 function toast(message){
-  const el =
-    document.getElementById("toast");
-
-  el.textContent = message;
-  el.classList.add("show");
-
-  setTimeout(
-    () => el.classList.remove("show"),
-    2300
-  );
+ const el=document.getElementById("toast");
+ el.textContent=message;
+ el.classList.add("show");
+ setTimeout(()=>el.classList.remove("show"),2300);
 }
 
+function dbDate(value){
+ if(!value)return null;
+ return value.replace("T"," ");
+}
 
-// =====================================================
-// LOGIN
-// =====================================================
+function inputDate(value){
+ if(!value)return "";
+ return String(value).replace(" ","T").slice(0,16);
+}
+
+/* LOGIN */
 
 async function login(){
 
-  adminToken =
-    document.getElementById("token")
-      .value
-      .trim();
+ adminToken=document.getElementById("token").value.trim();
 
-  if(!adminToken){
-    toast("Enter admin token");
-    return;
+ if(!adminToken){
+  toast("Enter admin token");
+  return;
+ }
+
+ try{
+
+  const response=await fetch("/api/admin/check",{headers:headers()});
+  const data=await response.json();
+
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Invalid admin token");
   }
 
-  try{
+  sessionStorage.setItem("srilatha_admin_token",adminToken);
+  openAdmin();
 
-    const response =
-      await fetch(
-        "/api/admin/check",
-        {
-          headers:headers()
-        }
-      );
-
-    const data =
-      await response.json();
-
-    if(
-      !response.ok ||
-      !data.success
-    ){
-      throw new Error(
-        data.error ||
-        "Invalid admin token"
-      );
-    }
-
-    sessionStorage.setItem(
-      "srilatha_admin_token",
-      adminToken
-    );
-
-    openAdmin();
-
-  }
-  catch(error){
-    toast(error.message);
-  }
-
+ }catch(error){
+  toast(error.message);
+ }
 }
-
 
 function logout(){
 
-  adminToken = "";
+ adminToken="";
+ sessionStorage.removeItem("srilatha_admin_token");
 
-  sessionStorage.removeItem(
-    "srilatha_admin_token"
-  );
-
-  document
-    .getElementById("adminView")
-    .classList.add("hidden");
-
-  document
-    .getElementById("loginView")
-    .classList.remove("hidden");
-
+ document.getElementById("adminView").classList.add("hidden");
+ document.getElementById("loginView").classList.remove("hidden");
 }
-
 
 async function openAdmin(){
 
-  document
-    .getElementById("loginView")
-    .classList.add("hidden");
+ document.getElementById("loginView").classList.add("hidden");
+ document.getElementById("adminView").classList.remove("hidden");
 
-  document
-    .getElementById("adminView")
-    .classList.remove("hidden");
-
-  await loadOrders();
+ await loadOrders();
 }
 
-
-// =====================================================
-// TABS
-// =====================================================
+/* TABS */
 
 function showTab(tab){
 
-  const orders =
-    tab === "orders";
+ ["orders","products","offers","coupons"].forEach(name=>{
 
   document
-    .getElementById("ordersSection")
-    .classList
-    .toggle("hidden",!orders);
+   .getElementById(name+"Section")
+   .classList.toggle("hidden",name!==tab);
 
   document
-    .getElementById("productsSection")
-    .classList
-    .toggle("hidden",orders);
+   .getElementById(name+"Tab")
+   .classList.toggle("active",name===tab);
 
-  document
-    .getElementById("ordersTab")
-    .classList
-    .toggle("active",orders);
+ });
 
-  document
-    .getElementById("productsTab")
-    .classList
-    .toggle("active",!orders);
-
-  if(!orders){
-    loadProducts();
-  }
-
+ if(tab==="products")loadProducts();
+ if(tab==="offers")loadOffers();
+ if(tab==="coupons")loadCoupons();
 }
 
-
-// =====================================================
-// ORDERS
-// =====================================================
+/* ORDERS */
 
 async function loadOrders(){
 
-  try{
+ try{
 
-    const response =
-      await fetch(
-        "/api/admin/orders",
-        {
-          headers:headers()
-        }
-      );
+  const response=await fetch("/api/admin/orders",{headers:headers()});
+  const data=await response.json();
 
-    const data =
-      await response.json();
-
-    if(response.status === 401){
-      logout();
-      throw new Error(
-        "Admin login expired"
-      );
-    }
-
-    if(
-      !response.ok ||
-      !data.success
-    ){
-      throw new Error(
-        data.error ||
-        "Unable to load orders"
-      );
-    }
-
-    allOrders =
-      data.orders || [];
-
-    renderOrders();
-
-  }
-  catch(error){
-    toast(error.message);
+  if(response.status===401){
+   logout();
+   throw new Error("Admin login expired");
   }
 
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to load orders");
+  }
+
+  allOrders=data.orders||[];
+  renderOrders();
+
+ }catch(error){
+  toast(error.message);
+ }
 }
-
 
 function renderOrders(){
 
-  const q =
-    (
-      document
-        .getElementById("orderSearch")
-        .value || ""
-    )
-      .toLowerCase()
-      .trim();
+ const q=(document.getElementById("orderSearch").value||"").toLowerCase().trim();
 
-  const list =
-    allOrders.filter(
-      order => {
+ const list=allOrders.filter(o=>
+  !q||
+  String(o.order_number||"").toLowerCase().includes(q)||
+  String(o.customer_name||"").toLowerCase().includes(q)||
+  String(o.phone||"").includes(q)
+ );
 
-        if(!q){
-          return true;
-        }
+ document.getElementById("ordersEmpty").classList.toggle("hidden",list.length>0);
 
-        return (
-          String(order.order_number || "")
-            .toLowerCase()
-            .includes(q)
-          ||
-          String(order.customer_name || "")
-            .toLowerCase()
-            .includes(q)
-          ||
-          String(order.phone || "")
-            .includes(q)
-        );
+ document.getElementById("ordersBody").innerHTML=list.map(order=>`
 
-      }
-    );
+ <tr>
+  <td><span class="order-number">${esc(order.order_number)}</span></td>
+  <td>${esc(order.customer_name)}</td>
+  <td>${esc(order.phone)}</td>
+  <td class="amount">${money(order.total_amount)}</td>
 
-  document
-    .getElementById("ordersEmpty")
-    .classList
-    .toggle(
-      "hidden",
-      list.length > 0
-    );
+  <td>
+   ${order.coupon_code?`<b>${esc(order.coupon_code)}</b><br><small>-${money(order.discount_amount)}</small>`:"-"}
+  </td>
 
-  document
-    .getElementById("ordersBody")
-    .innerHTML =
+  <td><span class="badge">${esc(order.order_status)}</span></td>
+  <td>${esc(order.created_at)}</td>
 
-    list.map(
-      order => `
+  <td>
+   <div class="actions">
 
-      <tr>
+    <button class="btn secondary small" onclick="viewOrder(${order.id})">
+     View
+    </button>
 
-        <td>
-          <span class="order-number">
-            ${esc(order.order_number)}
-          </span>
-        </td>
+    <select class="status" onchange="changeOrderStatus(${order.id},this.value)">
+     ${[
+      "pending",
+      "confirmed",
+      "processing",
+      "packed",
+      "shipped",
+      "delivered",
+      "cancelled"
+     ].map(status=>`
+      <option value="${status}" ${status===order.order_status?"selected":""}>
+       ${status}
+      </option>
+     `).join("")}
+    </select>
 
-        <td>
-          ${esc(order.customer_name)}
-        </td>
+   </div>
+  </td>
+ </tr>
 
-        <td>
-          ${esc(order.phone)}
-        </td>
-
-        <td class="amount">
-          ${money(order.total_amount)}
-        </td>
-
-        <td>
-          ${esc(order.payment_method)}
-          <br>
-          <small>
-            ${esc(order.payment_status)}
-          </small>
-        </td>
-
-        <td>
-          <span class="badge">
-            ${esc(order.order_status)}
-          </span>
-        </td>
-
-        <td>
-          ${esc(order.created_at)}
-        </td>
-
-        <td>
-
-          <div class="actions">
-
-            <button
-              class="btn secondary small"
-              onclick="viewOrder(${order.id})"
-            >
-              View
-            </button>
-
-            <select
-              class="status"
-              onchange="
-                changeOrderStatus(
-                  ${order.id},
-                  this.value
-                )
-              "
-            >
-
-              ${
-                [
-                  "pending",
-                  "confirmed",
-                  "processing",
-                  "packed",
-                  "shipped",
-                  "delivered",
-                  "cancelled"
-                ]
-                .map(
-                  status => `
-
-                  <option
-                    value="${status}"
-                    ${
-                      status ===
-                      order.order_status
-                        ? "selected"
-                        : ""
-                    }
-                  >
-                    ${status}
-                  </option>
-
-                `
-                )
-                .join("")
-              }
-
-            </select>
-
-          </div>
-
-        </td>
-
-      </tr>
-
-    `
-    )
-    .join("");
-
+ `).join("");
 }
-
 
 async function viewOrder(id){
 
-  try{
+ try{
 
-    const response =
-      await fetch(
-        `/api/admin/orders/${id}`,
-        {
-          headers:headers()
-        }
-      );
+  const response=await fetch(`/api/admin/orders/${id}`,{headers:headers()});
+  const data=await response.json();
 
-    const data =
-      await response.json();
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to load order");
+  }
 
-    if(
-      !response.ok ||
-      !data.success
-    ){
-      throw new Error(
-        data.error ||
-        "Unable to load order"
-      );
-    }
+  const order=data.order;
 
-    const order =
-      data.order;
+  document.getElementById("orderModalTitle").textContent=order.order_number;
 
-    document
-      .getElementById("orderModalTitle")
-      .textContent =
-      order.order_number;
+  document.getElementById("orderModalContent").innerHTML=`
 
-    document
-      .getElementById("orderModalContent")
-      .innerHTML = `
+   <div class="details">
 
-      <div class="details">
+    <div class="detail"><b>Customer</b>${esc(order.customer_name)}</div>
+    <div class="detail"><b>Phone</b>${esc(order.phone)}</div>
+    <div class="detail"><b>Email</b>${esc(order.email||"-")}</div>
+    <div class="detail"><b>Status</b>${esc(order.order_status)}</div>
 
-        <div class="detail">
-          <b>Customer</b>
-          ${esc(order.customer_name)}
-        </div>
+    <div class="detail">
+     <b>Subtotal</b>
+     ${money(order.subtotal)}
+    </div>
 
-        <div class="detail">
-          <b>Phone</b>
-          ${esc(order.phone)}
-        </div>
+    <div class="detail">
+     <b>Coupon Discount</b>
+     ${order.coupon_code?`${esc(order.coupon_code)} / -${money(order.discount_amount)}`:"None"}
+    </div>
 
-        <div class="detail">
-          <b>Email</b>
-          ${esc(order.email || "-")}
-        </div>
+    <div class="detail"><b>Total</b>${money(order.total_amount)}</div>
+    <div class="detail"><b>Payment</b>${esc(order.payment_method)} / ${esc(order.payment_status)}</div>
 
-        <div class="detail">
-          <b>Status</b>
-          ${esc(order.order_status)}
-        </div>
+    <div class="detail full">
+     <b>Address</b>
+     ${esc(order.address)}<br>
+     ${esc(order.city||"")}, ${esc(order.state||"")} ${esc(order.pincode||"")}
+    </div>
 
-        <div class="detail">
-          <b>Payment</b>
-          ${esc(order.payment_method)}
-          /
-          ${esc(order.payment_status)}
-        </div>
+    <div class="detail full">
 
-        <div class="detail">
-          <b>Total</b>
-          ${money(order.total_amount)}
-        </div>
+     <b>Shipping / Tracking</b>
 
-        <div class="detail full">
+     <div class="formgrid">
 
-          <b>Address</b>
-
-          ${esc(order.address)}
-
-          <br>
-
-          ${esc(order.city || "")},
-          ${esc(order.state || "")}
-          ${esc(order.pincode || "")}
-
-        </div>
-
-
-        <div class="detail full">
-
-          <b>Shipping / Tracking</b>
-
-          <div
-            class="product-form"
-            style="margin-top:8px"
-          >
-
-            <div class="field">
-
-              <label>
-                Courier Name
-              </label>
-
-              <input
-                id="shipCourier"
-                value="${esc(order.courier_name || "")}"
-                placeholder="DTDC / Delhivery / India Post..."
-              >
-
-            </div>
-
-
-            <div class="field">
-
-              <label>
-                Tracking ID / AWB
-              </label>
-
-              <input
-                id="shipTrackingId"
-                value="${esc(order.tracking_id || "")}"
-                placeholder="Courier tracking number"
-              >
-
-            </div>
-
-
-            <div class="field full">
-
-              <label>
-                Tracking Link
-              </label>
-
-              <input
-                id="shipTrackingUrl"
-                value="${esc(order.tracking_url || "")}"
-                placeholder="https://courier-website.com/track/..."
-              >
-
-            </div>
-
-          </div>
-
-
-          <button
-            class="btn primary"
-            style="margin-top:10px"
-            onclick="saveShipping(${order.id})"
-          >
-            Save Shipping Details
-          </button>
-
-
-          <p
-            style="font-size:10px;color:#745e69;line-height:1.5;margin:9px 0 0"
-          >
-            Use the courier/AWB number given when the parcel is dispatched. Then set the order status to Shipped.
-          </p>
-
-        </div>
-
+      <div class="field">
+       <label>Courier Name</label>
+       <input id="shipCourier" value="${esc(order.courier_name||"")}" placeholder="DTDC / Delhivery / India Post">
       </div>
 
+      <div class="field">
+       <label>Tracking ID / AWB</label>
+       <input id="shipTrackingId" value="${esc(order.tracking_id||"")}">
+      </div>
 
-      <h3>Products</h3>
+      <div class="field full">
+       <label>Tracking Link</label>
+       <input id="shipTrackingUrl" value="${esc(order.tracking_url||"")}" placeholder="https://...">
+      </div>
 
-      ${
-        (data.items || [])
-        .map(
-          item => `
+     </div>
 
-          <div class="item">
+     <button class="btn primary" style="margin-top:10px" onclick="saveShipping(${order.id})">
+      Save Shipping Details
+     </button>
 
-            <div>
+    </div>
 
-              <b>
-                ${esc(item.product_name)}
-              </b>
+   </div>
 
-              <br>
+   <h3>Products</h3>
 
-              <small>
-                Quantity ${item.quantity}
-              </small>
+   ${(data.items||[]).map(item=>`
+    <div class="item">
+     <div>
+      <b>${esc(item.product_name)}</b><br>
+      <small>Quantity ${item.quantity}</small>
+     </div>
+     <div>${money(item.price)}</div>
+     <div><b>${money(item.total)}</b></div>
+    </div>
+   `).join("")}
 
-            </div>
+  `;
 
-            <div>
-              ${money(item.price)}
-            </div>
+  document.getElementById("orderModal").classList.add("show");
 
-            <div>
-              <b>
-                ${money(item.total)}
-              </b>
-            </div>
-
-          </div>
-
-        `
-        )
-        .join("")
-      }
-
-    `;
-
-    document
-      .getElementById("orderModal")
-      .classList
-      .add("show");
-
-  }
-  catch(error){
-    toast(error.message);
-  }
-
+ }catch(error){
+  toast(error.message);
+ }
 }
-
 
 function closeOrderModal(){
-
-  document
-    .getElementById("orderModal")
-    .classList
-    .remove("show");
-
+ document.getElementById("orderModal").classList.remove("show");
 }
 
+async function changeOrderStatus(id,status){
 
-async function changeOrderStatus(
-  id,
-  status
-){
+ if(status==="cancelled"&&!confirm("Cancel order? Product stock will be restored.")){
+  loadOrders();
+  return;
+ }
 
-  if(status === "cancelled"){
+ try{
 
-    const confirmed =
-      confirm(
-        "Cancel this order? Product stock will be restored."
-      );
+  const response=await fetch(`/api/admin/orders/${id}/status`,{
+   method:"PUT",
+   headers:headers({"Content-Type":"application/json"}),
+   body:JSON.stringify({order_status:status})
+  });
 
-    if(!confirmed){
-      loadOrders();
-      return;
-    }
+  const data=await response.json();
 
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to update order");
   }
 
-  try{
+  toast("Order status updated");
+  await loadOrders();
 
-    const response =
-      await fetch(
-        `/api/admin/orders/${id}/status`,
-        {
-          method:"PUT",
-
-          headers:headers({
-            "Content-Type":
-              "application/json"
-          }),
-
-          body:JSON.stringify({
-            order_status:status
-          })
-        }
-      );
-
-    const data =
-      await response.json();
-
-    if(
-      !response.ok ||
-      !data.success
-    ){
-      throw new Error(
-        data.error ||
-        "Unable to update order"
-      );
-    }
-
-    toast(
-      "Order status updated"
-    );
-
-    await loadOrders();
-
-  }
-  catch(error){
-
-    toast(error.message);
-    await loadOrders();
-
-  }
-
+ }catch(error){
+  toast(error.message);
+  await loadOrders();
+ }
 }
-
-
-// =====================================================
-// SHIPPING / TRACKING
-// =====================================================
 
 async function saveShipping(id){
 
-  const courier =
-    document
-      .getElementById("shipCourier")
-      .value
-      .trim();
+ const courier=document.getElementById("shipCourier").value.trim();
+ const trackingId=document.getElementById("shipTrackingId").value.trim();
+ const trackingUrl=document.getElementById("shipTrackingUrl").value.trim();
 
-  const trackingId =
-    document
-      .getElementById("shipTrackingId")
-      .value
-      .trim();
+ try{
 
-  const trackingUrl =
-    document
-      .getElementById("shipTrackingUrl")
-      .value
-      .trim();
+  const response=await fetch(`/api/admin/orders/${id}/shipping`,{
+   method:"PUT",
+   headers:headers({"Content-Type":"application/json"}),
+   body:JSON.stringify({
+    courier_name:courier||null,
+    tracking_id:trackingId||null,
+    tracking_url:trackingUrl||null
+   })
+  });
 
-  if(
-    trackingUrl &&
-    !/^https?:\/\//i.test(trackingUrl)
-  ){
-    toast(
-      "Tracking link must start with http:// or https://"
-    );
-    return;
+  const data=await response.json();
+
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to save shipping");
   }
 
-  try{
+  toast("Shipping details saved");
 
-    const response =
-      await fetch(
-        `/api/admin/orders/${id}/shipping`,
-        {
-          method:"PUT",
-
-          headers:headers({
-            "Content-Type":
-              "application/json"
-          }),
-
-          body:JSON.stringify({
-            courier_name:
-              courier || null,
-            tracking_id:
-              trackingId || null,
-            tracking_url:
-              trackingUrl || null
-          })
-        }
-      );
-
-    const data =
-      await response.json();
-
-    if(
-      !response.ok ||
-      !data.success
-    ){
-      throw new Error(
-        data.error ||
-        "Unable to save shipping details"
-      );
-    }
-
-    toast(
-      "Shipping details saved"
-    );
-
-    await loadOrders();
-
-  }
-  catch(error){
-    toast(error.message);
-  }
-
+ }catch(error){
+  toast(error.message);
+ }
 }
 
-
-// =====================================================
-// PRODUCTS
-// =====================================================
+/* PRODUCTS */
 
 async function loadProducts(){
 
-  try{
+ try{
 
-    const response =
-      await fetch(
-        "/api/admin/products",
-        {
-          headers:headers()
-        }
-      );
+  const response=await fetch("/api/admin/products",{headers:headers()});
+  const data=await response.json();
 
-    const data =
-      await response.json();
-
-    if(
-      !response.ok ||
-      !data.success
-    ){
-      throw new Error(
-        data.error ||
-        "Unable to load products"
-      );
-    }
-
-    allProducts =
-      data.products || [];
-
-    renderProducts();
-
-  }
-  catch(error){
-    toast(error.message);
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to load products");
   }
 
+  allProducts=data.products||[];
+  renderProducts();
+
+ }catch(error){
+  toast(error.message);
+ }
 }
-
 
 function renderProducts(){
 
-  const q =
-    (
-      document
-        .getElementById("productSearch")
-        .value || ""
-    )
-      .toLowerCase()
-      .trim();
+ const q=(document.getElementById("productSearch").value||"").toLowerCase().trim();
 
-  const list =
-    allProducts.filter(
-      product => {
+ const list=allProducts.filter(p=>
+  !q||
+  String(p.name||"").toLowerCase().includes(q)||
+  String(p.category||"").toLowerCase().includes(q)
+ );
 
-        if(!q){
-          return true;
-        }
+ document.getElementById("productsEmpty").classList.toggle("hidden",list.length>0);
 
-        return (
-          String(product.name || "")
-            .toLowerCase()
-            .includes(q)
-          ||
-          String(product.category || "")
-            .toLowerCase()
-            .includes(q)
-        );
+ document.getElementById("productsBody").innerHTML=list.map(product=>`
 
-      }
-    );
+ <tr>
+  <td>${product.id}</td>
+  <td><b>${esc(product.name)}</b></td>
+  <td>${esc(product.category)}</td>
+  <td>${money(product.price)}</td>
+  <td>${product.sale_price!==null?money(product.sale_price):"-"}</td>
+  <td>${product.stock}</td>
 
-  document
-    .getElementById("productsEmpty")
-    .classList
-    .toggle(
-      "hidden",
-      list.length > 0
-    );
+  <td>
+   <span class="badge ${Number(product.is_active)===1?"active":"inactive"}">
+    ${Number(product.is_active)===1?"Active":"Hidden"}
+   </span>
+  </td>
 
-  document
-    .getElementById("productsBody")
-    .innerHTML =
+  <td>
+   <div class="actions">
+    <button class="btn secondary small" onclick="editProduct(${product.id})">Edit</button>
 
-    list.map(
-      product => `
+    <button class="btn ${Number(product.is_active)===1?"danger":"secondary"} small"
+     onclick="toggleProductStatus(${product.id},${Number(product.is_active)===1?0:1})">
+     ${Number(product.is_active)===1?"Hide":"Activate"}
+    </button>
+   </div>
+  </td>
+ </tr>
 
-      <tr>
-
-        <td>
-          ${product.id}
-        </td>
-
-        <td>
-          <b>
-            ${esc(product.name)}
-          </b>
-        </td>
-
-        <td>
-          ${esc(product.category)}
-        </td>
-
-        <td class="amount">
-          ${money(product.price)}
-        </td>
-
-        <td>
-          ${
-            product.sale_price !== null
-              ? money(product.sale_price)
-              : "-"
-          }
-        </td>
-
-        <td>
-          ${product.stock}
-        </td>
-
-        <td>
-
-          <span
-            class="badge ${
-              Number(product.is_active)
-              === 1
-                ? "active"
-                : "inactive"
-            }"
-          >
-
-            ${
-              Number(product.is_active)
-              === 1
-                ? "Active"
-                : "Hidden"
-            }
-
-          </span>
-
-        </td>
-
-        <td>
-
-          <div class="actions">
-
-            <button
-              class="btn secondary small"
-              onclick="
-                editProduct(
-                  ${product.id}
-                )
-              "
-            >
-              Edit
-            </button>
-
-
-            <button
-              class="btn ${
-                Number(product.is_active)
-                === 1
-                  ? "danger"
-                  : "secondary"
-              } small"
-              onclick="
-                toggleProductStatus(
-                  ${product.id},
-                  ${
-                    Number(product.is_active)
-                    === 1
-                      ? 0
-                      : 1
-                  }
-                )
-              "
-            >
-
-              ${
-                Number(product.is_active)
-                === 1
-                  ? "Hide"
-                  : "Activate"
-              }
-
-            </button>
-
-          </div>
-
-        </td>
-
-      </tr>
-
-    `
-    )
-    .join("");
-
+ `).join("");
 }
-
-
-// =====================================================
-// PRODUCT MODAL
-// =====================================================
 
 function openProductModal(){
 
-  editingProductId = null;
+ editingProductId=null;
 
-  document
-    .getElementById("productModalTitle")
-    .textContent =
-    "Add Product";
+ document.getElementById("productModalTitle").textContent="Add Product";
+ document.getElementById("pName").value="";
+ document.getElementById("pCategory").value="Blouse";
+ document.getElementById("pDescription").value="";
+ document.getElementById("pPrice").value="";
+ document.getElementById("pSalePrice").value="";
+ document.getElementById("pStock").value="0";
+ document.getElementById("pActive").value="1";
+ document.getElementById("pImage").value="";
+ document.getElementById("pImageFile").value="";
 
-  document
-    .getElementById("pName")
-    .value = "";
+ updateProductPreview();
 
-  document
-    .getElementById("pCategory")
-    .value = "Blouse";
-
-  document
-    .getElementById("pDescription")
-    .value = "";
-
-  document
-    .getElementById("pPrice")
-    .value = "";
-
-  document
-    .getElementById("pSalePrice")
-    .value = "";
-
-  document
-    .getElementById("pStock")
-    .value = "0";
-
-  document
-    .getElementById("pActive")
-    .value = "1";
-
-  document
-    .getElementById("pImage")
-    .value = "";
-
-  document
-    .getElementById("pImageFile")
-    .value = "";
-
-  updateImagePreview();
-
-  document
-    .getElementById("productModal")
-    .classList
-    .add("show");
-
+ document.getElementById("productModal").classList.add("show");
 }
-
 
 function editProduct(id){
 
-  const product =
-    allProducts.find(
-      item =>
-        Number(item.id) ===
-        Number(id)
-    );
+ const p=allProducts.find(x=>Number(x.id)===Number(id));
+ if(!p)return;
 
-  if(!product){
-    return;
-  }
+ editingProductId=Number(id);
 
-  editingProductId =
-    Number(product.id);
+ document.getElementById("productModalTitle").textContent="Edit Product";
+ document.getElementById("pName").value=p.name||"";
+ document.getElementById("pCategory").value=p.category||"Blouse";
+ document.getElementById("pDescription").value=p.description||"";
+ document.getElementById("pPrice").value=p.price??"";
+ document.getElementById("pSalePrice").value=p.sale_price??"";
+ document.getElementById("pStock").value=p.stock??0;
+ document.getElementById("pActive").value=Number(p.is_active)===1?"1":"0";
+ document.getElementById("pImage").value=p.image_url||"";
+ document.getElementById("pImageFile").value="";
 
-  document
-    .getElementById("productModalTitle")
-    .textContent =
-    "Edit Product";
+ updateProductPreview();
 
-  document
-    .getElementById("pName")
-    .value =
-    product.name || "";
-
-  document
-    .getElementById("pCategory")
-    .value =
-    product.category || "Blouse";
-
-  document
-    .getElementById("pDescription")
-    .value =
-    product.description || "";
-
-  document
-    .getElementById("pPrice")
-    .value =
-    product.price ?? "";
-
-  document
-    .getElementById("pSalePrice")
-    .value =
-    product.sale_price ?? "";
-
-  document
-    .getElementById("pStock")
-    .value =
-    product.stock ?? 0;
-
-  document
-    .getElementById("pActive")
-    .value =
-    Number(product.is_active)
-    === 1
-      ? "1"
-      : "0";
-
-  document
-    .getElementById("pImage")
-    .value =
-    product.image_url || "";
-
-  document
-    .getElementById("pImageFile")
-    .value = "";
-
-  updateImagePreview();
-
-  document
-    .getElementById("productModal")
-    .classList
-    .add("show");
-
+ document.getElementById("productModal").classList.add("show");
 }
-
 
 function closeProductModal(){
-
-  document
-    .getElementById("productModal")
-    .classList
-    .remove("show");
-
+ document.getElementById("productModal").classList.remove("show");
 }
 
+function updateProductPreview(){
 
-function updateImagePreview(){
+ const url=document.getElementById("pImage").value.trim();
+ const preview=document.getElementById("productPreview");
 
-  const url =
-    document
-      .getElementById("pImage")
-      .value
-      .trim();
+ if(!url){
+  preview.style.display="none";
+  preview.removeAttribute("src");
+  return;
+ }
 
-  const preview =
-    document
-      .getElementById("imagePreview");
-
-  if(!url){
-
-    preview.style.display =
-      "none";
-
-    preview.removeAttribute(
-      "src"
-    );
-
-    return;
-  }
-
-  preview.src =
-    url;
-
-  preview.style.display =
-    "block";
+ preview.src=url;
+ preview.style.display="block";
 }
 
+function previewProductImage(){
 
-function previewSelectedImage(){
+ const input=document.getElementById("pImageFile");
+ const file=input.files?.[0];
 
-  const input =
-    document.getElementById(
-      "pImageFile"
-    );
+ if(!file){
+  updateProductPreview();
+  return;
+ }
 
-  const preview =
-    document.getElementById(
-      "imagePreview"
-    );
+ if(file.size>5*1024*1024){
+  toast("Image must be under 5 MB");
+  input.value="";
+  return;
+ }
 
-  const file =
-    input.files &&
-    input.files[0];
-
-  if(!file){
-    updateImagePreview();
-    return;
-  }
-
-  const allowed = [
-    "image/jpeg",
-    "image/png",
-    "image/webp"
-  ];
-
-  if(!allowed.includes(file.type)){
-
-    toast(
-      "Only JPG, PNG or WEBP images are allowed"
-    );
-
-    input.value = "";
-    updateImagePreview();
-    return;
-  }
-
-  if(
-    file.size >
-    5 * 1024 * 1024
-  ){
-
-    toast(
-      "Image must be smaller than 5 MB"
-    );
-
-    input.value = "";
-    updateImagePreview();
-    return;
-  }
-
-  const objectUrl =
-    URL.createObjectURL(file);
-
-  preview.src =
-    objectUrl;
-
-  preview.style.display =
-    "block";
+ const preview=document.getElementById("productPreview");
+ preview.src=URL.createObjectURL(file);
+ preview.style.display="block";
 }
 
+async function uploadProductImage(){
 
-async function uploadSelectedProductImage(){
+ const file=document.getElementById("pImageFile").files?.[0];
 
-  const input =
-    document.getElementById(
-      "pImageFile"
-    );
+ if(!file){
+  return document.getElementById("pImage").value.trim();
+ }
 
-  const file =
-    input.files &&
-    input.files[0];
+ const form=new FormData();
+ form.append("file",file);
 
-  if(!file){
+ const response=await fetch("/api/admin/upload-image",{
+  method:"POST",
+  headers:headers(),
+  body:form
+ });
 
-    return document
-      .getElementById("pImage")
-      .value
-      .trim();
-  }
+ const data=await response.json();
 
-  const formData =
-    new FormData();
+ if(!response.ok||!data.success){
+  throw new Error(data.error||"Unable to upload image");
+ }
 
-  formData.append(
-    "file",
-    file
-  );
+ document.getElementById("pImage").value=data.image_url;
 
-  const response =
-    await fetch(
-      "/api/admin/upload-image",
-      {
-        method:"POST",
-        headers:headers(),
-        body:formData
-      }
-    );
-
-  const data =
-    await response.json();
-
-  if(
-    !response.ok ||
-    !data.success
-  ){
-    throw new Error(
-      data.error ||
-      "Unable to upload image"
-    );
-  }
-
-  document
-    .getElementById("pImage")
-    .value =
-    data.image_url;
-
-  return data.image_url;
+ return data.image_url;
 }
-
-
-// =====================================================
-// SAVE PRODUCT
-// =====================================================
 
 async function saveProduct(){
 
-  const name =
-    document.getElementById("pName")
-      .value
-      .trim();
+ const btn=document.getElementById("saveProductBtn");
+ btn.disabled=true;
+ btn.textContent="Saving...";
 
-  const category =
-    document.getElementById("pCategory")
-      .value
-      .trim();
+ try{
 
-  const description =
-    document.getElementById("pDescription")
-      .value
-      .trim();
+  const image=await uploadProductImage();
 
-  const price =
-    document.getElementById("pPrice")
-      .value;
+  const payload={
+   name:document.getElementById("pName").value.trim(),
+   category:document.getElementById("pCategory").value,
+   description:document.getElementById("pDescription").value.trim(),
+   price:Number(document.getElementById("pPrice").value),
+   sale_price:document.getElementById("pSalePrice").value===""?null:Number(document.getElementById("pSalePrice").value),
+   stock:Number(document.getElementById("pStock").value),
+   image_url:image||null,
+   is_active:Number(document.getElementById("pActive").value)
+  };
 
-  const salePrice =
-    document.getElementById("pSalePrice")
-      .value;
+  const editing=editingProductId!==null;
 
-  const stock =
-    document.getElementById("pStock")
-      .value;
+  const response=await fetch(
+   editing?`/api/admin/products/${editingProductId}`:"/api/admin/products",
+   {
+    method:editing?"PUT":"POST",
+    headers:headers({"Content-Type":"application/json"}),
+    body:JSON.stringify(payload)
+   }
+  );
 
-  const active =
-    document.getElementById("pActive")
-      .value;
+  const data=await response.json();
 
-  if(!name){
-    toast(
-      "Product name is required"
-    );
-    return;
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to save product");
   }
 
-  if(
-    price === "" ||
-    Number(price) < 0
-  ){
-    toast(
-      "Enter valid product price"
-    );
-    return;
-  }
+  toast(editing?"Product updated":"Product added");
 
-  if(
-    stock === "" ||
-    Number(stock) < 0
-  ){
-    toast(
-      "Enter valid stock"
-    );
-    return;
-  }
+  closeProductModal();
+  await loadProducts();
 
-  const button =
-    document.getElementById(
-      "saveProductBtn"
-    );
-
-  button.disabled =
-    true;
-
-  button.textContent =
-    "Saving...";
-
-  try{
-
-    const image =
-      await uploadSelectedProductImage();
-
-    const payload = {
-      name,
-      category,
-      description,
-      price:
-        Number(price),
-
-      sale_price:
-        salePrice === ""
-          ? null
-          : Number(salePrice),
-
-      stock:
-        Number(stock),
-
-      image_url:
-        image || null,
-
-      is_active:
-        Number(active)
-    };
-
-    const isEdit =
-      editingProductId !== null;
-
-    const response =
-      await fetch(
-        isEdit
-          ? `/api/admin/products/${editingProductId}`
-          : "/api/admin/products",
-        {
-          method:
-            isEdit
-              ? "PUT"
-              : "POST",
-
-          headers:headers({
-            "Content-Type":
-              "application/json"
-          }),
-
-          body:
-            JSON.stringify(payload)
-        }
-      );
-
-    const data =
-      await response.json();
-
-    if(
-      !response.ok ||
-      !data.success
-    ){
-      throw new Error(
-        data.error ||
-        "Unable to save product"
-      );
-    }
-
-    toast(
-      isEdit
-        ? "Product updated"
-        : "Product added"
-    );
-
-    closeProductModal();
-
-    await loadProducts();
-
-  }
-  catch(error){
-    toast(error.message);
-  }
-  finally{
-
-    button.disabled =
-      false;
-
-    button.textContent =
-      "Save Product";
-  }
-
+ }catch(error){
+  toast(error.message);
+ }finally{
+  btn.disabled=false;
+  btn.textContent="Save Product";
+ }
 }
 
+async function toggleProductStatus(id,is_active){
 
-// =====================================================
-// PRODUCT STATUS
-// =====================================================
+ try{
 
-async function toggleProductStatus(
-  id,
-  isActive
-){
+  const response=await fetch(`/api/admin/products/${id}/status`,{
+   method:"PUT",
+   headers:headers({"Content-Type":"application/json"}),
+   body:JSON.stringify({is_active})
+  });
 
-  try{
+  const data=await response.json();
 
-    const response =
-      await fetch(
-        `/api/admin/products/${id}/status`,
-        {
-          method:"PUT",
-
-          headers:headers({
-            "Content-Type":
-              "application/json"
-          }),
-
-          body:
-            JSON.stringify({
-              is_active:isActive
-            })
-        }
-      );
-
-    const data =
-      await response.json();
-
-    if(
-      !response.ok ||
-      !data.success
-    ){
-      throw new Error(
-        data.error ||
-        "Unable to update product"
-      );
-    }
-
-    toast(
-      isActive
-        ? "Product activated"
-        : "Product hidden"
-    );
-
-    await loadProducts();
-
-  }
-  catch(error){
-    toast(error.message);
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to update product");
   }
 
+  await loadProducts();
+
+ }catch(error){
+  toast(error.message);
+ }
 }
 
+/* OFFERS */
 
-// =====================================================
-// AUTO LOGIN
-// =====================================================
+async function loadOffers(){
+
+ try{
+
+  const response=await fetch("/api/admin/offers",{headers:headers()});
+  const data=await response.json();
+
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to load offers");
+  }
+
+  allOffers=data.offers||[];
+  renderOffers();
+
+ }catch(error){
+  toast(error.message);
+ }
+}
+
+function renderOffers(){
+
+ const q=(document.getElementById("offerSearch").value||"").toLowerCase().trim();
+
+ const list=allOffers.filter(o=>
+  !q||
+  String(o.title||"").toLowerCase().includes(q)||
+  String(o.subtitle||"").toLowerCase().includes(q)
+ );
+
+ document.getElementById("offersEmpty").classList.toggle("hidden",list.length>0);
+
+ document.getElementById("offersBody").innerHTML=list.map(o=>`
+
+ <tr>
+  <td>${o.id}</td>
+
+  <td>
+   <b>${esc(o.title)}</b>
+   <br>
+   <small>${esc(o.subtitle||"")}</small>
+  </td>
+
+  <td>${esc(o.start_at||"-")}</td>
+  <td>${esc(o.end_at||"-")}</td>
+
+  <td>
+   <span class="badge ${Number(o.is_active)===1?"active":"inactive"}">
+    ${Number(o.is_active)===1?"Active":"Hidden"}
+   </span>
+  </td>
+
+  <td>
+   <div class="actions">
+
+    <button class="btn secondary small" onclick="editOffer(${o.id})">
+     Edit
+    </button>
+
+    <button
+     class="btn ${Number(o.is_active)===1?"danger":"secondary"} small"
+     onclick="toggleOfferStatus(${o.id},${Number(o.is_active)===1?0:1})">
+     ${Number(o.is_active)===1?"Hide":"Activate"}
+    </button>
+
+   </div>
+  </td>
+ </tr>
+
+ `).join("");
+}
+
+function openOfferModal(){
+
+ editingOfferId=null;
+
+ document.getElementById("offerModalTitle").textContent="Add Offer";
+ document.getElementById("oTitle").value="";
+ document.getElementById("oSubtitle").value="";
+ document.getElementById("oImage").value="";
+ document.getElementById("oImageFile").value="";
+ document.getElementById("oButtonText").value="Shop Now";
+ document.getElementById("oButtonUrl").value="#shop";
+ document.getElementById("oStart").value="";
+ document.getElementById("oEnd").value="";
+ document.getElementById("oActive").value="1";
+
+ updateOfferPreview();
+
+ document.getElementById("offerModal").classList.add("show");
+}
+
+function editOffer(id){
+
+ const o=allOffers.find(x=>Number(x.id)===Number(id));
+ if(!o)return;
+
+ editingOfferId=Number(id);
+
+ document.getElementById("offerModalTitle").textContent="Edit Offer";
+ document.getElementById("oTitle").value=o.title||"";
+ document.getElementById("oSubtitle").value=o.subtitle||"";
+ document.getElementById("oImage").value=o.image_url||"";
+ document.getElementById("oImageFile").value="";
+ document.getElementById("oButtonText").value=o.button_text||"";
+ document.getElementById("oButtonUrl").value=o.button_url||"";
+ document.getElementById("oStart").value=inputDate(o.start_at);
+ document.getElementById("oEnd").value=inputDate(o.end_at);
+ document.getElementById("oActive").value=Number(o.is_active)===1?"1":"0";
+
+ updateOfferPreview();
+
+ document.getElementById("offerModal").classList.add("show");
+}
+
+function closeOfferModal(){
+ document.getElementById("offerModal").classList.remove("show");
+}
+
+function updateOfferPreview(){
+
+ const url=document.getElementById("oImage").value.trim();
+ const preview=document.getElementById("offerPreview");
+
+ if(!url){
+  preview.style.display="none";
+  preview.removeAttribute("src");
+  return;
+ }
+
+ preview.src=url;
+ preview.style.display="block";
+}
+
+function previewOfferImage(){
+
+ const file=document.getElementById("oImageFile").files?.[0];
+
+ if(!file){
+  updateOfferPreview();
+  return;
+ }
+
+ if(file.size>5*1024*1024){
+  toast("Offer image must be under 5 MB");
+  return;
+ }
+
+ const preview=document.getElementById("offerPreview");
+ preview.src=URL.createObjectURL(file);
+ preview.style.display="block";
+}
+
+async function uploadOfferImage(){
+
+ const file=document.getElementById("oImageFile").files?.[0];
+
+ if(!file){
+  return document.getElementById("oImage").value.trim();
+ }
+
+ const form=new FormData();
+ form.append("file",file);
+
+ const response=await fetch("/api/admin/upload-offer-image",{
+  method:"POST",
+  headers:headers(),
+  body:form
+ });
+
+ const data=await response.json();
+
+ if(!response.ok||!data.success){
+  throw new Error(data.error||"Unable to upload offer image");
+ }
+
+ document.getElementById("oImage").value=data.image_url;
+
+ return data.image_url;
+}
+
+async function saveOffer(){
+
+ const btn=document.getElementById("saveOfferBtn");
+
+ btn.disabled=true;
+ btn.textContent="Saving...";
+
+ try{
+
+  const image=await uploadOfferImage();
+
+  const payload={
+   title:document.getElementById("oTitle").value.trim(),
+   subtitle:document.getElementById("oSubtitle").value.trim(),
+   image_url:image||null,
+   button_text:document.getElementById("oButtonText").value.trim(),
+   button_url:document.getElementById("oButtonUrl").value.trim(),
+   start_at:dbDate(document.getElementById("oStart").value),
+   end_at:dbDate(document.getElementById("oEnd").value),
+   is_active:Number(document.getElementById("oActive").value)
+  };
+
+  const editing=editingOfferId!==null;
+
+  const response=await fetch(
+   editing?`/api/admin/offers/${editingOfferId}`:"/api/admin/offers",
+   {
+    method:editing?"PUT":"POST",
+    headers:headers({"Content-Type":"application/json"}),
+    body:JSON.stringify(payload)
+   }
+  );
+
+  const data=await response.json();
+
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to save offer");
+  }
+
+  toast(editing?"Offer updated":"Offer created");
+
+  closeOfferModal();
+  await loadOffers();
+
+ }catch(error){
+  toast(error.message);
+ }finally{
+  btn.disabled=false;
+  btn.textContent="Save Offer";
+ }
+}
+
+async function toggleOfferStatus(id,is_active){
+
+ try{
+
+  const response=await fetch(`/api/admin/offers/${id}/status`,{
+   method:"PUT",
+   headers:headers({"Content-Type":"application/json"}),
+   body:JSON.stringify({is_active})
+  });
+
+  const data=await response.json();
+
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to update offer");
+  }
+
+  await loadOffers();
+
+ }catch(error){
+  toast(error.message);
+ }
+}
+
+/* COUPONS */
+
+async function loadCoupons(){
+
+ try{
+
+  const response=await fetch("/api/admin/coupons",{headers:headers()});
+  const data=await response.json();
+
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to load coupons");
+  }
+
+  allCoupons=data.coupons||[];
+  renderCoupons();
+
+ }catch(error){
+  toast(error.message);
+ }
+}
+
+function renderCoupons(){
+
+ const q=(document.getElementById("couponSearch").value||"").toLowerCase().trim();
+
+ const list=allCoupons.filter(c=>
+  !q||
+  String(c.code||"").toLowerCase().includes(q)
+ );
+
+ document.getElementById("couponsEmpty").classList.toggle("hidden",list.length>0);
+
+ document.getElementById("couponsBody").innerHTML=list.map(c=>`
+
+ <tr>
+
+  <td><b>${esc(c.code)}</b></td>
+
+  <td>
+   ${String(c.discount_type).includes("percent")
+    ?`${c.discount_value}%`
+    :money(c.discount_value)}
+  </td>
+
+  <td>${money(c.min_order_amount||0)}</td>
+
+  <td>
+   ${c.max_discount!==null?money(c.max_discount):"-"}
+  </td>
+
+  <td>
+   ${c.used_count||0}
+   /
+   ${c.usage_limit||"∞"}
+  </td>
+
+  <td>${esc(c.end_at||"-")}</td>
+
+  <td>
+   <span class="badge ${Number(c.is_active)===1?"active":"inactive"}">
+    ${Number(c.is_active)===1?"Active":"Hidden"}
+   </span>
+  </td>
+
+  <td>
+   <div class="actions">
+
+    <button class="btn secondary small" onclick="editCoupon(${c.id})">
+     Edit
+    </button>
+
+    <button
+     class="btn ${Number(c.is_active)===1?"danger":"secondary"} small"
+     onclick="toggleCouponStatus(${c.id},${Number(c.is_active)===1?0:1})">
+     ${Number(c.is_active)===1?"Hide":"Activate"}
+    </button>
+
+   </div>
+  </td>
+
+ </tr>
+
+ `).join("");
+}
+
+function openCouponModal(){
+
+ editingCouponId=null;
+
+ document.getElementById("couponModalTitle").textContent="Add Coupon";
+ document.getElementById("cCode").value="";
+ document.getElementById("cType").value="percent";
+ document.getElementById("cValue").value="";
+ document.getElementById("cMinimum").value="0";
+ document.getElementById("cMaximum").value="";
+ document.getElementById("cLimit").value="";
+ document.getElementById("cStart").value="";
+ document.getElementById("cEnd").value="";
+ document.getElementById("cActive").value="1";
+
+ document.getElementById("couponModal").classList.add("show");
+}
+
+function editCoupon(id){
+
+ const c=allCoupons.find(x=>Number(x.id)===Number(id));
+ if(!c)return;
+
+ editingCouponId=Number(id);
+
+ document.getElementById("couponModalTitle").textContent="Edit Coupon";
+ document.getElementById("cCode").value=c.code||"";
+ document.getElementById("cType").value=String(c.discount_type).includes("percent")?"percent":"flat";
+ document.getElementById("cValue").value=c.discount_value??"";
+ document.getElementById("cMinimum").value=c.min_order_amount??0;
+ document.getElementById("cMaximum").value=c.max_discount??"";
+ document.getElementById("cLimit").value=c.usage_limit??"";
+ document.getElementById("cStart").value=inputDate(c.start_at);
+ document.getElementById("cEnd").value=inputDate(c.end_at);
+ document.getElementById("cActive").value=Number(c.is_active)===1?"1":"0";
+
+ document.getElementById("couponModal").classList.add("show");
+}
+
+function closeCouponModal(){
+ document.getElementById("couponModal").classList.remove("show");
+}
+
+async function saveCoupon(){
+
+ const btn=document.getElementById("saveCouponBtn");
+
+ btn.disabled=true;
+ btn.textContent="Saving...";
+
+ try{
+
+  const payload={
+   code:document.getElementById("cCode").value.trim().toUpperCase(),
+   discount_type:document.getElementById("cType").value,
+   discount_value:Number(document.getElementById("cValue").value),
+   min_order_amount:Number(document.getElementById("cMinimum").value||0),
+   max_discount:document.getElementById("cMaximum").value===""?null:Number(document.getElementById("cMaximum").value),
+   usage_limit:document.getElementById("cLimit").value===""?null:Number(document.getElementById("cLimit").value),
+   start_at:dbDate(document.getElementById("cStart").value),
+   end_at:dbDate(document.getElementById("cEnd").value),
+   is_active:Number(document.getElementById("cActive").value)
+  };
+
+  const editing=editingCouponId!==null;
+
+  const response=await fetch(
+   editing?`/api/admin/coupons/${editingCouponId}`:"/api/admin/coupons",
+   {
+    method:editing?"PUT":"POST",
+    headers:headers({"Content-Type":"application/json"}),
+    body:JSON.stringify(payload)
+   }
+  );
+
+  const data=await response.json();
+
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to save coupon");
+  }
+
+  toast(editing?"Coupon updated":"Coupon created");
+
+  closeCouponModal();
+  await loadCoupons();
+
+ }catch(error){
+  toast(error.message);
+ }finally{
+  btn.disabled=false;
+  btn.textContent="Save Coupon";
+ }
+}
+
+async function toggleCouponStatus(id,is_active){
+
+ try{
+
+  const response=await fetch(`/api/admin/coupons/${id}/status`,{
+   method:"PUT",
+   headers:headers({"Content-Type":"application/json"}),
+   body:JSON.stringify({is_active})
+  });
+
+  const data=await response.json();
+
+  if(!response.ok||!data.success){
+   throw new Error(data.error||"Unable to update coupon");
+  }
+
+  await loadCoupons();
+
+ }catch(error){
+  toast(error.message);
+ }
+}
+
+/* AUTO LOGIN */
 
 (async function(){
 
-  if(!adminToken){
-    return;
+ if(!adminToken)return;
+
+ try{
+
+  const response=await fetch("/api/admin/check",{headers:headers()});
+
+  if(response.ok){
+   openAdmin();
+  }else{
+   logout();
   }
 
-  try{
-
-    const response =
-      await fetch(
-        "/api/admin/check",
-        {
-          headers:headers()
-        }
-      );
-
-    if(response.ok){
-      openAdmin();
-    }
-    else{
-      logout();
-    }
-
-  }
-  catch{
-    logout();
-  }
+ }catch{
+  logout();
+ }
 
 })();
-
 </script>
 
 </body>
