@@ -2753,178 +2753,166 @@ function finishOrder(){
 
 function openTrackOrder(order="",phone=""){
 
- if(!order || !phone){
+  if(!order || !phone){
+    try{
+      const lastOrder = JSON.parse(
+        localStorage.getItem("srilatha_last_order") || "null"
+      );
 
-  try{
+      if(lastOrder){
+        if(!order){
+          order = lastOrder.order_number || "";
+        }
 
-   const lastOrder=
-    JSON.parse(
-     localStorage.getItem("srilatha_last_order") || "null"
-    );
-
-   if(lastOrder){
-
-    if(!order){
-     order=lastOrder.order_number || "";
+        if(!phone){
+          phone = lastOrder.phone || "";
+        }
+      }
+    }catch(error){
+      console.error("Unable to restore last order",error);
     }
-
-    if(!phone){
-     phone=lastOrder.phone || "";
-    }
-
-   }
-
-  }catch(error){
-   console.error("Unable to restore last order",error);
   }
 
- }
+  document.getElementById("trackOrderNumber").value = order;
+  document.getElementById("trackPhone").value = phone;
+  document.getElementById("trackResult").innerHTML = "";
 
- document.getElementById("trackOrderNumber").value=order;
- document.getElementById("trackPhone").value=phone;
- document.getElementById("trackResult").innerHTML="";
-
-document.getElementById("trackModal").classList.add("show");
+  document.getElementById("trackModal").classList.add("show");
 }
 
 function closeTrackOrder(){
- document.getElementById("trackModal").classList.remove("show");
+  document.getElementById("trackModal").classList.remove("show");
 }
 
 async function trackOrder(){
 
- const order=
-  document.getElementById("trackOrderNumber").value.trim();
+  const order =
+    document.getElementById("trackOrderNumber").value.trim();
 
- let phone=
-  document.getElementById("trackPhone").value.replace(/\D/g,"");
+  let phone =
+    document.getElementById("trackPhone").value.replace(/\D/g,"");
 
- if(phone.length===12&&phone.startsWith("91")){
-  phone=phone.slice(2);
- }
-
- if(!order||phone.length!==10){
-  toast("Enter order number and mobile number");
-  return;
- }
-
- const result=
-  document.getElementById("trackResult");
-
- result.innerHTML=
-  `<div class="track-result">Checking order...</div>`;
-
- try{
-
-  const response=
-   await fetch(
-    `/api/orders/${encodeURIComponent(order)}?phone=${encodeURIComponent(phone)}`,
-    {cache:"no-store"}
-   );
-
-  const data=
-   await response.json();
-
-  if(!response.ok||!data.success){
-   throw new Error(data.error||"Order not found");
+  if(phone.length === 12 && phone.startsWith("91")){
+    phone = phone.slice(2);
   }
 
-  const o=data.order;
-localStorage.setItem(
- "srilatha_last_order",
- JSON.stringify({
-  order_number:o.order_number,
-  phone:phone
- })
-);
-  const states=[
-   "pending",
-   "confirmed",
-   "processing",
-   "packed",
-   "shipped",
-   "delivered"
-  ];
+  if(!order || phone.length !== 10){
+    toast("Enter order number and mobile number");
+    return;
+  }
 
-  const currentStatus=
-   String(o.order_status||"pending").toLowerCase();
+  const result = document.getElementById("trackResult");
 
-  const index=
-   states.indexOf(currentStatus);
+  result.innerHTML =
+    `<div class="track-result">Checking order...</div>`;
 
-  const timeline=
-   states.map((state,i)=>{
+  try{
 
-    const done=
-     currentStatus!=="cancelled"&&
-     i<=index;
+    const response = await fetch(
+      `/api/orders/${encodeURIComponent(order)}?phone=${encodeURIComponent(phone)}`,
+      {cache:"no-store"}
+    );
 
-    return`
-     <div class="step ${done?"done":""}">
-      <div class="dotstep">${done?"✓":i+1}</div>
-      ${state.charAt(0).toUpperCase()+state.slice(1)}
-     </div>
-    `;
+    const data = await response.json();
 
-   }).join("");
-
-  const shipping=
-   o.courier_name||
-   o.tracking_id||
-   o.tracking_url
-    ? `
-     <div class="shipbox">
-      <b>Shipping Details</b><br>
-      ${o.courier_name?`Courier: ${esc(o.courier_name)}<br>`:""}
-      ${o.tracking_id?`Tracking ID: ${esc(o.tracking_id)}<br>`:""}
-      ${
-       o.tracking_url
-        ? `<br><a class="btn primary" href="${esc(o.tracking_url)}" target="_blank">Track Package ↗</a>`
-        : ""
-      }
-     </div>
-    `
-    : `
-     <div class="shipbox">
-      Courier details will appear after dispatch.
-     </div>
-    `;
-
-  result.innerHTML=`
-
-   <div class="track-result">
-
-    <div style="display:flex;justify-content:space-between">
-     <b>${esc(o.order_number)}</b>
-     <b>${money(o.total_amount)}</b>
-    </div>
-
-    ${
-     o.coupon_code
-      ? `<div style="font-size:11px;color:#18864b;margin-top:6px">Coupon ${esc(o.coupon_code)} saved ${money(o.discount_amount)}</div>`
-      : ""
+    if(!response.ok || !data.success){
+      throw new Error(data.error || "Order not found");
     }
 
-    ${
-     currentStatus==="cancelled"
-      ? `<p style="color:#b21849;font-weight:900">Order Cancelled</p>`
-      : `<div class="timeline">${timeline}</div>`
-    }
+    const o = data.order;
 
-    ${shipping}
+    localStorage.setItem(
+      "srilatha_last_order",
+      JSON.stringify({
+        order_number:o.order_number,
+        phone:phone
+      })
+    );
 
-   </div>
+    const states = [
+      "pending",
+      "confirmed",
+      "processing",
+      "packed",
+      "shipped",
+      "delivered"
+    ];
 
-  `;
+    const currentStatus =
+      String(o.order_status || "pending").toLowerCase();
 
- }catch(error){
+    const index = states.indexOf(currentStatus);
 
-  result.innerHTML=
-   `<div class="track-result" style="color:#b21849">${esc(error.message)}</div>`;
- }
-}
+    const timeline = states.map((state,i)=>{
 
-/* SLIDES */
+      const done =
+        currentStatus !== "cancelled" &&
+        i <= index;
+
+      return `
+        <div class="step ${done ? "done" : ""}">
+          <div class="dotstep">${done ? "✓" : i+1}</div>
+          ${state.charAt(0).toUpperCase()+state.slice(1)}
+        </div>
+      `;
+
+    }).join("");
+
+    const shipping =
+      o.courier_name || o.tracking_id || o.tracking_url
+      ? `
+        <div class="shipbox">
+          <b>Shipping Details</b><br>
+          ${o.courier_name ? `Courier: ${esc(o.courier_name)}<br>` : ""}
+          ${o.tracking_id ? `Tracking ID: ${esc(o.tracking_id)}<br>` : ""}
+          ${
+            o.tracking_url
+            ? `<br><a class="btn primary" href="${esc(o.tracking_url)}" target="_blank">Track Package ↗</a>`
+            : ""
+          }
+        </div>
+      `
+      : `
+        <div class="shipbox">
+          Courier details will appear after dispatch.
+        </div>
+      `;
+
+    result.innerHTML = `
+      <div class="track-result">
+
+        <div style="display:flex;justify-content:space-between">
+          <b>${esc(o.order_number)}</b>
+          <b>${money(o.total_amount)}</b>
+        </div>
+
+        ${
+          o.coupon_code
+          ? `<div style="font-size:11px;color:#18864b;margin-top:6px">
+               Coupon ${esc(o.coupon_code)} saved ${money(o.discount_amount)}
+             </div>`
+          : ""
+        }
+
+        ${
+          currentStatus === "cancelled"
+          ? `<p style="color:#b21849;font-weight:900">Order Cancelled</p>`
+          : `<div class="timeline">${timeline}</div>`
+        }
+
+        ${shipping}
+
+      </div>
+    `;
+
+  }catch(error){
+
+    result.innerHTML =
+      `<div class="track-result" style="color:#b21849">
+        ${esc(error.message)}
+      </div>`;
+  }
+}/* SLIDES */
 
 function goSlide(i){
 
