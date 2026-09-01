@@ -2695,7 +2695,13 @@ async function placeOrder(){
   if(!response.ok||!data.success){
    throw new Error(data.error||"Unable to place order");
   }
-
+localStorage.setItem(
+ "srilatha_last_order",
+ JSON.stringify({
+  order_number:data.order.order_number,
+  phone:customer.phone
+ })
+);
   cart=[];
   saveCart();
   updateCart();
@@ -2747,6 +2753,40 @@ function finishOrder(){
 
 function openTrackOrder(order="",phone=""){
 
+ if(!order || !phone){
+
+  try{
+
+   const lastOrder=
+    JSON.parse(
+     localStorage.getItem("srilatha_last_order") || "null"
+    );
+
+   if(lastOrder){
+
+    if(!order){
+     order=lastOrder.order_number || "";
+    }
+
+    if(!phone){
+     phone=lastOrder.phone || "";
+    }
+
+   }
+
+  }catch(error){
+   console.error("Unable to restore last order",error);
+  }
+
+ }
+
+ document.getElementById("trackOrderNumber").value=order;
+ document.getElementById("trackPhone").value=phone;
+ document.getElementById("trackResult").innerHTML="";
+
+ document.getElementById("trackModal").classList.add("show");
+}
+
  document.getElementById("trackOrderNumber").value=order;
  document.getElementById("trackPhone").value=phone;
  document.getElementById("trackResult").innerHTML="";
@@ -2797,7 +2837,13 @@ async function trackOrder(){
   }
 
   const o=data.order;
-
+localStorage.setItem(
+ "srilatha_last_order",
+ JSON.stringify({
+  order_number:o.order_number,
+  phone:phone
+ })
+);
   const states=[
    "pending",
    "confirmed",
