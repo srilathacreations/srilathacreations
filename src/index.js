@@ -1531,6 +1531,517 @@ export default {
         );
       }
     }
+    // ==================================================
+// CUSTOMER EMAIL OTP - REQUEST
+// ==================================================
+
+if (
+  url.pathname === "/api/customer/otp/request" &&
+  request.method === "POST"
+) {
+  try {
+    const body = await request.json();
+
+    const email = String(
+      body.email || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    if (
+      !email ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ) {
+      return json(
+        {
+          success: false,
+          error: "Enter a valid email address"
+        },
+        400
+      );
+    }
+
+    if (!env.RESEND_API_KEY) {
+      return json(
+        {
+          success: false,
+          error: "Email service is not configured"
+        },
+        500
+      );
+    }
+
+    // Only customers already present in our store
+    // can request a login OTP.
+    const customer = await env.DB
+      .prepare(
+        `SELECT
+          id,
+          name,
+          phone,
+          email
+        FROM customers
+        WHERE LOWER(email) = ?
+        ORDER BY id DESC
+        LIMIT 1`
+      )
+      .bind(email)
+      .first();
+
+    // Return a generic response if no account exists.
+    // This avoids exposing registered customer emails.
+    if (!customer) {
+      return json({
+        success: true,
+        message:
+          "If this email is registered, an OTP will be sent."
+      });
+    }
+
+    // Prevent repeated OTP requests within 60 seconds.
+    const recentOtp = await env.DB
+      .prepare(
+        `SELECT id
+        FROM customer_otp
+        WHERE email = ?
+          AND created_at >= datetime('now', '-60 seconds')
+        ORDER BY id DESC
+        LIMIT 1`
+      )
+      .bind(email)
+      .first();
+
+    if (recentOtp) {
+      return json(
+        {
+          success: false,
+          error:
+            "Please wait 60 seconds before requesting another OTP"
+        },
+        429
+      );
+    }
+
+    // Expire previous unused OTPs for this email.
+    await env.DB
+      .prepare(
+        `UPDATE customer_otp
+        SET expires_at = CURRENT_TIMESTAMP
+        WHERE email = ?
+          AND verified_at IS NULL`
+      )
+      .bind(email)
+      .run();
+
+    const random = new Uint32Array(1);
+    crypto.getRandomValues(random);
+
+    const otp = String(
+      100000 + (random[0] % 900000)
+    );
+
+    const otpHash = await sha256(otp);
+
+    await env.DB
+      .prepare(
+        `INSERT INTO customer_otp (
+          phone,
+          email,
+          otp_hash,
+          expires_at,
+          attempts
+        )
+        VALUES (
+          ?,
+          ?,
+          ?,
+          datetime('now', '+10 minutes'),
+          0
+        )`
+      )
+      .bind(
+        String(customer.phone || ""),
+        email,
+        otpHash
+      )
+      .run();
+
+    const resendResponse = await fetch(
+      "https://api.resend.com/emails",
+      {
+        method: "POST",
+        headers: {
+          Authorization:
+            `Bearer ${env.RESEND_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from:
+            "Srilatha Creations <otp@auth.srilathacreations.com>",
+          to: [email],
+          subject:
+            "Your Srilatha Creations Login OTP",
+          text:
+            `Your Srilatha Creations login OTP is ${otp}. ` +
+            `This OTP is valid for 10 minutes. ` +
+            `Do not share this OTP with anyone.`,
+          html: `
+            <div style="
+              font-family:Arial,sans-serif;
+              max-width:520px;
+              margin:auto;
+              padding:28px;
+              border:1px solid #eee;
+              border-radius:14px;
+            ">
+              <h2 style="margin-top:0;">
+                Srilatha Creations
+              </h2>
+
+              <p>
+                Hello ${String(
+                  customer.name || "Customer"
+                )},
+              </p>
+
+              <p>
+                Use the following OTP to securely
+                sign in to your account:
+              </p>
+
+              <div style="
+                font-size:34px;
+                font-weight:700;
+                letter-spacing:8px;
+                padding:18px 0;
+              ">
+                ${otp}
+              </div>
+
+              <p>
+                This OTP is valid for
+                <strong>10 minutes</strong>.
+              </p>
+
+              <p style="
+                font-size:13px;
+                color:#666;
+              ">
+                Do not share this OTP with anyone.
+                If you did not request this login,
+                you can safely ignore this email.
+              </p>
+            </div>
+          `
+        })
+      }
+    );
+
+    if (!resendResponse.ok) {
+      const resendError =
+        await resendResponse.text();
+
+      console.error(
+        "Resend OTP error:",
+        resendError
+      );
+
+      return json(
+        {
+          success: false,
+          error: "Unable to send OTP"
+        },
+        502
+      );
+    }
+
+    return json({
+      success: true,
+      message: "OTP sent to your email",
+      expires_in: 600
+    });
+
+  } catch (error) {
+    console.error(
+      "Customer OTP request error:",
+      error
+    );
+
+    return json(
+      {
+        success: false,
+        error:
+          error.message ||
+          "Unable to send OTP"
+      },
+      500
+    );
+  }
+}
+
+
+// ==================================================
+// CUSTOMER EMAIL OTP - VERIFY
+// ==================================================
+
+if (
+  url.pathname === "/api/customer/otp/verify" &&
+  request.method === "POST"
+) {
+  try {
+    const body = await request.json();
+
+    const email = String(
+      body.email || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const otp = String(
+      body.otp || ""
+    ).trim();
+
+    if (
+      !email ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ) {
+      return json(
+        {
+          success: false,
+          error: "Enter a valid email address"
+        },
+        400
+      );
+    }
+
+    if (!/^\d{6}$/.test(otp)) {
+      return json(
+        {
+          success: false,
+          error: "Enter the 6-digit OTP"
+        },
+        400
+      );
+    }
+
+    const otpRecord = await env.DB
+      .prepare(
+        `SELECT
+          id,
+          email,
+          phone,
+          otp_hash,
+          attempts,
+          expires_at,
+          verified_at
+        FROM customer_otp
+        WHERE email = ?
+          AND verified_at IS NULL
+        ORDER BY id DESC
+        LIMIT 1`
+      )
+      .bind(email)
+      .first();
+
+    if (!otpRecord) {
+      return json(
+        {
+          success: false,
+          error:
+            "Invalid or expired OTP"
+        },
+        400
+      );
+    }
+
+    if (
+      Number(otpRecord.attempts || 0) >= 5
+    ) {
+      return json(
+        {
+          success: false,
+          error:
+            "Too many incorrect attempts. Request a new OTP."
+        },
+        429
+      );
+    }
+
+    const expiryCheck = await env.DB
+      .prepare(
+        `SELECT
+          CASE
+            WHEN datetime(?) > CURRENT_TIMESTAMP
+            THEN 1
+            ELSE 0
+          END AS valid`
+      )
+      .bind(otpRecord.expires_at)
+      .first();
+
+    if (!expiryCheck?.valid) {
+      return json(
+        {
+          success: false,
+          error:
+            "OTP expired. Request a new OTP."
+        },
+        400
+      );
+    }
+
+    const otpHash = await sha256(otp);
+
+    if (otpHash !== otpRecord.otp_hash) {
+      await env.DB
+        .prepare(
+          `UPDATE customer_otp
+          SET attempts = attempts + 1
+          WHERE id = ?`
+        )
+        .bind(otpRecord.id)
+        .run();
+
+      return json(
+        {
+          success: false,
+          error: "Incorrect OTP"
+        },
+        400
+      );
+    }
+
+    const customer = await env.DB
+      .prepare(
+        `SELECT
+          id,
+          name,
+          phone,
+          email,
+          address,
+          city,
+          state,
+          pincode
+        FROM customers
+        WHERE LOWER(email) = ?
+        ORDER BY id DESC
+        LIMIT 1`
+      )
+      .bind(email)
+      .first();
+
+    if (!customer) {
+      return json(
+        {
+          success: false,
+          error:
+            "Customer account not found"
+        },
+        404
+      );
+    }
+
+    await env.DB
+      .prepare(
+        `UPDATE customer_otp
+        SET verified_at = CURRENT_TIMESTAMP
+        WHERE id = ?`
+      )
+      .bind(otpRecord.id)
+      .run();
+
+    await env.DB
+      .prepare(
+        `UPDATE customers
+        SET
+          is_verified = 1,
+          last_login_at = CURRENT_TIMESTAMP
+        WHERE id = ?`
+      )
+      .bind(customer.id)
+      .run();
+
+    // Revoke any expired sessions first.
+    await env.DB
+      .prepare(
+        `UPDATE customer_sessions
+        SET revoked_at = CURRENT_TIMESTAMP
+        WHERE customer_id = ?
+          AND revoked_at IS NULL
+          AND expires_at <= CURRENT_TIMESTAMP`
+      )
+      .bind(customer.id)
+      .run();
+
+    const tokenBytes =
+      new Uint8Array(32);
+
+    crypto.getRandomValues(tokenBytes);
+
+    const token = Array.from(tokenBytes)
+      .map(byte =>
+        byte
+          .toString(16)
+          .padStart(2, "0")
+      )
+      .join("");
+
+    const tokenHash =
+      await sha256(token);
+
+    await env.DB
+      .prepare(
+        `INSERT INTO customer_sessions (
+          customer_id,
+          token_hash,
+          expires_at
+        )
+        VALUES (
+          ?,
+          ?,
+          datetime('now', '+30 days')
+        )`
+      )
+      .bind(
+        customer.id,
+        tokenHash
+      )
+      .run();
+
+    return json({
+      success: true,
+      message: "Login successful",
+      token,
+      expires_in: 2592000,
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        phone: customer.phone,
+        email: customer.email,
+        address: customer.address,
+        city: customer.city,
+        state: customer.state,
+        pincode: customer.pincode
+      }
+    });
+
+  } catch (error) {
+    console.error(
+      "Customer OTP verify error:",
+      error
+    );
+
+    return json(
+      {
+        success: false,
+        error:
+          error.message ||
+          "Unable to verify OTP"
+      },
+      500
+    );
+  }
+}
     // =====================================================
     // ADMIN AUTH
     // =====================================================
