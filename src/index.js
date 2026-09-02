@@ -1545,6 +1545,73 @@ if (!customerSession) {
     }
 
     // =====================================================
+// CUSTOMER ACCOUNT - MY ORDERS
+// =====================================================
+
+if (
+  url.pathname === "/api/customer/orders" &&
+  request.method === "GET"
+) {
+  try {
+
+    const customer =
+      await getAuthenticatedCustomer();
+
+    if (!customer) {
+      return json(
+        {
+          success: false,
+          error: "Customer login required"
+        },
+        401
+      );
+    }
+
+    const result =
+      await env.DB
+        .prepare(
+          `SELECT
+             id,
+             order_number,
+             subtotal,
+             discount_amount,
+             coupon_code,
+             delivery_charge,
+             total_amount,
+             payment_method,
+             payment_status,
+             order_status,
+             courier_name,
+             tracking_id,
+             tracking_url,
+             shipped_at,
+             created_at
+           FROM orders
+           WHERE customer_id = ?
+           ORDER BY id DESC`
+        )
+        .bind(customer.customer_id)
+        .all();
+
+    return json({
+      success: true,
+      orders: result.results || []
+    });
+
+  } catch (error) {
+
+    return json(
+      {
+        success: false,
+        error:
+          error.message ||
+          "Unable to load customer orders"
+      },
+      500
+    );
+  }
+}
+    // =====================================================
     // CUSTOMER ACCOUNT - LOGOUT
     // =====================================================
 
