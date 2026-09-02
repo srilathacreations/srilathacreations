@@ -2577,7 +2577,6 @@ if (
     )
     .run();
 }
-        }
 
         return json({
           success: true,
