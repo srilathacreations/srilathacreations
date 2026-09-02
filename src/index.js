@@ -1434,7 +1434,103 @@ export default {
 
       return session;
     };
-    
+        // =====================================================
+    // CUSTOMER ACCOUNT - CURRENT USER
+    // =====================================================
+
+    if (
+      url.pathname === "/api/customer/me" &&
+      request.method === "GET"
+    ) {
+      try {
+        const customer =
+          await getAuthenticatedCustomer();
+
+        if (!customer) {
+          return json(
+            {
+              success: false,
+              error: "Customer login required"
+            },
+            401
+          );
+        }
+
+        return json({
+          success: true,
+          customer: {
+            id: customer.customer_id,
+            name: customer.name,
+            phone: customer.phone,
+            email: customer.email,
+            address: customer.address,
+            city: customer.city,
+            state: customer.state,
+            pincode: customer.pincode
+          }
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message ||
+              "Unable to load customer account"
+          },
+          500
+        );
+      }
+    }
+
+    // =====================================================
+    // CUSTOMER ACCOUNT - LOGOUT
+    // =====================================================
+
+    if (
+      url.pathname === "/api/customer/logout" &&
+      request.method === "POST"
+    ) {
+      try {
+        const token = getCustomerToken();
+
+        if (!token) {
+          return json({
+            success: true,
+            message: "Logged out"
+          });
+        }
+
+        const tokenHash =
+          await sha256(token);
+
+        await env.DB
+          .prepare(
+            `UPDATE customer_sessions
+             SET revoked_at = CURRENT_TIMESTAMP
+             WHERE token_hash = ?
+             AND revoked_at IS NULL`
+          )
+          .bind(tokenHash)
+          .run();
+
+        return json({
+          success: true,
+          message: "Logged out successfully"
+        });
+
+      } catch (error) {
+        return json(
+          {
+            success: false,
+            error:
+              error.message ||
+              "Unable to logout"
+          },
+          500
+        );
+      }
+    }
     // =====================================================
     // ADMIN AUTH
     // =====================================================
