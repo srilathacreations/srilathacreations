@@ -967,7 +967,7 @@ footer{
    <button onclick="filterCat('sarees',this)">Sarees</button>
    <button onclick="filterCat('fabric',this)">Dress Materials</button>
    <button onclick="openTrackOrder()">Track Order</button>
-   <button onclick="openCustomerLogin()">Login / My Account</button>
+  <button id="customerProfileBtn" onclick="openCustomerLogin()">👤 My Profile</button>
   </div>
  </nav>
 
@@ -1980,6 +1980,53 @@ footer{
 
   </div>
 </div>
+ <!-- CUSTOMER PROFILE MODAL -->
+
+<div class="track-modal" id="customerProfileModal">
+  <div class="track-card">
+
+    <div class="checkout-head">
+      <h2>My Profile</h2>
+
+      <button
+        class="close-checkout"
+        onclick="closeCustomerProfile()"
+      >×</button>
+    </div>
+
+    <div id="customerProfileContent">
+      Loading profile...
+    </div>
+
+    <div style="margin-top:18px">
+
+      <button
+        class="place-order"
+        onclick="showMyOrders()"
+      >
+        My Orders
+      </button>
+
+      <button
+        class="place-order"
+        style="margin-top:10px"
+        onclick="openTrackOrder()"
+      >
+        Track Order
+      </button>
+
+      <button
+        class="place-order"
+        style="margin-top:10px"
+        onclick="customerLogout()"
+      >
+        Logout
+      </button>
+
+    </div>
+
+  </div>
+</div>
 <div id="toast" class="toast"></div>
 
 <script>
@@ -2820,6 +2867,22 @@ function finishOrder(){
 
 function openCustomerLogin(){
 
+  const token =
+    localStorage.getItem(
+      "srilatha_customer_token"
+    );
+
+  const customerRaw =
+    localStorage.getItem(
+      "srilatha_customer"
+    );
+
+  if(token && customerRaw){
+
+    openCustomerProfile();
+    return;
+  }
+
   document
     .getElementById("customerLoginModal")
     .classList.add("show");
@@ -2836,14 +2899,119 @@ function openCustomerLogin(){
     .getElementById("customerLoginResult")
     .innerHTML = "";
 }
-
 function closeCustomerLogin(){
 
   document
     .getElementById("customerLoginModal")
     .classList.remove("show");
 }
+/* CUSTOMER PROFILE */
 
+function openCustomerProfile(){
+
+  let customer = {};
+
+  try{
+    customer = JSON.parse(
+      localStorage.getItem("srilatha_customer") || "{}"
+    );
+  }catch(error){
+    customer = {};
+  }
+
+  const content =
+    document.getElementById("customerProfileContent");
+
+  content.innerHTML = `
+    <div style="line-height:1.9">
+
+      <div>
+        <b>Name:</b>
+        ${esc(customer.name || "Customer")}
+      </div>
+
+      <div>
+        <b>Email:</b>
+        ${esc(customer.email || "-")}
+      </div>
+
+      <div>
+        <b>Mobile:</b>
+        ${esc(customer.phone || "-")}
+      </div>
+
+      <div style="
+        margin-top:12px;
+        color:#18864b;
+        font-weight:700
+      ">
+        ✓ Logged in securely
+      </div>
+
+    </div>
+  `;
+
+  document
+    .getElementById("customerProfileModal")
+    .classList.add("show");
+}
+
+function closeCustomerProfile(){
+
+  document
+    .getElementById("customerProfileModal")
+    .classList.remove("show");
+}
+
+function showMyOrders(){
+
+  const content =
+    document.getElementById("customerProfileContent");
+
+  content.innerHTML = `
+    <div style="text-align:center;padding:20px">
+      <b>My Orders</b><br><br>
+      Order history is being connected.
+    </div>
+  `;
+}
+
+async function customerLogout(){
+
+  const token =
+    localStorage.getItem(
+      "srilatha_customer_token"
+    );
+
+  try{
+
+    await fetch(
+      "/api/customer/logout",
+      {
+        method:"POST",
+        headers:{
+          "Authorization":
+            `Bearer ${token || ""}`
+        }
+      }
+    );
+
+  }catch(error){
+    console.error(error);
+  }
+
+  localStorage.removeItem(
+    "srilatha_customer_token"
+  );
+
+  localStorage.removeItem(
+    "srilatha_customer"
+  );
+
+  closeCustomerProfile();
+
+  toast("Logged out successfully");
+}
 async function requestCustomerOtp(){
 
   const email = document
