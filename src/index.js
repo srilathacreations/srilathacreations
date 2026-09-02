@@ -587,6 +587,67 @@ export default {
       request.method === "POST"
     ) {
       try {
+        // CUSTOMER LOGIN REQUIRED FOR ORDER
+
+const authHeader =
+  request.headers.get("Authorization") || "";
+
+const customerToken =
+  authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7).trim()
+    : "";
+
+if (!customerToken) {
+  return json(
+    {
+      success: false,
+      error: "Please login before placing your order"
+    },
+    401
+  );
+}
+
+const tokenData =
+  new TextEncoder().encode(customerToken);
+
+const tokenDigest =
+  await crypto.subtle.digest(
+    "SHA-256",
+    tokenData
+  );
+
+const customerTokenHash =
+  Array.from(
+    new Uint8Array(tokenDigest)
+  )
+    .map(byte =>
+      byte.toString(16).padStart(2, "0")
+    )
+    .join("");
+
+const customerSession = await env.DB
+  .prepare(
+    `SELECT
+      cs.id,
+      cs.customer_id
+    FROM customer_sessions cs
+    WHERE cs.token_hash = ?
+      AND cs.revoked_at IS NULL
+      AND cs.expires_at > CURRENT_TIMESTAMP
+    LIMIT 1`
+  )
+  .bind(customerTokenHash)
+  .first();
+
+if (!customerSession) {
+  return json(
+    {
+      success: false,
+      error: "Your login session has expired. Please login again."
+    },
+    401
+  );
+}
         const body =
           await request.json();
 
