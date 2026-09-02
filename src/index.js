@@ -2556,17 +2556,27 @@ if (
             )
             .run();
         } else {
-          await env.DB
-            .prepare(
-              `UPDATE orders
-               SET order_status = ?
-               WHERE id = ?`
-            )
-            .bind(
-              newStatus,
-              orderId
-            )
-            .run();
+  await env.DB
+    .prepare(
+      `UPDATE orders
+       SET
+         order_status = ?,
+         payment_status =
+           CASE
+             WHEN ? = 'delivered'
+              AND LOWER(payment_method) IN ('cod','cash on delivery')
+             THEN 'paid'
+             ELSE payment_status
+           END
+       WHERE id = ?`
+    )
+    .bind(
+      newStatus,
+      newStatus,
+      orderId
+    )
+    .run();
+}
         }
 
         return json({
