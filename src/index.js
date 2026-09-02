@@ -1593,9 +1593,34 @@ if (
         .bind(customer.customer_id)
         .all();
 
+    const orders =
+      await Promise.all(
+        (result.results || []).map(
+          async order => {
+
+            const items =
+              await env.DB
+                .prepare(
+                  `SELECT *
+                   FROM order_items
+                   WHERE order_id = ?
+                   ORDER BY id ASC`
+                )
+                .bind(order.id)
+                .all();
+
+            return {
+              ...order,
+              items:
+                items.results || []
+            };
+          }
+        )
+      );
+
     return json({
       success: true,
-      orders: result.results || []
+      orders
     });
 
   } catch (error) {
