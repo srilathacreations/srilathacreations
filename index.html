@@ -3020,69 +3020,277 @@ async function showMyOrders(){
       return;
     }
 
+    const states = [
+      "pending",
+      "confirmed",
+      "processing",
+      "packed",
+      "shipped",
+      "delivered"
+    ];
+
     content.innerHTML = `
       <div style="padding:4px">
+
         <h3 style="margin:0 0 16px">
-          My Orders
+          Order History
         </h3>
 
-        ${orders.map(order => `
-          <div style="
-            border:1px solid #ead7df;
-            border-radius:16px;
-            padding:16px;
-            margin-bottom:12px;
-            background:#fff;
-          ">
+        ${orders.map((order,index)=>{
 
-            <div style="
-              display:flex;
-              justify-content:space-between;
-              gap:10px;
-              align-items:center;
-            ">
-              <b>${esc(order.order_number)}</b>
-              <b>${money(order.total_amount)}</b>
-            </div>
+          const status =
+            String(order.order_status || "pending")
+              .toLowerCase();
 
-            <div style="
-              margin-top:8px;
-              font-size:13px;
-            ">
-              Status:
-              <b>
-                ${esc(order.order_status || "Pending")}
-              </b>
-            </div>
+          const activeIndex =
+            states.indexOf(status);
 
-            ${
-              order.tracking_id
-              ? `
-                <div style="margin-top:6px;font-size:13px">
-                  Tracking ID:
-                  <b>${esc(order.tracking_id)}</b>
+          const items =
+            Array.isArray(order.items)
+              ? order.items
+              : [];
+
+          const itemHtml =
+            items.length
+            ? items.map(item=>`
+                <div style="
+                  display:flex;
+                  justify-content:space-between;
+                  gap:12px;
+                  padding:8px 0;
+                  border-bottom:1px solid #f1e5ea;
+                  font-size:13px;
+                ">
+                  <div>
+                    <b>
+                      ${esc(
+                        item.product_name ||
+                        item.name ||
+                        "Item"
+                      )}
+                    </b>
+                    <div>
+                      Qty:
+                      ${esc(
+                        String(
+                          item.quantity ||
+                          item.qty ||
+                          1
+                        )
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    ${money(
+                      item.total_price ||
+                      item.line_total ||
+                      item.price ||
+                      0
+                    )}
+                  </div>
                 </div>
-              `
-              : ""
-            }
+              `).join("")
+            : `<div style="font-size:13px">
+                 Item details unavailable
+               </div>`;
 
-            <button
-              class="btn primary"
-              style="width:100%;margin-top:12px"
-              onclick="openTrackOrder(
-                '${String(order.order_number).replace(/'/g,"\\'")}',
-                '${String(
-                  JSON.parse(
-                    localStorage.getItem("srilatha_customer") || "{}"
-                  ).phone || ""
-                ).replace(/'/g,"\\'")}'
-              )"
-            >
-              Track Order
-            </button>
+          const timeline =
+            status === "cancelled"
+            ? `
+              <div style="
+                margin-top:14px;
+                font-weight:700;
+                color:#b21849;
+              ">
+                Order Cancelled
+              </div>
+            `
+            : `
+              <div style="
+                display:flex;
+                justify-content:space-between;
+                gap:4px;
+                margin-top:16px;
+                font-size:11px;
+                text-align:center;
+              ">
+                ${states.map((state,i)=>`
+                  <div style="flex:1">
+                    <div style="
+                      width:24px;
+                      height:24px;
+                      border-radius:50%;
+                      margin:0 auto 5px;
+                      display:flex;
+                      align-items:center;
+                      justify-content:center;
+                      background:${i<=activeIndex ? "#dff7e8" : "#f1e9ed"};
+                      font-weight:700;
+                    ">
+                      ${i<=activeIndex ? "✓" : i+1}
+                    </div>
+                    ${state.charAt(0).toUpperCase()+state.slice(1)}
+                  </div>
+                `).join("")}
+              </div>
+            `;
 
-          </div>
-        `).join("")}
+          return `
+            <div style="
+              border:1px solid #ead7df;
+              border-radius:16px;
+              padding:16px;
+              margin-bottom:14px;
+              background:#fff;
+            ">
+
+              <div style="
+                display:flex;
+                justify-content:space-between;
+                gap:12px;
+                align-items:center;
+              ">
+                <b>${esc(order.order_number)}</b>
+                <b>${money(order.total_amount)}</b>
+              </div>
+
+              <div style="
+                font-size:12px;
+                margin-top:5px;
+                color:#666;
+              ">
+                ${order.created_at
+                  ? esc(String(order.created_at))
+                  : ""}
+              </div>
+
+              <div style="
+                margin-top:12px;
+                padding:12px;
+                background:#fff8fb;
+                border-radius:12px;
+              ">
+                <b>Items Purchased</b>
+                <div style="margin-top:6px">
+                  ${itemHtml}
+                </div>
+              </div>
+
+              <div style="
+                margin-top:12px;
+                font-size:13px;
+                line-height:1.8;
+              ">
+                <b>Payment</b><br>
+                Method:
+                ${esc(
+                  order.payment_method ||
+                  "Cash on Delivery"
+                )}<br>
+
+                Status:
+                ${esc(
+                  order.payment_status ||
+                  "Pending"
+                )}<br>
+
+                ${
+                  order.coupon_code
+                  ? `Coupon:
+                     ${esc(order.coupon_code)}
+                     • Saved
+                     ${money(order.discount_amount || 0)}
+                     <br>`
+                  : ""
+                }
+
+                Order Status:
+                <b>${esc(order.order_status || "Pending")}</b>
+              </div>
+
+              <button
+                class="btn primary"
+                style="width:100%;margin-top:14px"
+                onclick="
+                  const box =
+                    document.getElementById('orderTrack${index}');
+                  box.style.display =
+                    box.style.display === 'none'
+                    ? 'block'
+                    : 'none';
+                "
+              >
+                View / Track
+              </button>
+
+              <div
+                id="orderTrack${index}"
+                style="
+                  display:none;
+                  margin-top:12px;
+                  padding-top:12px;
+                  border-top:1px solid #ead7df;
+                "
+              >
+
+                ${timeline}
+
+                ${
+                  order.tracking_id
+                  ? `
+                    <div style="
+                      margin-top:14px;
+                      padding:12px;
+                      background:#fff8fb;
+                      border-radius:12px;
+                      font-size:13px;
+                    ">
+                      ${
+                        order.courier_name
+                        ? `Courier:
+                           ${esc(order.courier_name)}<br>`
+                        : ""
+                      }
+
+                      Tracking ID:
+                      <b>${esc(order.tracking_id)}</b>
+
+                      ${
+                        order.tracking_url
+                        ? `
+                          <br><br>
+                          <a
+                            class="btn primary"
+                            href="${esc(order.tracking_url)}"
+                            target="_blank"
+                          >
+                            Track Package ↗
+                          </a>
+                        `
+                        : ""
+                      }
+                    </div>
+                  `
+                  : `
+                    <div style="
+                      margin-top:14px;
+                      padding:12px;
+                      background:#fff8fb;
+                      border-radius:12px;
+                      font-size:13px;
+                    ">
+                      Courier details will appear after dispatch.
+                    </div>
+                  `
+                }
+
+              </div>
+
+            </div>
+          `;
+
+        }).join("")}
 
       </div>
     `;
