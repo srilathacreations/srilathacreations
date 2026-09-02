@@ -2963,19 +2963,141 @@ function closeCustomerProfile(){
     .classList.remove("show");
 }
 
-function showMyOrders(){
+async function showMyOrders(){
 
   const content =
     document.getElementById("customerProfileContent");
 
+  const token =
+    localStorage.getItem("srilatha_customer_token");
+
+  if(!token){
+    toast("Please login again");
+    closeCustomerProfile();
+    openCustomerLogin();
+    return;
+  }
+
   content.innerHTML = `
-    <div style="text-align:center;padding:20px">
+    <div style="text-align:center;padding:24px">
       <b>My Orders</b><br><br>
-      Order history is being connected.
+      Loading your orders...
     </div>
   `;
-}
 
+  try{
+
+    const response = await fetch(
+      "/api/customer/orders",
+      {
+        method:"GET",
+        headers:{
+          "Authorization":`Bearer ${token}`
+        },
+        cache:"no-store"
+      }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+      throw new Error(
+        data.error || "Unable to load orders"
+      );
+    }
+
+    const orders = data.orders || [];
+
+    if(!orders.length){
+
+      content.innerHTML = `
+        <div style="text-align:center;padding:25px">
+          <h3>My Orders</h3>
+          <p>You have not placed any orders yet.</p>
+        </div>
+      `;
+
+      return;
+    }
+
+    content.innerHTML = `
+      <div style="padding:4px">
+        <h3 style="margin:0 0 16px">
+          My Orders
+        </h3>
+
+        ${orders.map(order => `
+          <div style="
+            border:1px solid #ead7df;
+            border-radius:16px;
+            padding:16px;
+            margin-bottom:12px;
+            background:#fff;
+          ">
+
+            <div style="
+              display:flex;
+              justify-content:space-between;
+              gap:10px;
+              align-items:center;
+            ">
+              <b>${esc(order.order_number)}</b>
+              <b>${money(order.total_amount)}</b>
+            </div>
+
+            <div style="
+              margin-top:8px;
+              font-size:13px;
+            ">
+              Status:
+              <b>
+                ${esc(order.order_status || "Pending")}
+              </b>
+            </div>
+
+            ${
+              order.tracking_id
+              ? `
+                <div style="margin-top:6px;font-size:13px">
+                  Tracking ID:
+                  <b>${esc(order.tracking_id)}</b>
+                </div>
+              `
+              : ""
+            }
+
+            <button
+              class="btn primary"
+              style="width:100%;margin-top:12px"
+              onclick="openTrackOrder(
+                '${String(order.order_number).replace(/'/g,"\\'")}',
+                '${String(
+                  JSON.parse(
+                    localStorage.getItem("srilatha_customer") || "{}"
+                  ).phone || ""
+                ).replace(/'/g,"\\'")}'
+              )"
+            >
+              Track Order
+            </button>
+
+          </div>
+        `).join("")}
+
+      </div>
+    `;
+
+  }catch(error){
+
+    content.innerHTML = `
+      <div style="text-align:center;padding:24px">
+        <b>Unable to load orders</b><br><br>
+        ${esc(error.message)}
+      </div>
+    `;
+
+  }
+}
 async function customerLogout(){
 
   const token =
