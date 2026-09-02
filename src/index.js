@@ -1343,6 +1343,99 @@ export default {
     }
 
     // =====================================================
+    // CUSTOMER AUTH HELPERS
+    // =====================================================
+
+    const sha256 = async value => {
+      const data = new TextEncoder().encode(
+        String(value || "")
+      );
+
+      const hash = await crypto.subtle.digest(
+        "SHA-256",
+        data
+      );
+
+      return Array.from(
+        new Uint8Array(hash)
+      )
+        .map(byte =>
+          byte.toString(16).padStart(2, "0")
+        )
+        .join("");
+    };
+
+    const createSecureToken = () => {
+      const bytes = new Uint8Array(32);
+      crypto.getRandomValues(bytes);
+
+      return Array.from(bytes)
+        .map(byte =>
+          byte.toString(16).padStart(2, "0")
+        )
+        .join("");
+    };
+
+    const getCustomerToken = () => {
+      const auth =
+        request.headers.get("Authorization") || "";
+
+      if (auth.startsWith("Bearer ")) {
+        return auth.slice(7).trim();
+      }
+
+      return "";
+    };
+
+    const getAuthenticatedCustomer = async () => {
+      const token = getCustomerToken();
+
+      if (!token) {
+        return null;
+      }
+
+      const tokenHash = await sha256(token);
+
+      const session = await env.DB
+        .prepare(
+          `SELECT
+             cs.id AS session_id,
+             cs.customer_id,
+             c.name,
+             c.phone,
+             c.email,
+             c.address,
+             c.city,
+             c.state,
+             c.pincode
+           FROM customer_sessions cs
+           JOIN customers c
+             ON c.id = cs.customer_id
+           WHERE cs.token_hash = ?
+             AND cs.revoked_at IS NULL
+             AND datetime(cs.expires_at) > CURRENT_TIMESTAMP
+           LIMIT 1`
+        )
+        .bind(tokenHash)
+        .first();
+
+      if (!session) {
+        return null;
+      }
+
+      await env.DB
+        .prepare(
+          `UPDATE customer_sessions
+           SET last_used_at = CURRENT_TIMESTAMP
+           WHERE id = ?`
+        )
+        .bind(session.session_id)
+        .run();
+
+      return session;
+    };
+    
+    // =====================================================
     // ADMIN AUTH
     // =====================================================
 
