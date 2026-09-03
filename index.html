@@ -1928,25 +1928,56 @@ footer{
       >×</button>
     </div>
 
-    <div id="customerLoginStep1">
+   <div id="customerLoginStep1">
 
-      <div class="checkout-field">
-        <label>Email Address *</label>
-        <input
-          id="customerLoginEmail"
-          type="email"
-          placeholder="Enter your registered email"
-        >
-      </div>
+  <div class="checkout-field">
+    <label>Email Address *</label>
+    <input
+      id="customerLoginEmail"
+      type="email"
+      placeholder="Enter your email address"
+    >
+  </div>
 
-      <button
-        class="place-order"
-        onclick="requestCustomerOtp()"
-      >
-        Send OTP
-      </button>
+  <div
+    style="
+      margin:12px 0 8px;
+      font-size:12px;
+      color:#745e69;
+    "
+  >
+    New customer? Enter your name and mobile number below.
+    Existing customers can leave these two fields blank.
+  </div>
 
-    </div>
+  <div class="checkout-field">
+    <label>Name <span style="font-weight:400">(New customers only)</span></label>
+    <input
+      id="customerLoginName"
+      type="text"
+      placeholder="Enter your name"
+    >
+  </div>
+
+  <div class="checkout-field">
+    <label>Mobile Number <span style="font-weight:400">(New customers only)</span></label>
+    <input
+      id="customerLoginPhone"
+      type="tel"
+      inputmode="numeric"
+      maxlength="10"
+      placeholder="Enter 10-digit mobile number"
+    >
+  </div>
+
+  <button
+    class="place-order"
+    onclick="requestCustomerOtp()"
+  >
+    Send OTP
+  </button>
+
+</div>
 
     <div
       id="customerLoginStep2"
@@ -3350,15 +3381,51 @@ async function requestCustomerOtp(){
     .trim()
     .toLowerCase();
 
+  const name = document
+    .getElementById("customerLoginName")
+    .value
+    .trim();
+
+  let phone = document
+    .getElementById("customerLoginPhone")
+    .value
+    .replace(/\D/g,"");
+
   const result = document
     .getElementById("customerLoginResult");
 
-  if(!email){
+  if(
+    !email ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  ){
     result.innerHTML =
       `<div style="color:#b21849">
-        Enter your registered email.
+        Enter a valid email address.
       </div>`;
     return;
+  }
+
+  if(name || phone){
+
+    if(!name){
+      result.innerHTML =
+        `<div style="color:#b21849">
+          Enter your name.
+        </div>`;
+      return;
+    }
+
+    if(phone.length === 12 && phone.startsWith("91")){
+      phone = phone.slice(2);
+    }
+
+    if(!/^\d{10}$/.test(phone)){
+      result.innerHTML =
+        `<div style="color:#b21849">
+          Enter a valid 10-digit mobile number.
+        </div>`;
+      return;
+    }
   }
 
   result.innerHTML = "Sending OTP...";
@@ -3373,7 +3440,9 @@ async function requestCustomerOtp(){
           "Content-Type":"application/json"
         },
         body:JSON.stringify({
-          email:email
+          email,
+          name,
+          phone
         })
       }
     );
@@ -3407,9 +3476,7 @@ async function requestCustomerOtp(){
       </div>`;
   }
 }
-
 async function verifyCustomerOtp(){
-
   const email = document
     .getElementById("customerLoginEmail")
     .value
