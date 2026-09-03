@@ -2754,7 +2754,19 @@ async function applyCoupon(){
 /* ORDER */
 
 async function placeOrder(){
+const token =
+  localStorage.getItem(
+    "srilatha_customer_token"
+  );
 
+if(!token){
+
+  toast("Please sign in to continue");
+
+  openCustomerLogin();
+
+  return;
+}
  const customer={
 
   name:
@@ -3543,8 +3555,17 @@ async function verifyCustomerOtp(){
       </div>`;
 
     setTimeout(()=>{
-      closeCustomerLogin();
-    },800);
+
+  closeCustomerLogin();
+
+  const checkout =
+    document.getElementById("checkoutModal");
+
+  if(checkout){
+    checkout.style.display = "flex";
+  }
+
+},800);
 
   }catch(error){
 
