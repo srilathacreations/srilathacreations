@@ -1701,6 +1701,21 @@ if (
       .trim()
       .toLowerCase();
 
+    const name = String(
+      body.name || ""
+    ).trim();
+
+    let phone = String(
+      body.phone || ""
+    ).replace(/\D/g, "");
+
+    if (
+      phone.length === 12 &&
+      phone.startsWith("91")
+    ) {
+      phone = phone.slice(2);
+    }
+
     if (
       !email ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -1724,9 +1739,7 @@ if (
       );
     }
 
-    // Only customers already present in our store
-    // can request a login OTP.
-    const customer = await env.DB
+    let customer = await env.DB
       .prepare(
         `SELECT
           id,
@@ -1741,17 +1754,68 @@ if (
       .bind(email)
       .first();
 
-    // Return a generic response if no account exists.
-    // This avoids exposing registered customer emails.
-    if (!customer) {
-      return json({
-        success: true,
-        message:
-          "If this email is registered, an OTP will be sent."
-      });
+    let otpName = "";
+    let otpPhone = "";
+
+    if (customer) {
+
+      otpName =
+        String(customer.name || "Customer");
+
+      otpPhone =
+        String(customer.phone || "");
+
+    } else {
+
+      if (!name) {
+        return json(
+          {
+            success: false,
+            error:
+              "Enter your name for new customer registration"
+          },
+          400
+        );
+      }
+
+      if (!/^\d{10}$/.test(phone)) {
+        return json(
+          {
+            success: false,
+            error:
+              "Enter a valid 10-digit mobile number"
+          },
+          400
+        );
+      }
+
+      const phoneOwner = await env.DB
+        .prepare(
+          `SELECT
+            id,
+            email
+          FROM customers
+          WHERE phone = ?
+          LIMIT 1`
+        )
+        .bind(phone)
+        .first();
+
+      if (phoneOwner) {
+        return json(
+          {
+            success: false,
+            error:
+              "This mobile number is already registered with another email"
+          },
+          409
+        );
+      }
+
+      otpName = name;
+      otpPhone = phone;
     }
 
-    // Prevent repeated OTP requests within 60 seconds.
     const recentOtp = await env.DB
       .prepare(
         `SELECT id
@@ -1775,7 +1839,6 @@ if (
       );
     }
 
-    // Expire previous unused OTPs for this email.
     await env.DB
       .prepare(
         `UPDATE customer_otp
@@ -1786,20 +1849,24 @@ if (
       .bind(email)
       .run();
 
-    const random = new Uint32Array(1);
+    const random =
+      new Uint32Array(1);
+
     crypto.getRandomValues(random);
 
     const otp = String(
       100000 + (random[0] % 900000)
     );
 
-    const otpHash = await sha256(otp);
+    const otpHash =
+      await sha256(otp);
 
     await env.DB
       .prepare(
         `INSERT INTO customer_otp (
           phone,
           email,
+          name,
           otp_hash,
           expires_at,
           attempts
@@ -1808,89 +1875,90 @@ if (
           ?,
           ?,
           ?,
+          ?,
           datetime('now', '+10 minutes'),
           0
         )`
       )
       .bind(
-        String(customer.phone || ""),
+        otpPhone,
         email,
+        otpName,
         otpHash
       )
       .run();
 
-    const resendResponse = await fetch(
-      "https://api.resend.com/emails",
-      {
-        method: "POST",
-        headers: {
-          Authorization:
-            `Bearer ${env.RESEND_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          from:
-            "Srilatha Creations <otp@auth.srilathacreations.com>",
-          to: [email],
-          subject:
-            "Your Srilatha Creations Login OTP",
-          text:
-            `Your Srilatha Creations login OTP is ${otp}. ` +
-            `This OTP is valid for 10 minutes. ` +
-            `Do not share this OTP with anyone.`,
-          html: `
-            <div style="
-              font-family:Arial,sans-serif;
-              max-width:520px;
-              margin:auto;
-              padding:28px;
-              border:1px solid #eee;
-              border-radius:14px;
-            ">
-              <h2 style="margin-top:0;">
-                Srilatha Creations
-              </h2>
-
-              <p>
-                Hello ${String(
-                  customer.name || "Customer"
-                )},
-              </p>
-
-              <p>
-                Use the following OTP to securely
-                sign in to your account:
-              </p>
-
+    const resendResponse =
+      await fetch(
+        "https://api.resend.com/emails",
+        {
+          method: "POST",
+          headers: {
+            Authorization:
+              `Bearer ${env.RESEND_API_KEY}`,
+            "Content-Type":
+              "application/json"
+          },
+          body: JSON.stringify({
+            from:
+              "Srilatha Creations <otp@auth.srilathacreations.com>",
+            to: [email],
+            subject:
+              "Your Srilatha Creations Login OTP",
+            text:
+              `Your Srilatha Creations login OTP is ${otp}. ` +
+              `This OTP is valid for 10 minutes. ` +
+              `Do not share this OTP with anyone.`,
+            html: `
               <div style="
-                font-size:34px;
-                font-weight:700;
-                letter-spacing:8px;
-                padding:18px 0;
+                font-family:Arial,sans-serif;
+                max-width:520px;
+                margin:auto;
+                padding:28px;
+                border:1px solid #eee;
+                border-radius:14px;
               ">
-                ${otp}
+                <h2 style="margin-top:0;">
+                  Srilatha Creations
+                </h2>
+
+                <p>
+                  Hello ${otpName || "Customer"},
+                </p>
+
+                <p>
+                  Use the following OTP to securely
+                  sign in to your account:
+                </p>
+
+                <div style="
+                  font-size:34px;
+                  font-weight:700;
+                  letter-spacing:8px;
+                  padding:18px 0;
+                ">
+                  ${otp}
+                </div>
+
+                <p>
+                  This OTP is valid for
+                  <strong>10 minutes</strong>.
+                </p>
+
+                <p style="
+                  font-size:13px;
+                  color:#666;
+                ">
+                  Do not share this OTP with anyone.
+                </p>
               </div>
-
-              <p>
-                This OTP is valid for
-                <strong>10 minutes</strong>.
-              </p>
-
-              <p style="
-                font-size:13px;
-                color:#666;
-              ">
-                Do not share this OTP with anyone.
-                If you did not request this login,
-                you can safely ignore this email.
-              </p>
-            </div>
-          `
-        })
-      }
-    );
+            `
+          })
+        }
+      );
 
     if (!resendResponse.ok) {
+
       const resendError =
         await resendResponse.text();
 
@@ -1902,7 +1970,8 @@ if (
       return json(
         {
           success: false,
-          error: "Unable to send OTP"
+          error:
+            "Unable to send OTP"
         },
         502
       );
@@ -1910,11 +1979,13 @@ if (
 
     return json({
       success: true,
-      message: "OTP sent to your email",
+      message:
+        "OTP sent to your email",
       expires_in: 600
     });
 
   } catch (error) {
+
     console.error(
       "Customer OTP request error:",
       error
@@ -1931,7 +2002,6 @@ if (
     );
   }
 }
-
 
 // ==================================================
 // CUSTOMER EMAIL OTP - VERIFY
@@ -2064,7 +2134,107 @@ if (
       );
     }
 
-    const customer = await env.DB
+    let customer = await env.DB
+  .prepare(
+    `SELECT
+      id,
+      name,
+      phone,
+      email,
+      address,
+      city,
+      state,
+      pincode
+    FROM customers
+    WHERE LOWER(email) = ?
+    ORDER BY id DESC
+    LIMIT 1`
+  )
+  .bind(email)
+  .first();
+
+if (!customer) {
+
+  const registration =
+    await env.DB
+      .prepare(
+        `SELECT
+          name,
+          phone
+        FROM customer_otp
+        WHERE id = ?
+        LIMIT 1`
+      )
+      .bind(otpRecord.id)
+      .first();
+
+  const registrationName =
+    String(
+      registration?.name || ""
+    ).trim();
+
+  const registrationPhone =
+    String(
+      registration?.phone || ""
+    ).trim();
+
+  if (
+    !registrationName ||
+    !/^\d{10}$/.test(registrationPhone)
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "New customer registration details are missing. Please request a new OTP."
+      },
+      400
+    );
+  }
+
+  const phoneOwner =
+    await env.DB
+      .prepare(
+        `SELECT
+          id,
+          email
+        FROM customers
+        WHERE phone = ?
+        LIMIT 1`
+      )
+      .bind(registrationPhone)
+      .first();
+
+  if (phoneOwner) {
+    return json(
+      {
+        success: false,
+        error:
+          "This mobile number is already registered with another email"
+      },
+      409
+    );
+  }
+
+  await env.DB
+    .prepare(
+      `INSERT INTO customers (
+        name,
+        phone,
+        email,
+        is_verified
+      )
+      VALUES (?, ?, ?, 0)`
+    )
+    .bind(
+      registrationName,
+      registrationPhone,
+      email
+    )
+    .run();
+
+  customer =
+    await env.DB
       .prepare(
         `SELECT
           id,
@@ -2082,17 +2252,7 @@ if (
       )
       .bind(email)
       .first();
-
-    if (!customer) {
-      return json(
-        {
-          success: false,
-          error:
-            "Customer account not found"
-        },
-        404
-      );
-    }
+}
 
     await env.DB
       .prepare(
