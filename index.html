@@ -3558,12 +3558,12 @@ async function verifyCustomerOtp(){
 
   closeCustomerLogin();
 
-  const checkout =
-    document.getElementById("checkoutModal");
+ const checkout =
+  document.getElementById("checkoutModal");
 
-  if(checkout){
-    checkout.style.display = "flex";
-  }
+if(checkout){
+  checkout.classList.add("show");
+}
 
 },800);
 
